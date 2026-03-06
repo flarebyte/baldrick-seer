@@ -128,3 +128,76 @@ export const implementations: Record<string, ImplementationConsideration> = {
       "Ensure that running the same model with the same inputs always produces identical results. This is important for auditing and comparing decisions over time.",
   },
 };
+
+
+export type AlgorithmReference = {
+  name: string;
+  title: string;
+  description: string;
+  typicalUse?: string;
+};
+
+export const algorithmReferences: Record<string, AlgorithmReference> = {
+  "mcda.ahp": {
+    name: "mcda.ahp",
+    title: "Analytic Hierarchy Process (AHP)",
+    description:
+      "A structured decision-making method that derives criteria weights from pairwise comparisons. It converts subjective judgments about relative importance into a consistent numerical weighting system.",
+    typicalUse:
+      "Used to compute criteria importance before ranking alternatives with another MCDA method."
+  },
+
+  "mcda.topsis": {
+    name: "mcda.topsis",
+    title: "Technique for Order Preference by Similarity to Ideal Solution (TOPSIS)",
+    description:
+      "Ranks alternatives based on their distance from an ideal best solution and a worst solution. The preferred alternative is the one closest to the ideal and farthest from the negative ideal.",
+    typicalUse:
+      "Commonly used to rank alternatives once criteria weights are known."
+  },
+
+  "mcda.electre": {
+    name: "mcda.electre",
+    title: "ELECTRE Outranking Method",
+    description:
+      "An outranking-based MCDA approach that determines whether one alternative sufficiently dominates another using concordance and discordance measures.",
+    typicalUse:
+      "Useful when decisions involve strong conflicts between criteria or when certain criteria should act as veto conditions."
+  },
+
+  "mcda.promethee": {
+    name: "mcda.promethee",
+    title: "PROMETHEE (Preference Ranking Organization Method for Enrichment Evaluation)",
+    description:
+      "An outranking MCDA method that compares alternatives pairwise using preference functions and produces partial or complete rankings.",
+    typicalUse:
+      "Useful when a transparent ranking of alternatives is needed with clear preference modeling."
+  },
+
+  "mcda.vikor": {
+    name: "mcda.vikor",
+    title: "VIKOR Compromise Ranking Method",
+    description:
+      "A multi-criteria ranking method focused on identifying a compromise solution that balances group utility and individual regret among alternatives.",
+    typicalUse:
+      "Often used when decision-makers seek a compromise solution among conflicting criteria."
+  },
+
+  "analysis.sensitivity": {
+    name: "analysis.sensitivity",
+    title: "Sensitivity Analysis",
+    description:
+      "A technique that evaluates how changes in criteria weights or input values affect the ranking of alternatives.",
+    typicalUse:
+      "Used to test the robustness of MCDA results and identify parameters that significantly influence the decision."
+  },
+
+  "analysis.robustness": {
+    name: "analysis.robustness",
+    title: "Robustness Analysis",
+    description:
+      "Evaluates how stable a decision remains across variations in assumptions, scenarios, or parameter ranges.",
+    typicalUse:
+      "Useful when decisions must remain valid under uncertain future conditions."
+  }
+};
