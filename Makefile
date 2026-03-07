@@ -30,7 +30,7 @@ typecheck:
 e2e:
 	npm run test:e2e
 
-doc-design: build-dev
+doc-design:
 	mkdir -p doc/design
 	flyb validate --config doc/design-meta/app.cue
 	flyb generate markdown --config doc/design-meta/app.cue
