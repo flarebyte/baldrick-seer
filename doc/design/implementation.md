@@ -8,49 +8,49 @@ Recommendations about the decision-model shape and validation.
 
 ### Model structure
 
-#### Clear Representation of Pairwise Judgments
+#### Clear Representation of Pairwise Judgments (v1)
 
 Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
 
-#### Consistent Criteria Interpretation
+#### Consistent Criteria Interpretation (v1)
 
 Keep each criterion semantically stable across scenarios even when its importance changes.
 
-#### Human and AI Friendly Input Format
+#### Human and AI Friendly Input Format (v1)
 
-Use a semantic format such as JSON or YAML that is easy for humans and AI systems to read and generate.
+Use a semantic format such as CUE that remains readable for humans and AI systems while supporting strong validation.
 
-#### Model Documentation
+#### Model Documentation (v1)
 
 Allow decision models to carry descriptions, notes, and justifications for comparisons and values.
 
-#### Handling Incomplete Information
+#### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values and provide clear feedback, with any inferred values marked explicitly.
+Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
 
-#### Decision Model Structure
+#### Decision Model Structure (v1)
 
 Represent the decision problem with clear structures for criteria, alternatives, and scenarios that remain understandable to humans and AI.
 
-#### Model Validation
+#### Model Validation (v1)
 
 Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
 
-#### Scenario Aggregation Strategy
+#### Scenario Aggregation Strategy (v1)
 
-Define how multiple scenarios are combined into a final decision, such as equal averaging, weighted scenarios, or robustness-focused approaches.
+Define how multiple scenarios are combined into a final decision, starting with practical v1 aggregation approaches such as equal or weighted averaging.
 
-#### Constraint Enforcement
+#### Constraint Enforcement (v1)
 
 Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 
-#### Scenario Isolation
+#### Scenario Isolation (v1)
 
 Evaluate each scenario independently with its own priorities and candidate evaluations.
 
-#### Extensible Decision Methods
+#### Extensible Decision Methods (v2)
 
-Design the system so additional MCDA methods can be added later without redesigning the data model or CLI interface.
+Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface.
 
 ## Referenced methods
 
@@ -160,11 +160,11 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
 
-#### Structured Output for Automation
+#### Structured Output for Automation (v1)
 
 Provide machine-readable output such as JSON in addition to human-readable summaries.
 
-#### Readable CLI Output
+#### Readable CLI Output (v1)
 
 Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns.
 
@@ -182,33 +182,33 @@ Guidance for readable, reproducible, and automatable execution.
 
 ### CLI and explainability
 
-#### Sensitivity and Robustness Analysis
+#### Sensitivity and Robustness Analysis (v2)
 
-Support testing how changes in criteria importance or scenario assumptions affect the final ranking so users can see whether a result is stable or fragile.
+Add post-ranking analysis that tests how changes in criteria importance or scenario assumptions affect the final result so users can judge stability.
 
-#### Structured Output for Automation
+#### Structured Output for Automation (v1)
 
 Provide machine-readable output such as JSON in addition to human-readable summaries.
 
-#### Readable CLI Output
+#### Readable CLI Output (v1)
 
 Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns.
 
-#### Explainable Results
+#### Explainable Results (v1)
 
 Explain ranking outputs in terms of criteria influence and scenario differences.
 
-#### Traceable Decision Process
+#### Traceable Decision Process (v1)
 
 Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor.
 
-#### Reproducible Decision Runs
+#### Reproducible Decision Runs (v1)
 
 Running the same model with the same inputs should always produce identical results for auditing and comparison.
 
-#### Guidance for Model Creation
+#### Guidance for Model Creation (v2)
 
-Provide prompts and guidance that help users define criteria, comparisons, and scenario descriptions with fewer modeling errors.
+Provide richer prompts and guidance that help users define criteria, comparisons, and scenario descriptions with fewer modeling errors.
 
 ## Validation call flow
 
@@ -256,19 +256,19 @@ Check that report definitions use supported formats, valid focus selectors, and 
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
 
-#### Clear Representation of Pairwise Judgments
+#### Clear Representation of Pairwise Judgments (v1)
 
 Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
 
-#### Handling Incomplete Information
+#### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values and provide clear feedback, with any inferred values marked explicitly.
+Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
 
-#### Model Validation
+#### Model Validation (v1)
 
 Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
 
-#### Constraint Enforcement
+#### Constraint Enforcement (v1)
 
 Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 

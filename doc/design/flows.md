@@ -165,23 +165,23 @@ Check that report definitions use supported formats, valid focus selectors, and 
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
 
-#### Clear Representation of Pairwise Judgments
+#### Clear Representation of Pairwise Judgments (v1)
 
 Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
 
-#### Human and AI Friendly Input Format
+#### Human and AI Friendly Input Format (v1)
 
-Use a semantic format such as JSON or YAML that is easy for humans and AI systems to read and generate.
+Use a semantic format such as CUE that remains readable for humans and AI systems while supporting strong validation.
 
-#### Handling Incomplete Information
+#### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values and provide clear feedback, with any inferred values marked explicitly.
+Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
 
-#### Model Validation
+#### Model Validation (v1)
 
 Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
 
-#### Constraint Enforcement
+#### Constraint Enforcement (v1)
 
 Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 

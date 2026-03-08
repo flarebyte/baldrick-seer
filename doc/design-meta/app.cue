@@ -7,9 +7,9 @@ modules: ["design"]
 #notesByName: {
   "analysis.robustness": {
     name: "analysis.robustness"
-    title: "Sensitivity and Robustness Analysis"
-    labels: ["design", "implementation"]
-    markdown: "Support testing how changes in criteria importance or scenario assumptions affect the final ranking so users can see whether a result is stable or fragile."
+    title: "Sensitivity and Robustness Analysis (v2)"
+    labels: ["design", "implementation", "v2"]
+    markdown: "Add post-ranking analysis that tests how changes in criteria importance or scenario assumptions affect the final result so users can judge stability."
   }
   "analysis.robustness.method": {
     name: "analysis.robustness.method"
@@ -25,14 +25,14 @@ modules: ["design"]
   }
   "cli.output.machine": {
     name: "cli.output.machine"
-    title: "Structured Output for Automation"
-    labels: ["design", "implementation"]
+    title: "Structured Output for Automation (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Provide machine-readable output such as JSON in addition to human-readable summaries."
   }
   "cli.output.readability": {
     name: "cli.output.readability"
-    title: "Readable CLI Output"
-    labels: ["design", "implementation"]
+    title: "Readable CLI Output (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns."
   }
   "call.validation.input-config": {
@@ -187,20 +187,20 @@ modules: ["design"]
   }
   "criteria.pairwise.clarity": {
     name: "criteria.pairwise.clarity"
-    title: "Clear Representation of Pairwise Judgments"
-    labels: ["design", "implementation"]
+    title: "Clear Representation of Pairwise Judgments (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them."
   }
   "criteria.semantic.consistency": {
     name: "criteria.semantic.consistency"
-    title: "Consistent Criteria Interpretation"
-    labels: ["design", "implementation"]
+    title: "Consistent Criteria Interpretation (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Keep each criterion semantically stable across scenarios even when its importance changes."
   }
   "decision.explainability": {
     name: "decision.explainability"
-    title: "Explainable Results"
-    labels: ["design", "implementation"]
+    title: "Explainable Results (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Explain ranking outputs in terms of criteria influence and scenario differences."
   }
   "decision.multi-criteria-ranking": {
@@ -217,8 +217,8 @@ modules: ["design"]
   }
   "decision.traceability": {
     name: "decision.traceability"
-    title: "Traceable Decision Process"
-    labels: ["design", "implementation"]
+    title: "Traceable Decision Process (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor."
   }
   "example.hosting-choice": {
@@ -283,8 +283,8 @@ modules: ["design"]
   }
   "execution.reproducibility": {
     name: "execution.reproducibility"
-    title: "Reproducible Decision Runs"
-    labels: ["design", "implementation"]
+    title: "Reproducible Decision Runs (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Running the same model with the same inputs should always produce identical results for auditing and comparison."
   }
   "infrastructure.system-design-selection": {
@@ -295,9 +295,9 @@ modules: ["design"]
   }
   "input.format": {
     name: "input.format"
-    title: "Human and AI Friendly Input Format"
-    labels: ["design", "implementation"]
-    markdown: "Use a semantic format such as JSON or YAML that is easy for humans and AI systems to read and generate."
+    title: "Human and AI Friendly Input Format (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Use a semantic format such as CUE that remains readable for humans and AI systems while supporting strong validation."
   }
   "mcda.ahp": {
     name: "mcda.ahp"
@@ -331,26 +331,26 @@ modules: ["design"]
   }
   "model.documentation": {
     name: "model.documentation"
-    title: "Model Documentation"
-    labels: ["design", "implementation"]
+    title: "Model Documentation (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Allow decision models to carry descriptions, notes, and justifications for comparisons and values."
   }
   "model.incomplete.data": {
     name: "model.incomplete.data"
-    title: "Handling Incomplete Information"
-    labels: ["design", "implementation"]
-    markdown: "Detect missing comparisons or evaluation values and provide clear feedback, with any inferred values marked explicitly."
+    title: "Handling Incomplete Information (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery."
   }
   "model.structure": {
     name: "model.structure"
-    title: "Decision Model Structure"
-    labels: ["design", "implementation"]
+    title: "Decision Model Structure (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Represent the decision problem with clear structures for criteria, alternatives, and scenarios that remain understandable to humans and AI."
   }
   "model.validation": {
     name: "model.validation"
-    title: "Model Validation"
-    labels: ["design", "implementation"]
+    title: "Model Validation (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation."
   }
   "planning.lifecycle-decision": {
@@ -385,20 +385,20 @@ modules: ["design"]
   }
   "scenario.aggregation.policy": {
     name: "scenario.aggregation.policy"
-    title: "Scenario Aggregation Strategy"
-    labels: ["design", "implementation"]
-    markdown: "Define how multiple scenarios are combined into a final decision, such as equal averaging, weighted scenarios, or robustness-focused approaches."
+    title: "Scenario Aggregation Strategy (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Define how multiple scenarios are combined into a final decision, starting with practical v1 aggregation approaches such as equal or weighted averaging."
   }
   "scenario.constraints": {
     name: "scenario.constraints"
-    title: "Constraint Enforcement"
-    labels: ["design", "implementation"]
+    title: "Constraint Enforcement (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Allow scenarios to define hard requirements that can exclude alternatives before ranking."
   }
   "scenario.isolation": {
     name: "scenario.isolation"
-    title: "Scenario Isolation"
-    labels: ["design", "implementation"]
+    title: "Scenario Isolation (v1)"
+    labels: ["design", "implementation", "v1"]
     markdown: "Evaluate each scenario independently with its own priorities and candidate evaluations."
   }
   "strategy.growth-scenario-evaluation": {
@@ -415,9 +415,9 @@ modules: ["design"]
   }
   "system.extensibility.methods": {
     name: "system.extensibility.methods"
-    title: "Extensible Decision Methods"
-    labels: ["design", "implementation"]
-    markdown: "Design the system so additional MCDA methods can be added later without redesigning the data model or CLI interface."
+    title: "Extensible Decision Methods (v2)"
+    labels: ["design", "implementation", "v2"]
+    markdown: "Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface."
   }
   "technology.architecture-choice": {
     name: "technology.architecture-choice"
@@ -439,9 +439,9 @@ modules: ["design"]
   }
   "ux.model.guidance": {
     name: "ux.model.guidance"
-    title: "Guidance for Model Creation"
-    labels: ["design", "implementation"]
-    markdown: "Provide prompts and guidance that help users define criteria, comparisons, and scenario descriptions with fewer modeling errors."
+    title: "Guidance for Model Creation (v2)"
+    labels: ["design", "implementation", "v2"]
+    markdown: "Provide richer prompts and guidance that help users define criteria, comparisons, and scenario descriptions with fewer modeling errors."
   }
   "vendor.service-provider-comparison": {
     name: "vendor.service-provider-comparison"
