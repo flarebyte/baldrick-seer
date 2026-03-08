@@ -131,6 +131,12 @@ modules: ["design"]
     labels: ["call", "design", "flow", "implementation", "method"]
     markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
   }
+  "call.reports.generate.select-ranking-strategy": {
+    name: "call.reports.generate.select-ranking-strategy"
+    title: "Select Ranking Strategy"
+    labels: ["call", "design", "flow", "implementation", "method"]
+    markdown: "Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+  }
   "call.reports.generate.build-topsis-inputs": {
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
@@ -142,6 +148,18 @@ modules: ["design"]
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "design", "flow", "implementation", "method"]
     markdown: "Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS."
+  }
+  "call.reports.generate.future-rank-electre": {
+    name: "call.reports.generate.future-rank-electre"
+    title: "Future Option: Rank with ELECTRE"
+    labels: ["call", "design", "flow", "future", "method"]
+    markdown: "Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS."
+  }
+  "call.reports.generate.future-rank-topsis-sensitivity": {
+    name: "call.reports.generate.future-rank-topsis-sensitivity"
+    title: "Future Option: TOPSIS with Sensitivity Analysis"
+    labels: ["call", "design", "flow", "future", "method"]
+    markdown: "Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness."
   }
   "call.reports.generate.render-output": {
     name: "call.reports.generate.render-output"
@@ -638,8 +656,11 @@ reports: [
               #notesByName["call.validation.input-config.validate-model"].name,
               #notesByName["call.reports.generate.build-ahp-inputs"].name,
               #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.select-ranking-strategy"].name,
               #notesByName["call.reports.generate.build-topsis-inputs"].name,
               #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
+              #notesByName["call.reports.generate.future-rank-electre"].name,
+              #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name,
               #notesByName["call.reports.generate.render-output"].name,
               #notesByName["call.reports.generate.render-output.render-markdown"].name,
               #notesByName["call.reports.generate.render-output.render-json"].name,
@@ -740,8 +761,11 @@ reports: [
               #notesByName["call.validation.input-config.validate-model"].name,
               #notesByName["call.reports.generate.build-ahp-inputs"].name,
               #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.select-ranking-strategy"].name,
               #notesByName["call.reports.generate.build-topsis-inputs"].name,
               #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
+              #notesByName["call.reports.generate.future-rank-electre"].name,
+              #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name,
               #notesByName["call.reports.generate.render-output"].name,
               #notesByName["call.reports.generate.render-output.render-markdown"].name,
               #notesByName["call.reports.generate.render-output.render-json"].name,
@@ -875,8 +899,11 @@ notes: [
   #notesByName["call.reports.generate.shared-validation"],
   #notesByName["call.reports.generate.build-ahp-inputs"],
   #notesByName["call.reports.generate.compute-ahp-weights"],
+  #notesByName["call.reports.generate.select-ranking-strategy"],
   #notesByName["call.reports.generate.build-topsis-inputs"],
   #notesByName["call.reports.generate.rank-alternatives-topsis"],
+  #notesByName["call.reports.generate.future-rank-electre"],
+  #notesByName["call.reports.generate.future-rank-topsis-sensitivity"],
   #notesByName["call.reports.generate.render-output"],
   #notesByName["call.reports.generate.render-output.render-markdown"],
   #notesByName["call.reports.generate.render-output.render-json"],
@@ -1115,7 +1142,25 @@ relationships: [
   },
   {
     from: #notesByName["call.reports.generate.compute-ahp-weights"].name
+    to: #notesByName["call.reports.generate.select-ranking-strategy"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.select-ranking-strategy"].name
     to: #notesByName["call.reports.generate.build-topsis-inputs"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.select-ranking-strategy"].name
+    to: #notesByName["call.reports.generate.future-rank-electre"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.select-ranking-strategy"].name
+    to: #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name
     label: "delegate_to"
     labels: ["delegate_to"]
   },
@@ -1183,6 +1228,16 @@ relationships: [
     from: #notesByName["call.reports.generate.render-output.render-csv"].name
     to: #notesByName["cli.output.machine"].name
     label: "supports"
+  },
+  {
+    from: #notesByName["call.reports.generate.future-rank-electre"].name
+    to: #notesByName["mcda.electre"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name
+    to: #notesByName["analysis.sensitivity"].name
+    label: "implements"
   },
   {
     from: #notesByName["criteria.pairwise.clarity"].name

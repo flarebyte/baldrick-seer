@@ -67,8 +67,11 @@ reports: [{
             "call.validation.input-config.validate-model",
             "call.reports.generate.build-ahp-inputs",
             "call.reports.generate.compute-ahp-weights",
+            "call.reports.generate.select-ranking-strategy",
             "call.reports.generate.build-topsis-inputs",
             "call.reports.generate.rank-alternatives-topsis",
+            "call.reports.generate.future-rank-electre",
+            "call.reports.generate.future-rank-topsis-sensitivity",
             "call.reports.generate.render-output",
             "call.reports.generate.render-output.render-markdown",
             "call.reports.generate.render-output.render-json",
@@ -178,6 +181,12 @@ notes: [
     markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
   },
   {
+    name: "call.reports.generate.select-ranking-strategy"
+    title: "Select Ranking Strategy"
+    labels: ["call", "flow", "implementation", "method"]
+    markdown: "Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+  },
+  {
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "flow", "implementation", "method"]
@@ -188,6 +197,18 @@ notes: [
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "flow", "implementation", "method"]
     markdown: "Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS."
+  },
+  {
+    name: "call.reports.generate.future-rank-electre"
+    title: "Future Option: Rank with ELECTRE"
+    labels: ["call", "flow", "future", "method"]
+    markdown: "Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS."
+  },
+  {
+    name: "call.reports.generate.future-rank-topsis-sensitivity"
+    title: "Future Option: TOPSIS with Sensitivity Analysis"
+    labels: ["call", "flow", "future", "method"]
+    markdown: "Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness."
   },
   {
     name: "call.reports.generate.render-output"
@@ -312,7 +333,25 @@ relationships: [
   },
   {
     from: "call.reports.generate.compute-ahp-weights"
+    to: "call.reports.generate.select-ranking-strategy"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.select-ranking-strategy"
     to: "call.reports.generate.build-topsis-inputs"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.select-ranking-strategy"
+    to: "call.reports.generate.future-rank-electre"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.select-ranking-strategy"
+    to: "call.reports.generate.future-rank-topsis-sensitivity"
     label: "delegate_to"
     labels: ["delegate_to"]
   },

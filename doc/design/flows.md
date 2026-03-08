@@ -16,12 +16,15 @@ Text graph for the report-generation call chain, reusing the shared validation p
       - <a id="graph-node-call-reports-generate-shared-validation"></a> Reuse Shared Validation Flow: Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
         - <a id="graph-node-call-reports-generate-build-ahp-inputs"></a> Build AHP Inputs: Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation.
           - <a id="graph-node-call-reports-generate-compute-ahp-weights"></a> Compute Criteria Weights with AHP: Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
-            - <a id="graph-node-call-reports-generate-build-topsis-inputs"></a> Build TOPSIS Inputs: Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS.
-              - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
-                - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
-                  - <a id="graph-node-call-reports-generate-render-output-render-csv"></a> Render CSV Report: Render flat tabular CSV output for spreadsheet analysis and data exchange.
-                  - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility.
-                  - <a id="graph-node-call-reports-generate-render-output-render-markdown"></a> Render Markdown Report: Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
+            - <a id="graph-node-call-reports-generate-select-ranking-strategy"></a> Select Ranking Strategy: Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
+              - <a id="graph-node-call-reports-generate-build-topsis-inputs"></a> Build TOPSIS Inputs: Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS.
+                - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
+                  - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+                    - <a id="graph-node-call-reports-generate-render-output-render-csv"></a> Render CSV Report: Render flat tabular CSV output for spreadsheet analysis and data exchange.
+                    - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+                    - <a id="graph-node-call-reports-generate-render-output-render-markdown"></a> Render Markdown Report: Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
+              - <a id="graph-node-call-reports-generate-future-rank-electre"></a> Future Option: Rank with ELECTRE: Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS.
+              - <a id="graph-node-call-reports-generate-future-rank-topsis-sensitivity"></a> Future Option: TOPSIS with Sensitivity Analysis: Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness.
 
 ### Report generation notes
 
@@ -40,6 +43,14 @@ Combine validated evaluations, criterion polarity, and AHP-derived weights into 
 #### Compute Criteria Weights with AHP
 
 Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
+
+#### Future Option: Rank with ELECTRE
+
+Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS.
+
+#### Future Option: TOPSIS with Sensitivity Analysis
+
+Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness.
 
 #### Parse Report Arguments
 
@@ -64,6 +75,10 @@ Render machine-readable JSON output for automation, downstream processing, and r
 #### Render Markdown Report
 
 Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
+
+#### Select Ranking Strategy
+
+Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
 
 #### Select Requested Reports
 
