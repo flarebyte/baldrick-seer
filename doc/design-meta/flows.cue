@@ -14,13 +14,13 @@ reports: [{
     sections: [
       {
         title: "Input config validation graph"
-        description: "Mermaid graph for the validate-config call chain."
+        description: "Text graph for the validate-config call chain."
         arguments: [
           "graph-subject-label=call",
           "graph-edge-label=delegate_to",
           "graph-start-node=call.validation.input-config",
-          "graph-renderer=mermaid",
-          "mermaid-direction=TD",
+          "graph-renderer=markdown-text",
+          "cycle-policy=disallow",
         ]
       },
       {
