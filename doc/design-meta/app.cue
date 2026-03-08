@@ -221,6 +221,42 @@ modules: ["design"]
     labels: ["design", "implementation", "v1"]
     markdown: "Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor."
   }
+  "engineering.deterministic-ordering": {
+    name: "engineering.deterministic-ordering"
+    title: "Deterministic Output Ordering (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Guarantee deterministic ordering in generated outputs so repeated runs produce stable markdown, JSON, and CSV artifacts."
+  }
+  "engineering.guard-clauses": {
+    name: "engineering.guard-clauses"
+    title: "Guard Clauses and Early Returns (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Prefer early returns and guard clauses for error handling so failure paths stay short, obvious, and easy to test."
+  }
+  "engineering.small-functions": {
+    name: "engineering.small-functions"
+    title: "Small Single-Purpose Functions (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Keep functions small and single-purpose so validation, weighting, ranking, and rendering logic remain easy to understand and reuse."
+  }
+  "engineering.io-core-separation": {
+    name: "engineering.io-core-separation"
+    title: "I/O and Core Logic Separation (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Separate filesystem, terminal, and config-loading I/O from core decision logic so the computation pipeline stays testable and deterministic."
+  }
+  "engineering.tiny-structs": {
+    name: "engineering.tiny-structs"
+    title: "Tiny Structs over Long Parameter Lists (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Use small focused structs to carry grouped inputs instead of long parameter lists that are brittle and hard to read."
+  }
+  "engineering.named-predicates": {
+    name: "engineering.named-predicates"
+    title: "Named Predicates over Boolean Soup (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Replace tangled boolean expressions with named predicates so validation and ranking rules read like domain logic instead of control noise."
+  }
   "example.hosting-choice": {
     name: "example.hosting-choice"
     title: "Hosting Choice Example"
@@ -401,6 +437,24 @@ modules: ["design"]
     labels: ["design", "implementation", "v1"]
     markdown: "Evaluate each scenario independently with its own priorities and candidate evaluations."
   }
+  "stack.cli.go": {
+    name: "stack.cli.go"
+    title: "Go CLI Implementation (v1)"
+    labels: ["design", "implementation", "stack", "v1"]
+    markdown: "Implement the production CLI in Go so the tool remains fast, portable, and straightforward to distribute."
+  }
+  "stack.cli.cobra": {
+    name: "stack.cli.cobra"
+    title: "Cobra Command and Argument Parsing (v1)"
+    labels: ["design", "implementation", "stack", "v1"]
+    markdown: "Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model."
+  }
+  "stack.config.cue": {
+    name: "stack.config.cue"
+    title: "CUE as Configuration Source of Truth (v1)"
+    labels: ["design", "implementation", "stack", "v1"]
+    markdown: "Use CUE as the configuration source of truth so schema, defaults, validation, and concrete config evaluation live in one place."
+  }
   "strategy.growth-scenario-evaluation": {
     name: "strategy.growth-scenario-evaluation"
     title: "Growth Scenario Evaluation (v1)"
@@ -418,6 +472,12 @@ modules: ["design"]
     title: "Extensible Decision Methods (v2)"
     labels: ["design", "implementation", "v2"]
     markdown: "Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface."
+  }
+  "testing.e2e.bun-typescript": {
+    name: "testing.e2e.bun-typescript"
+    title: "Bun and TypeScript for E2E Tests (v1)"
+    labels: ["design", "implementation", "testing", "v1"]
+    markdown: "Implement end-to-end tests in TypeScript with Bun so CLI scenarios can be expressed tersely while staying fast to run in CI."
   }
   "technology.architecture-choice": {
     name: "technology.architecture-choice"
@@ -662,6 +722,23 @@ reports: [
         ]
       },
       {
+        title: "Engineering conventions"
+        description: "Implementation rules intended to keep the codebase readable, testable, and deterministic."
+        sections: [
+          {
+            title: "Code structure"
+            notes: [
+              #notesByName["engineering.deterministic-ordering"].name,
+              #notesByName["engineering.guard-clauses"].name,
+              #notesByName["engineering.small-functions"].name,
+              #notesByName["engineering.io-core-separation"].name,
+              #notesByName["engineering.tiny-structs"].name,
+              #notesByName["engineering.named-predicates"].name,
+            ]
+          },
+        ]
+      },
+      {
         title: "User experience and output"
         description: "Guidance for readable, reproducible, and automatable execution."
         sections: [
@@ -675,6 +752,21 @@ reports: [
               #notesByName["decision.traceability"].name,
               #notesByName["execution.reproducibility"].name,
               #notesByName["ux.model.guidance"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Implementation stack"
+        description: "Primary languages, libraries, and tools chosen for the first release."
+        sections: [
+          {
+            title: "Runtime and tooling"
+            notes: [
+              #notesByName["stack.cli.go"].name,
+              #notesByName["stack.cli.cobra"].name,
+              #notesByName["stack.config.cue"].name,
+              #notesByName["testing.e2e.bun-typescript"].name,
             ]
           },
         ]
@@ -977,6 +1069,12 @@ notes: [
   #notesByName["decision.multi-criteria-ranking"],
   #notesByName["decision.robust-choice-identification"],
   #notesByName["decision.traceability"],
+  #notesByName["engineering.deterministic-ordering"],
+  #notesByName["engineering.guard-clauses"],
+  #notesByName["engineering.io-core-separation"],
+  #notesByName["engineering.named-predicates"],
+  #notesByName["engineering.small-functions"],
+  #notesByName["engineering.tiny-structs"],
   #notesByName["example.hosting-choice"],
   #notesByName["example.hosting-choice.lean-startup"],
   #notesByName["example.hosting-choice.regulated-growth"],
@@ -1007,9 +1105,13 @@ notes: [
   #notesByName["scenario.aggregation.policy"],
   #notesByName["scenario.constraints"],
   #notesByName["scenario.isolation"],
+  #notesByName["stack.cli.cobra"],
+  #notesByName["stack.cli.go"],
+  #notesByName["stack.config.cue"],
   #notesByName["strategy.growth-scenario-evaluation"],
   #notesByName["strategy.investment-decision"],
   #notesByName["system.extensibility.methods"],
+  #notesByName["testing.e2e.bun-typescript"],
   #notesByName["technology.architecture-choice"],
   #notesByName["technology.infrastructure-strategy"],
   #notesByName["technology.platform-selection"],
@@ -1318,6 +1420,36 @@ relationships: [
     label: "reinforces"
   },
   {
+    from: #notesByName["engineering.deterministic-ordering"].name
+    to: #notesByName["execution.reproducibility"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["engineering.guard-clauses"].name
+    to: #notesByName["model.validation"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["engineering.small-functions"].name
+    to: #notesByName["engineering.io-core-separation"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["engineering.io-core-separation"].name
+    to: #notesByName["execution.reproducibility"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["engineering.tiny-structs"].name
+    to: #notesByName["model.structure"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["engineering.named-predicates"].name
+    to: #notesByName["model.validation"].name
+    label: "supports"
+  },
+  {
     from: #notesByName["example.hosting-choice"].name
     to: #notesByName["decision.multi-criteria-ranking"].name
     label: "addresses_usecase"
@@ -1401,6 +1533,36 @@ relationships: [
     from: #notesByName["input.format"].name
     to: #notesByName["model.structure"].name
     label: "supports"
+  },
+  {
+    from: #notesByName["stack.cli.go"].name
+    to: #notesByName["call.reports.generate"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["stack.cli.go"].name
+    to: #notesByName["call.validation.input-config"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["stack.cli.cobra"].name
+    to: #notesByName["call.validation.input-config.parse-args"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["stack.cli.cobra"].name
+    to: #notesByName["call.reports.generate.parse-args"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["stack.config.cue"].name
+    to: #notesByName["input.format"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["stack.config.cue"].name
+    to: #notesByName["call.validation.input-config.load-cue-config"].name
+    label: "implements"
   },
   {
     from: #notesByName["model.validation"].name
@@ -1496,6 +1658,21 @@ relationships: [
     from: #notesByName["system.extensibility.methods"].name
     to: #notesByName["mcda.vikor"].name
     label: "enables"
+  },
+  {
+    from: #notesByName["testing.e2e.bun-typescript"].name
+    to: #notesByName["execution.reproducibility"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["testing.e2e.bun-typescript"].name
+    to: #notesByName["call.reports.generate"].name
+    label: "tests"
+  },
+  {
+    from: #notesByName["testing.e2e.bun-typescript"].name
+    to: #notesByName["call.validation.input-config"].name
+    label: "tests"
   },
   {
     from: #notesByName["technology.architecture-choice"].name

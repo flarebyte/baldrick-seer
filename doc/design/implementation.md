@@ -2,6 +2,58 @@
 
 Implementation guidance and method references for the CLI and model.
 
+## Engineering conventions
+
+Implementation rules intended to keep the codebase readable, testable, and deterministic.
+
+### Code structure
+
+#### Deterministic Output Ordering (v1)
+
+Guarantee deterministic ordering in generated outputs so repeated runs produce stable markdown, JSON, and CSV artifacts.
+
+#### Guard Clauses and Early Returns (v1)
+
+Prefer early returns and guard clauses for error handling so failure paths stay short, obvious, and easy to test.
+
+#### I/O and Core Logic Separation (v1)
+
+Separate filesystem, terminal, and config-loading I/O from core decision logic so the computation pipeline stays testable and deterministic.
+
+#### Named Predicates over Boolean Soup (v1)
+
+Replace tangled boolean expressions with named predicates so validation and ranking rules read like domain logic instead of control noise.
+
+#### Small Single-Purpose Functions (v1)
+
+Keep functions small and single-purpose so validation, weighting, ranking, and rendering logic remain easy to understand and reuse.
+
+#### Tiny Structs over Long Parameter Lists (v1)
+
+Use small focused structs to carry grouped inputs instead of long parameter lists that are brittle and hard to read.
+
+## Implementation stack
+
+Primary languages, libraries, and tools chosen for the first release.
+
+### Runtime and tooling
+
+#### Cobra Command and Argument Parsing (v1)
+
+Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model.
+
+#### Go CLI Implementation (v1)
+
+Implement the production CLI in Go so the tool remains fast, portable, and straightforward to distribute.
+
+#### CUE as Configuration Source of Truth (v1)
+
+Use CUE as the configuration source of truth so schema, defaults, validation, and concrete config evaluation live in one place.
+
+#### Bun and TypeScript for E2E Tests (v1)
+
+Implement end-to-end tests in TypeScript with Bun so CLI scenarios can be expressed tersely while staying fast to run in CI.
+
 ## Modeling guidance
 
 Recommendations about the decision-model shape and validation.
