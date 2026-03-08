@@ -1,4 +1,4 @@
-export type Id = string;
+export type Name = string;
 
 export type CriterionPolarity = "benefit" | "cost";
 
@@ -30,8 +30,8 @@ export interface McdaModel {
 }
 
 export interface ProblemDefinition {
-  id: Id;
-  name: string;
+  name: Name;
+  title: string;
   goal: string;
   description?: string;
   owner?: string;
@@ -39,8 +39,8 @@ export interface ProblemDefinition {
 }
 
 export interface CriterionDefinition {
-  id: Id;
-  name: string;
+  name: Name;
+  title: string;
   description?: string;
   polarity: CriterionPolarity;
   unit?: string;
@@ -49,15 +49,15 @@ export interface CriterionDefinition {
 }
 
 export interface AlternativeDefinition {
-  id: Id;
-  name: string;
+  name: Name;
+  title: string;
   description?: string;
   tags?: string[];
 }
 
 export interface ScenarioDefinition {
-  id: Id;
-  name: string;
+  name: Name;
+  title: string;
   description?: string;
 
   /**
@@ -98,8 +98,8 @@ export interface ScenarioDefinition {
 }
 
 export interface ScenarioCriterionRef {
-  criterionId: Id;
-  notes?: string;
+  criterionName: Name;
+  description?: string;
 }
 
 export interface ScenarioPreferences {
@@ -109,8 +109,8 @@ export interface ScenarioPreferences {
 }
 
 export interface PairwiseComparison {
-  moreImportantCriterionId: Id;
-  lessImportantCriterionId: Id;
+  moreImportantCriterionName: Name;
+  lessImportantCriterionName: Name;
   strength: PairwiseStrength;
   justification?: string;
   source?: "human" | "ai" | "hybrid";
@@ -118,9 +118,9 @@ export interface PairwiseComparison {
 }
 
 export interface AlternativeScenarioEvaluation {
-  alternativeId: Id;
-  values: Record<Id, CriterionValue>;
-  notes?: string;
+  alternativeName: Name;
+  values: Record<Name, CriterionValue>;
+  description?: string;
   evidence?: EvidenceRef[];
 }
 
@@ -166,7 +166,7 @@ export interface EvidenceRef {
 }
 
 export interface ScenarioConstraint {
-  criterionId: Id;
+  criterionName: Name;
   operator: "<=" | ">=" | "=" | "!=";
   value: number | boolean | string;
   justification?: string;
@@ -178,9 +178,9 @@ export interface ScenarioAggregationDefinition {
   /**
    * Optional explicit scenario weights.
    * Recommended when method = weighted_average.
-   * Keys are scenario ids.
+   * Keys are scenario names.
    */
-  scenarioWeights?: Record<Id, number>;
+  scenarioWeights?: Record<Name, number>;
 
   /**
    * Optional policy note for humans / AI agents.

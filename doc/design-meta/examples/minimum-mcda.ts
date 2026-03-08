@@ -5,37 +5,37 @@ export const minimalScenarioMcda: McdaModel = {
   version: "1.0",
 
   problem: {
-    id: "hosting-choice",
-    name: "Hosting Choice",
+    name: "hosting-choice",
+    title: "Hosting Choice",
     goal: "Choose the best hosting provider across business scenarios"
   },
 
   criteriaCatalog: [
-    { id: "cost", name: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
-    { id: "speed", name: "Speed", polarity: "benefit", unit: "score", valueType: "number" },
-    { id: "compliance", name: "Compliance", polarity: "benefit", unit: "score", valueType: "number" }
+    { name: "cost", title: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
+    { name: "speed", title: "Speed", polarity: "benefit", unit: "score", valueType: "number" },
+    { name: "compliance", title: "Compliance", polarity: "benefit", unit: "score", valueType: "number" }
   ],
 
   alternatives: [
-    { id: "a", name: "Provider A" },
-    { id: "b", name: "Provider B" }
+    { name: "provider_a", title: "Provider A" },
+    { name: "provider_b", title: "Provider B" }
   ],
 
   scenarios: [
     {
-      id: "lean_startup",
-      name: "Lean Startup",
+      name: "lean_startup",
+      title: "Lean Startup",
       activeCriteria: [
-        { criterionId: "cost" },
-        { criterionId: "speed" }
+        { criterionName: "cost" },
+        { criterionName: "speed" }
       ],
       preferences: {
         method: "ahp_pairwise",
         scale: "saaty_1_9",
         comparisons: [
           {
-            moreImportantCriterionId: "cost",
-            lessImportantCriterionId: "speed",
+            moreImportantCriterionName: "cost",
+            lessImportantCriterionName: "speed",
             strength: 3,
             justification: "Budget matters more than peak performance."
           }
@@ -43,14 +43,14 @@ export const minimalScenarioMcda: McdaModel = {
       },
       evaluations: [
         {
-          alternativeId: "a",
+          alternativeName: "provider_a",
           values: {
             cost: { kind: "number", value: 100 },
             speed: { kind: "number", value: 70 }
           }
         },
         {
-          alternativeId: "b",
+          alternativeName: "provider_b",
           values: {
             cost: { kind: "number", value: 180 },
             speed: { kind: "number", value: 90 }
@@ -59,37 +59,37 @@ export const minimalScenarioMcda: McdaModel = {
       ]
     },
     {
-      id: "regulated_growth",
-      name: "Regulated Growth",
+      name: "regulated_growth",
+      title: "Regulated Growth",
       activeCriteria: [
-        { criterionId: "cost" },
-        { criterionId: "speed" },
-        { criterionId: "compliance" }
+        { criterionName: "cost" },
+        { criterionName: "speed" },
+        { criterionName: "compliance" }
       ],
       preferences: {
         method: "ahp_pairwise",
         scale: "saaty_1_9",
         comparisons: [
           {
-            moreImportantCriterionId: "compliance",
-            lessImportantCriterionId: "cost",
+            moreImportantCriterionName: "compliance",
+            lessImportantCriterionName: "cost",
             strength: 5
           },
           {
-            moreImportantCriterionId: "compliance",
-            lessImportantCriterionId: "speed",
+            moreImportantCriterionName: "compliance",
+            lessImportantCriterionName: "speed",
             strength: 4
           },
           {
-            moreImportantCriterionId: "speed",
-            lessImportantCriterionId: "cost",
+            moreImportantCriterionName: "speed",
+            lessImportantCriterionName: "cost",
             strength: 2
           }
         ]
       },
       evaluations: [
         {
-          alternativeId: "a",
+          alternativeName: "provider_a",
           values: {
             cost: { kind: "number", value: 100 },
             speed: { kind: "number", value: 70 },
@@ -97,7 +97,7 @@ export const minimalScenarioMcda: McdaModel = {
           }
         },
         {
-          alternativeId: "b",
+          alternativeName: "provider_b",
           values: {
             cost: { kind: "number", value: 180 },
             speed: { kind: "number", value: 90 },
