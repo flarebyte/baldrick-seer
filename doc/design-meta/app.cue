@@ -311,6 +311,18 @@ modules: ["design"]
     labels: ["design", "example", "output", "csv"]
     filepath: "examples/hosting-choice-scores.csv"
   }
+  "example.output-validation-failure.markdown": {
+    name: "example.output-validation-failure.markdown"
+    title: "Validation Failure Markdown Output"
+    labels: ["design", "example", "output", "markdown", "validation"]
+    filepath: "examples/validation-failure.md"
+  }
+  "example.output-validation-failure.json": {
+    name: "example.output-validation-failure.json"
+    title: "Validation Failure JSON Output"
+    labels: ["design", "example", "output", "json", "validation"]
+    filepath: "examples/validation-failure.json"
+  }
   "example.platform-selection": {
     name: "example.platform-selection"
     title: "Platform Selection Example"
@@ -640,11 +652,18 @@ reports: [
         description: "Illustrative outputs for the hosting-choice example across the main v1 report formats."
         sections: [
           {
-            title: "Rendered reports"
+            title: "Successful reports"
             notes: [
               #notesByName["example.output-hosting-choice.markdown"].name,
               #notesByName["example.output-hosting-choice.json"].name,
               #notesByName["example.output-hosting-choice.csv"].name,
+            ]
+          },
+          {
+            title: "Validation failures"
+            notes: [
+              #notesByName["example.output-validation-failure.markdown"].name,
+              #notesByName["example.output-validation-failure.json"].name,
             ]
           },
         ]
@@ -1078,6 +1097,8 @@ notes: [
   #notesByName["example.output-hosting-choice.csv"],
   #notesByName["example.output-hosting-choice.json"],
   #notesByName["example.output-hosting-choice.markdown"],
+  #notesByName["example.output-validation-failure.json"],
+  #notesByName["example.output-validation-failure.markdown"],
   #notesByName["example.input-platform-selection.ts"],
   #notesByName["example.input-schema.ts"],
   #notesByName["example.platform-selection"],
@@ -1632,6 +1653,16 @@ relationships: [
   {
     from: #notesByName["example.output-hosting-choice.csv"].name
     to:   #notesByName["example.hosting-choice"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.output-validation-failure.markdown"].name
+    to:   #notesByName["call.validation.input-config.validate-model"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.output-validation-failure.json"].name
+    to:   #notesByName["call.validation.input-config.validate-model"].name
     label: "documents"
   },
   {

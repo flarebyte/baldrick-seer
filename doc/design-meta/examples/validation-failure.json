@@ -1,0 +1,24 @@
+{
+  "status": "invalid",
+  "problemName": "hosting-choice",
+  "diagnostics": [
+    {
+      "code": "UNKNOWN_REFERENCE",
+      "severity": "error",
+      "path": "evaluations[1].scenarioName",
+      "message": "Unknown scenario name: regulated_growthh"
+    },
+    {
+      "code": "MISSING_EVALUATION_VALUE",
+      "severity": "error",
+      "path": "evaluations[0].evaluations[1].values",
+      "message": "Missing value for active criterion: speed"
+    },
+    {
+      "code": "INVALID_REPORT_ARGUMENT",
+      "severity": "error",
+      "path": "reports[0].arguments[2]",
+      "message": "Unsupported argument: include-score=yes"
+    }
+  ]
+}

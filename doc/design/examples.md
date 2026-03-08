@@ -6,7 +6,7 @@ Scenario-based MCDA examples translated from the TypeScript design fixtures.
 
 Illustrative outputs for the hosting-choice example across the main v1 report formats.
 
-### Rendered reports
+### Successful reports
 
 #### Hosting Choice CSV Output
 
@@ -83,6 +83,58 @@ Illustrative outputs for the hosting-choice example across the main v1 report fo
 
 1. `Provider B` (`0.555`)
 2. `Provider A` (`0.445`)
+```
+
+### Validation failures
+
+#### Validation Failure JSON Output
+
+```json
+{
+  "status": "invalid",
+  "problemName": "hosting-choice",
+  "diagnostics": [
+    {
+      "code": "UNKNOWN_REFERENCE",
+      "severity": "error",
+      "path": "evaluations[1].scenarioName",
+      "message": "Unknown scenario name: regulated_growthh"
+    },
+    {
+      "code": "MISSING_EVALUATION_VALUE",
+      "severity": "error",
+      "path": "evaluations[0].evaluations[1].values",
+      "message": "Missing value for active criterion: speed"
+    },
+    {
+      "code": "INVALID_REPORT_ARGUMENT",
+      "severity": "error",
+      "path": "reports[0].arguments[2]",
+      "message": "Unsupported argument: include-score=yes"
+    }
+  ]
+}
+```
+
+#### Validation Failure Markdown Output
+
+```markdown
+# Validation Failed
+
+The input config is invalid. No ranking was produced.
+
+## Diagnostics
+
+- `UNKNOWN_REFERENCE` at `evaluations[1].scenarioName`
+  - Unknown scenario name: `regulated_growthh`
+- `MISSING_EVALUATION_VALUE` at `evaluations[0].evaluations[1].values`
+  - Missing value for active criterion: `speed`
+- `INVALID_REPORT_ARGUMENT` at `reports[0].arguments[2]`
+  - Unsupported argument: `include-score=yes`
+
+## Next step
+
+Fix the reported config errors and run validation again.
 ```
 
 ## Hosting choice
