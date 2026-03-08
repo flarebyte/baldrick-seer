@@ -15,19 +15,22 @@ export const minimalScenarioMcda: McdaModel = {
       name: "hosting-choice-summary",
       title: "Hosting Choice Summary",
       description: "Human-readable summary of rankings and scenario trade-offs.",
-      format: "markdown"
+      format: "markdown",
+      arguments: ["include-scenarios=all", "top-alternatives=2"]
     },
     {
       name: "hosting-choice-results",
       title: "Hosting Choice Results",
       description: "Structured ranking output for downstream tooling.",
-      format: "json"
+      format: "json",
+      arguments: ["include-evidence=false", "pretty=true"]
     },
     {
       name: "hosting-choice-scenario-scores",
       title: "Hosting Choice Scenario Scores",
       description: "Flat scenario and alternative scores for spreadsheet-style analysis.",
-      format: "csv"
+      format: "csv",
+      arguments: ["columns=scenario,alternative,score,rank", "header=true"]
     }
   ],
 

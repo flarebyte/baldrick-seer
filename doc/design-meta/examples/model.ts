@@ -36,6 +36,12 @@ export interface ReportDefinition {
   title: string;
   description?: string;
   format: ReportFormat;
+  /**
+   * Optional report parameters using the same key=value convention as CLI args.
+   * These are intended to be parsed with the same Cobra-based argument handling
+   * used by the CLI so report-level customization stays consistent.
+   */
+  arguments?: string[];
   focus?: ReportFocusDefinition;
 }
 

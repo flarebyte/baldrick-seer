@@ -93,6 +93,12 @@ export interface ReportDefinition {
   title: string;
   description?: string;
   format: ReportFormat;
+  /**
+   * Optional report parameters using the same key=value convention as CLI args.
+   * These are intended to be parsed with the same Cobra-based argument handling
+   * used by the CLI so report-level customization stays consistent.
+   */
+  arguments?: string[];
   focus?: ReportFocusDefinition;
 }
 
@@ -284,19 +290,22 @@ export const minimalScenarioMcda: McdaModel = {
       name: "hosting-choice-summary",
       title: "Hosting Choice Summary",
       description: "Human-readable summary of rankings and scenario trade-offs.",
-      format: "markdown"
+      format: "markdown",
+      arguments: ["include-scenarios=all", "top-alternatives=2"]
     },
     {
       name: "hosting-choice-results",
       title: "Hosting Choice Results",
       description: "Structured ranking output for downstream tooling.",
-      format: "json"
+      format: "json",
+      arguments: ["include-evidence=false", "pretty=true"]
     },
     {
       name: "hosting-choice-scenario-scores",
       title: "Hosting Choice Scenario Scores",
       description: "Flat scenario and alternative scores for spreadsheet-style analysis.",
-      format: "csv"
+      format: "csv",
+      arguments: ["columns=scenario,alternative,score,rank", "header=true"]
     }
   ],
 
@@ -427,6 +436,7 @@ export const exampleScenarioBasedMcda: McdaModel = {
       title: "Platform Selection Decision Brief",
       description: "Narrative report for humans comparing the leading platforms across scenarios.",
       format: "markdown",
+      arguments: ["include-scenarios=all", "top-alternatives=3", "explain=true"],
       focus: {
         scenarioNames: ["startup", "unicorn", "established"]
       }
@@ -435,13 +445,15 @@ export const exampleScenarioBasedMcda: McdaModel = {
       name: "platform-selection-machine-results",
       title: "Platform Selection Machine Results",
       description: "Structured data for automation, reproducibility, and downstream processing.",
-      format: "json"
+      format: "json",
+      arguments: ["include-evidence=true", "include-weights=true", "pretty=true"]
     },
     {
       name: "platform-selection-scenario-matrix",
       title: "Platform Selection Scenario Matrix",
       description: "Tabular scenario, criterion, and alternative output for analytics workflows.",
       format: "csv",
+      arguments: ["columns=scenario,alternative,criterion,value,score,rank", "header=true"],
       focus: {
         criterionNames: ["cost", "time_to_market", "scalability", "reliability", "compliance"],
         alternativeNames: ["platform_a", "platform_b", "platform_c"]

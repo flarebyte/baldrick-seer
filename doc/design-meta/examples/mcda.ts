@@ -18,6 +18,7 @@ export const exampleScenarioBasedMcda: McdaModel = {
       title: "Platform Selection Decision Brief",
       description: "Narrative report for humans comparing the leading platforms across scenarios.",
       format: "markdown",
+      arguments: ["include-scenarios=all", "top-alternatives=3", "explain=true"],
       focus: {
         scenarioNames: ["startup", "unicorn", "established"]
       }
@@ -26,13 +27,15 @@ export const exampleScenarioBasedMcda: McdaModel = {
       name: "platform-selection-machine-results",
       title: "Platform Selection Machine Results",
       description: "Structured data for automation, reproducibility, and downstream processing.",
-      format: "json"
+      format: "json",
+      arguments: ["include-evidence=true", "include-weights=true", "pretty=true"]
     },
     {
       name: "platform-selection-scenario-matrix",
       title: "Platform Selection Scenario Matrix",
       description: "Tabular scenario, criterion, and alternative output for analytics workflows.",
       format: "csv",
+      arguments: ["columns=scenario,alternative,criterion,value,score,rank", "header=true"],
       focus: {
         criterionNames: ["cost", "time_to_market", "scalability", "reliability", "compliance"],
         alternativeNames: ["platform_a", "platform_b", "platform_c"]
