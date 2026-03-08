@@ -63,6 +63,12 @@ Text graph for the validate-config call chain.
   - <a id="graph-node-call-validation-input-config-parse-args"></a> Parse Validation Arguments: Parse CLI arguments for the validate command, including the config path and output flags.
     - <a id="graph-node-call-validation-input-config-load-cue-config"></a> Load CUE Config: Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
       - <a id="graph-node-call-validation-input-config-validate-model"></a> Validate Config Model: Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+        - <a id="graph-node-call-validation-input-config-validate-model-check-structure"></a> Check Config Structure: Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
+          - <a id="graph-node-call-validation-input-config-validate-model-check-references"></a> Check Named References: Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
+            - <a id="graph-node-call-validation-input-config-validate-model-check-pairwise-comparisons"></a> Check Pairwise Comparisons: Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting.
+              - <a id="graph-node-call-validation-input-config-validate-model-check-evaluation-coverage"></a> Check Evaluation Coverage: Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria.
+                - <a id="graph-node-call-validation-input-config-validate-model-check-constraints"></a> Check Scenario Constraints: Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types.
+                  - <a id="graph-node-call-validation-input-config-validate-model-check-report-definitions"></a> Check Report Definitions: Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing.
 
 ### Input config validation notes
 
@@ -81,4 +87,28 @@ Parse CLI arguments for the validate command, including the config path and outp
 #### Validate Config Model
 
 Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+
+#### Check Scenario Constraints
+
+Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types.
+
+#### Check Evaluation Coverage
+
+Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria.
+
+#### Check Pairwise Comparisons
+
+Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting.
+
+#### Check Named References
+
+Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
+
+#### Check Report Definitions
+
+Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing.
+
+#### Check Config Structure
+
+Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
 

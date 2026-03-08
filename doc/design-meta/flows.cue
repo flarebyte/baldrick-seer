@@ -31,6 +31,12 @@ reports: [{
             "call.validation.input-config.parse-args",
             "call.validation.input-config.load-cue-config",
             "call.validation.input-config.validate-model",
+            "call.validation.input-config.validate-model.check-structure",
+            "call.validation.input-config.validate-model.check-references",
+            "call.validation.input-config.validate-model.check-pairwise-comparisons",
+            "call.validation.input-config.validate-model.check-evaluation-coverage",
+            "call.validation.input-config.validate-model.check-constraints",
+            "call.validation.input-config.validate-model.check-report-definitions",
           ]
         },
       ]
@@ -94,6 +100,42 @@ notes: [
     markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
   },
   {
+    name: "call.validation.input-config.validate-model.check-structure"
+    title: "Check Config Structure"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation."
+  },
+  {
+    name: "call.validation.input-config.validate-model.check-references"
+    title: "Check Named References"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors."
+  },
+  {
+    name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
+    title: "Check Pairwise Comparisons"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting."
+  },
+  {
+    name: "call.validation.input-config.validate-model.check-evaluation-coverage"
+    title: "Check Evaluation Coverage"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria."
+  },
+  {
+    name: "call.validation.input-config.validate-model.check-constraints"
+    title: "Check Scenario Constraints"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types."
+  },
+  {
+    name: "call.validation.input-config.validate-model.check-report-definitions"
+    title: "Check Report Definitions"
+    labels: ["call", "flow", "implementation", "validation"]
+    markdown: "Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing."
+  },
+  {
     name: "call.reports.generate"
     title: "Generate Reports Call"
     labels: ["call", "flow", "implementation"]
@@ -147,6 +189,42 @@ relationships: [
   {
     from: "call.validation.input-config.load-cue-config"
     to: "call.validation.input-config.validate-model"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model"
+    to: "call.validation.input-config.validate-model.check-structure"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model.check-structure"
+    to: "call.validation.input-config.validate-model.check-references"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model.check-references"
+    to: "call.validation.input-config.validate-model.check-pairwise-comparisons"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model.check-pairwise-comparisons"
+    to: "call.validation.input-config.validate-model.check-evaluation-coverage"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model.check-evaluation-coverage"
+    to: "call.validation.input-config.validate-model.check-constraints"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.validation.input-config.validate-model.check-constraints"
+    to: "call.validation.input-config.validate-model.check-report-definitions"
     label: "delegate_to"
     labels: ["delegate_to"]
   },

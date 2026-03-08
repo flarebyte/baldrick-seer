@@ -59,6 +59,42 @@ modules: ["design"]
     labels: ["call", "design", "flow", "implementation"]
     markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
   }
+  "call.validation.input-config.validate-model.check-structure": {
+    name: "call.validation.input-config.validate-model.check-structure"
+    title: "Check Config Structure"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation."
+  }
+  "call.validation.input-config.validate-model.check-references": {
+    name: "call.validation.input-config.validate-model.check-references"
+    title: "Check Named References"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors."
+  }
+  "call.validation.input-config.validate-model.check-pairwise-comparisons": {
+    name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
+    title: "Check Pairwise Comparisons"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting."
+  }
+  "call.validation.input-config.validate-model.check-evaluation-coverage": {
+    name: "call.validation.input-config.validate-model.check-evaluation-coverage"
+    title: "Check Evaluation Coverage"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria."
+  }
+  "call.validation.input-config.validate-model.check-constraints": {
+    name: "call.validation.input-config.validate-model.check-constraints"
+    title: "Check Scenario Constraints"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types."
+  }
+  "call.validation.input-config.validate-model.check-report-definitions": {
+    name: "call.validation.input-config.validate-model.check-report-definitions"
+    title: "Check Report Definitions"
+    labels: ["call", "design", "flow", "implementation", "validation"]
+    markdown: "Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing."
+  }
   "call.reports.generate": {
     name: "call.reports.generate"
     title: "Generate Reports Call"
@@ -537,8 +573,16 @@ reports: [
               #notesByName["call.validation.input-config.parse-args"].name,
               #notesByName["call.validation.input-config.load-cue-config"].name,
               #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.validation.input-config.validate-model.check-structure"].name,
+              #notesByName["call.validation.input-config.validate-model.check-references"].name,
+              #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name,
+              #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
+              #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
+              #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
               #notesByName["model.validation"].name,
               #notesByName["model.incomplete.data"].name,
+              #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["scenario.constraints"].name,
             ]
           },
         ]
@@ -613,9 +657,17 @@ reports: [
               #notesByName["call.validation.input-config.parse-args"].name,
               #notesByName["call.validation.input-config.load-cue-config"].name,
               #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.validation.input-config.validate-model.check-structure"].name,
+              #notesByName["call.validation.input-config.validate-model.check-references"].name,
+              #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name,
+              #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
+              #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
+              #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
               #notesByName["input.format"].name,
               #notesByName["model.validation"].name,
               #notesByName["model.incomplete.data"].name,
+              #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["scenario.constraints"].name,
             ]
           },
         ]
@@ -763,6 +815,12 @@ notes: [
   #notesByName["call.validation.input-config.parse-args"],
   #notesByName["call.validation.input-config.load-cue-config"],
   #notesByName["call.validation.input-config.validate-model"],
+  #notesByName["call.validation.input-config.validate-model.check-structure"],
+  #notesByName["call.validation.input-config.validate-model.check-references"],
+  #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"],
+  #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"],
+  #notesByName["call.validation.input-config.validate-model.check-constraints"],
+  #notesByName["call.validation.input-config.validate-model.check-report-definitions"],
   #notesByName["call.reports.generate"],
   #notesByName["call.reports.generate.parse-args"],
   #notesByName["call.reports.generate.shared-validation"],
@@ -856,6 +914,42 @@ relationships: [
     labels: ["delegate_to"]
   },
   {
+    from: #notesByName["call.validation.input-config.validate-model"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-structure"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-structure"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-references"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-references"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-constraints"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-constraints"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
     from: #notesByName["call.reports.generate"].name
     to: #notesByName["call.reports.generate.parse-args"].name
     label: "delegate_to"
@@ -878,9 +972,54 @@ relationships: [
     label: "implements"
   },
   {
+    from: #notesByName["call.validation.input-config.validate-model.check-structure"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-references"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
+  },
+  {
     from: #notesByName["call.validation.input-config.validate-model"].name
     to: #notesByName["model.incomplete.data"].name
     label: "checks_for"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name
+    to: #notesByName["criteria.pairwise.clarity"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name
+    to: #notesByName["model.incomplete.data"].name
+    label: "checks_for"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name
+    to: #notesByName["model.incomplete.data"].name
+    label: "checks_for"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-constraints"].name
+    to: #notesByName["scenario.constraints"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-constraints"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
   },
   {
     from: #notesByName["call.reports.generate.shared-validation"].name
