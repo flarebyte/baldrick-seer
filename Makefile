@@ -34,6 +34,8 @@ doc-design:
 	mkdir -p doc/design
 	flyb validate --config doc/design-meta/app.cue
 	flyb generate markdown --config doc/design-meta/app.cue
+	flyb validate --config doc/design-meta/flows.cue
+	flyb generate markdown --config doc/design-meta/flows.cue
 
 release: build
 	@printf "Artifacts in ./build (checksums.txt included)\n"
