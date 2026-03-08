@@ -141,6 +141,23 @@ reports: [
         ]
       },
       {
+        title: "Validation call flow"
+        description: "Early CLI execution path for reading and validating an input config file."
+        sections: [
+          {
+            title: "Input config validation"
+            notes: [
+              #notesByName["call.validation.input-config"].name,
+              #notesByName["call.validation.input-config.parse-args"].name,
+              #notesByName["call.validation.input-config.load-cue-config"].name,
+              #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["model.validation"].name,
+              #notesByName["model.incomplete.data"].name,
+            ]
+          },
+        ]
+      },
+      {
         title: "Referenced methods"
         description: "Algorithms and analysis techniques explicitly named in the design."
         sections: [

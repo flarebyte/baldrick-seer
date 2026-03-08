@@ -31,6 +31,30 @@ package flyb
     labels: ["design", "implementation"]
     markdown: "Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns."
   }
+  "call.validation.input-config": {
+    name: "call.validation.input-config"
+    title: "Validate Input Config Call"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Top-level CLI call flow for validating an input configuration file before any decision analysis runs."
+  }
+  "call.validation.input-config.parse-args": {
+    name: "call.validation.input-config.parse-args"
+    title: "Parse Validation Arguments"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Parse CLI arguments for the validate command, including the config path and output flags."
+  }
+  "call.validation.input-config.load-cue-config": {
+    name: "call.validation.input-config.load-cue-config"
+    title: "Load CUE Config"
+    labels: ["call", "cue", "design", "flow", "implementation"]
+    markdown: "Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value."
+  }
+  "call.validation.input-config.validate-model": {
+    name: "call.validation.input-config.validate-model"
+    title: "Validate Config Model"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
+  }
   "criteria.pairwise.clarity": {
     name: "criteria.pairwise.clarity"
     title: "Clear Representation of Pairwise Judgments"

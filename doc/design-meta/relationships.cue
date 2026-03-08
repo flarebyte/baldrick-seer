@@ -22,6 +22,36 @@ relationships: [
     label: "supports"
   },
   {
+    from: #notesByName["call.validation.input-config"].name
+    to: #notesByName["call.validation.input-config.parse-args"].name
+    label: "delegate_to"
+  },
+  {
+    from: #notesByName["call.validation.input-config.parse-args"].name
+    to: #notesByName["call.validation.input-config.load-cue-config"].name
+    label: "delegate_to"
+  },
+  {
+    from: #notesByName["call.validation.input-config.load-cue-config"].name
+    to: #notesByName["call.validation.input-config.validate-model"].name
+    label: "delegate_to"
+  },
+  {
+    from: #notesByName["call.validation.input-config.load-cue-config"].name
+    to: #notesByName["input.format"].name
+    label: "depends_on"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model"].name
+    to: #notesByName["model.validation"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.validation.input-config.validate-model"].name
+    to: #notesByName["model.incomplete.data"].name
+    label: "checks_for"
+  },
+  {
     from: #notesByName["criteria.pairwise.clarity"].name
     to: #notesByName["mcda.ahp"].name
     label: "documents_method"
