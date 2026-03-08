@@ -131,7 +131,7 @@ export interface AlternativeDefinition {
   name: Name;
   title: string;
   description?: string;
-  tags?: string[];
+  labels?: string[];
 }
 
 export interface ScenarioDefinition {
@@ -310,9 +310,30 @@ export const minimalScenarioMcda: McdaModel = {
   ],
 
   criteriaCatalog: [
-    { name: "cost", title: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
-    { name: "speed", title: "Speed", polarity: "benefit", unit: "score", valueType: "number" },
-    { name: "compliance", title: "Compliance", polarity: "benefit", unit: "score", valueType: "number" }
+    {
+      name: "cost",
+      title: "Cost",
+      description: "Estimated monthly hosting spend.",
+      polarity: "cost",
+      unit: "USD/month",
+      valueType: "number"
+    },
+    {
+      name: "speed",
+      title: "Speed",
+      description: "Overall delivery and runtime responsiveness.",
+      polarity: "benefit",
+      unit: "score",
+      valueType: "number"
+    },
+    {
+      name: "compliance",
+      title: "Compliance",
+      description: "Ability to satisfy governance and regulatory expectations.",
+      polarity: "benefit",
+      unit: "score",
+      valueType: "number"
+    }
   ],
 
   alternatives: [
@@ -324,6 +345,7 @@ export const minimalScenarioMcda: McdaModel = {
     {
       name: "lean_startup",
       title: "Lean Startup",
+      description: "Early-stage context where budget discipline matters more than peak capability.",
       activeCriteria: [
         { criterionName: "cost" },
         { criterionName: "speed" }
@@ -360,6 +382,7 @@ export const minimalScenarioMcda: McdaModel = {
     {
       name: "regulated_growth",
       title: "Regulated Growth",
+      description: "Scaling context where compliance becomes a first-order requirement.",
       activeCriteria: [
         { criterionName: "cost" },
         { criterionName: "speed" },
@@ -534,10 +557,19 @@ export const exampleScenarioBasedMcda: McdaModel = {
         "In this scenario, low cost and fast deployment matter more than enterprise controls.",
       importanceWeight: 0.4,
       activeCriteria: [
-        { criterionName: "cost" },
-        { criterionName: "time_to_market" },
-        { criterionName: "scalability" },
-        { criterionName: "reliability" }
+        { criterionName: "cost", description: "Startup budgets remain tightly constrained." },
+        {
+          criterionName: "time_to_market",
+          description: "Delivery speed is critical for fast product iteration."
+        },
+        {
+          criterionName: "scalability",
+          description: "Growth headroom matters, but less than near-term execution."
+        },
+        {
+          criterionName: "reliability",
+          description: "Operational resilience matters, though less than cost and speed."
+        }
       ],
       preferences: {
         method: "ahp_pairwise",
@@ -632,10 +664,19 @@ export const exampleScenarioBasedMcda: McdaModel = {
         "In this scenario, scalability becomes dominant, while cost still matters but less than growth readiness.",
       importanceWeight: 0.35,
       activeCriteria: [
-        { criterionName: "cost" },
-        { criterionName: "scalability" },
-        { criterionName: "reliability" },
-        { criterionName: "compliance" }
+        { criterionName: "cost", description: "Cost still matters, but it no longer dominates." },
+        {
+          criterionName: "scalability",
+          description: "This scenario optimizes for rapid expansion under heavy load."
+        },
+        {
+          criterionName: "reliability",
+          description: "Service continuity remains important while scaling aggressively."
+        },
+        {
+          criterionName: "compliance",
+          description: "Governance matters, but it is not yet the dominant driver."
+        }
       ],
       preferences: {
         method: "ahp_pairwise",
@@ -730,10 +771,22 @@ export const exampleScenarioBasedMcda: McdaModel = {
         "In this scenario, operational stability and compliance dominate speed and startup efficiency.",
       importanceWeight: 0.25,
       activeCriteria: [
-        { criterionName: "cost" },
-        { criterionName: "reliability" },
-        { criterionName: "compliance" },
-        { criterionName: "scalability" }
+        {
+          criterionName: "cost",
+          description: "Cost is secondary to enterprise readiness and risk reduction."
+        },
+        {
+          criterionName: "reliability",
+          description: "Stable operations are a primary concern for established organizations."
+        },
+        {
+          criterionName: "compliance",
+          description: "Regulatory and governance fit is critical in this scenario."
+        },
+        {
+          criterionName: "scalability",
+          description: "The platform should continue to support large-scale operations."
+        }
       ],
       preferences: {
         method: "ahp_pairwise",

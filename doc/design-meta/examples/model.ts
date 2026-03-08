@@ -74,7 +74,7 @@ export interface AlternativeDefinition {
   name: Name;
   title: string;
   description?: string;
-  tags?: string[];
+  labels?: string[];
 }
 
 export interface ScenarioDefinition {

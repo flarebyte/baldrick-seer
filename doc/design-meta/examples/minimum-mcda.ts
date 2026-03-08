@@ -35,9 +35,30 @@ export const minimalScenarioMcda: McdaModel = {
   ],
 
   criteriaCatalog: [
-    { name: "cost", title: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
-    { name: "speed", title: "Speed", polarity: "benefit", unit: "score", valueType: "number" },
-    { name: "compliance", title: "Compliance", polarity: "benefit", unit: "score", valueType: "number" }
+    {
+      name: "cost",
+      title: "Cost",
+      description: "Estimated monthly hosting spend.",
+      polarity: "cost",
+      unit: "USD/month",
+      valueType: "number"
+    },
+    {
+      name: "speed",
+      title: "Speed",
+      description: "Overall delivery and runtime responsiveness.",
+      polarity: "benefit",
+      unit: "score",
+      valueType: "number"
+    },
+    {
+      name: "compliance",
+      title: "Compliance",
+      description: "Ability to satisfy governance and regulatory expectations.",
+      polarity: "benefit",
+      unit: "score",
+      valueType: "number"
+    }
   ],
 
   alternatives: [
@@ -49,6 +70,7 @@ export const minimalScenarioMcda: McdaModel = {
     {
       name: "lean_startup",
       title: "Lean Startup",
+      description: "Early-stage context where budget discipline matters more than peak capability.",
       activeCriteria: [
         { criterionName: "cost" },
         { criterionName: "speed" }
@@ -85,6 +107,7 @@ export const minimalScenarioMcda: McdaModel = {
     {
       name: "regulated_growth",
       title: "Regulated Growth",
+      description: "Scaling context where compliance becomes a first-order requirement.",
       activeCriteria: [
         { criterionName: "cost" },
         { criterionName: "speed" },
