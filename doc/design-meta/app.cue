@@ -113,6 +113,24 @@ modules: ["design"]
     labels: ["design", "example", "flow"]
     markdown: "Scenario adding compliance as a dominant concern alongside cost and speed."
   }
+  "example.input-schema.ts": {
+    name: "example.input-schema.ts"
+    title: "TypeScript Input Model"
+    labels: ["design", "example", "source", "typescript"]
+    filepath: "examples/model.ts"
+  }
+  "example.input-platform-selection.ts": {
+    name: "example.input-platform-selection.ts"
+    title: "Platform Selection TypeScript Example"
+    labels: ["design", "example", "source", "typescript"]
+    filepath: "examples/mcda.ts"
+  }
+  "example.input-hosting-choice.ts": {
+    name: "example.input-hosting-choice.ts"
+    title: "Hosting Choice TypeScript Example"
+    labels: ["design", "example", "source", "typescript"]
+    filepath: "examples/minimum-mcda.ts"
+  }
   "example.platform-selection": {
     name: "example.platform-selection"
     title: "Platform Selection Example"
@@ -406,6 +424,25 @@ reports: [
           },
         ]
       },
+      {
+        title: "TypeScript source examples"
+        description: "Readable draft examples for the future CUE input model."
+        sections: [
+          {
+            title: "Model types"
+            notes: [
+              #notesByName["example.input-schema.ts"].name,
+            ]
+          },
+          {
+            title: "Scenario-based examples"
+            notes: [
+              #notesByName["example.input-platform-selection.ts"].name,
+              #notesByName["example.input-hosting-choice.ts"].name,
+            ]
+          },
+        ]
+      },
     ]
   },
   {
@@ -637,6 +674,9 @@ notes: [
   #notesByName["example.hosting-choice"],
   #notesByName["example.hosting-choice.lean-startup"],
   #notesByName["example.hosting-choice.regulated-growth"],
+  #notesByName["example.input-hosting-choice.ts"],
+  #notesByName["example.input-platform-selection.ts"],
+  #notesByName["example.input-schema.ts"],
   #notesByName["example.platform-selection"],
   #notesByName["example.platform-selection.established-enterprise"],
   #notesByName["example.platform-selection.startup"],

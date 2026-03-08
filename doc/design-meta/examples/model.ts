@@ -134,14 +134,14 @@ export interface NumericCriterionValue {
   kind: "number";
   value: number;
   estimated?: boolean;
-  source?: "human" | "ai" | "measured" | "imported";
+  source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
 }
 
 export interface BooleanCriterionValue {
   kind: "boolean";
   value: boolean;
-  source?: "human" | "ai" | "measured" | "imported";
+  source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
 }
 
@@ -149,14 +149,14 @@ export interface OrdinalCriterionValue {
   kind: "ordinal";
   value: number;
   label?: string;
-  source?: "human" | "ai" | "measured" | "imported";
+  source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
 }
 
 export interface TextCriterionValue {
   kind: "text";
   value: string;
-  source?: "human" | "ai" | "measured" | "imported";
+  source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
 }
 
