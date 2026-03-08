@@ -60,7 +60,7 @@ Allow decision models to carry descriptions, notes, and justifications for compa
 
 #### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
+Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
 
 #### Decision Model Structure (v1)
 

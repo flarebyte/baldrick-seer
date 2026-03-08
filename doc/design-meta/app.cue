@@ -57,7 +57,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model"
     title: "Validate Config Model"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
+    markdown: "Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations."
   }
   "call.validation.input-config.validate-model.check-structure": {
     name: "call.validation.input-config.validate-model.check-structure"
@@ -177,7 +177,7 @@ modules: ["design"]
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility."
+    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails."
   }
   "call.reports.generate.render-output.render-csv": {
     name: "call.reports.generate.render-output.render-csv"
@@ -411,7 +411,7 @@ modules: ["design"]
     name: "model.incomplete.data"
     title: "Handling Incomplete Information (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery."
+    markdown: "Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations."
   }
   "model.structure": {
     name: "model.structure"

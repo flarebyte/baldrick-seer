@@ -78,7 +78,7 @@ Allow decision models to carry descriptions, notes, and justifications for compa
 
 #### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
+Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
 
 #### Decision Model Structure (v1)
 
@@ -190,7 +190,7 @@ Render flat tabular CSV output for spreadsheet analysis and data exchange.
 
 #### Render JSON Report
 
-Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails.
 
 #### Render Markdown Report
 
@@ -214,7 +214,7 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
 
 ## User experience and output
 
@@ -270,7 +270,7 @@ Parse CLI arguments for the validate command, including the config path and outp
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
 
 #### Check Scenario Constraints
 
