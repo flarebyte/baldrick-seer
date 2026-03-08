@@ -205,15 +205,15 @@ modules: ["design"]
   }
   "decision.multi-criteria-ranking": {
     name: "decision.multi-criteria-ranking"
-    title: "General Multi-Criteria Ranking"
-    labels: ["design", "usecase"]
-    markdown: "Rank competing alternatives using multiple evaluation criteria and scenario-based priorities."
+    title: "General Multi-Criteria Ranking (v1)"
+    labels: ["design", "usecase", "v1"]
+    markdown: "Run a scenario-based CLI evaluation that ranks named alternatives from a structured config and emits decision reports for humans and tools."
   }
   "decision.robust-choice-identification": {
     name: "decision.robust-choice-identification"
-    title: "Robust Choice Identification"
-    labels: ["design", "usecase"]
-    markdown: "Identify alternatives that perform consistently well across different scenarios or changing assumptions."
+    title: "Robust Choice Identification (v2)"
+    labels: ["design", "usecase", "v2"]
+    markdown: "Identify alternatives that remain strong across scenarios and under changing assumptions, likely using robustness or sensitivity-oriented post-analysis."
   }
   "decision.traceability": {
     name: "decision.traceability"
@@ -289,8 +289,8 @@ modules: ["design"]
   }
   "infrastructure.system-design-selection": {
     name: "infrastructure.system-design-selection"
-    title: "System Design Selection"
-    labels: ["design", "usecase"]
+    title: "System Design Selection (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Compare system designs where trade-offs exist between cost, scalability, and reliability."
   }
   "input.format": {
@@ -355,32 +355,32 @@ modules: ["design"]
   }
   "planning.lifecycle-decision": {
     name: "planning.lifecycle-decision"
-    title: "Lifecycle Decision Support"
-    labels: ["design", "usecase"]
+    title: "Lifecycle Decision Support (v2)"
+    labels: ["design", "usecase", "v2"]
     markdown: "Compare options that must remain effective throughout different stages of organizational or system development."
   }
   "planning.long-term-option-evaluation": {
     name: "planning.long-term-option-evaluation"
-    title: "Long-Term Option Evaluation"
-    labels: ["design", "usecase"]
+    title: "Long-Term Option Evaluation (v2)"
+    labels: ["design", "usecase", "v2"]
     markdown: "Evaluate alternatives that must perform well across multiple possible future environments."
   }
   "policy.policy-option-analysis": {
     name: "policy.policy-option-analysis"
-    title: "Policy Option Analysis"
-    labels: ["design", "usecase"]
+    title: "Policy Option Analysis (v2)"
+    labels: ["design", "usecase", "v2"]
     markdown: "Support evaluation of policy alternatives where multiple criteria such as impact, feasibility, and cost must be considered."
   }
   "product.feature-prioritization": {
     name: "product.feature-prioritization"
-    title: "Product Feature Prioritization"
-    labels: ["design", "usecase"]
+    title: "Product Feature Prioritization (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Rank product features using multiple criteria such as user value, development effort, and strategic importance."
   }
   "product.roadmap-planning": {
     name: "product.roadmap-planning"
-    title: "Product Roadmap Planning"
-    labels: ["design", "usecase"]
+    title: "Product Roadmap Planning (v2)"
+    labels: ["design", "usecase", "v2"]
     markdown: "Evaluate product initiatives across different market or growth scenarios to support long-term planning."
   }
   "scenario.aggregation.policy": {
@@ -403,14 +403,14 @@ modules: ["design"]
   }
   "strategy.growth-scenario-evaluation": {
     name: "strategy.growth-scenario-evaluation"
-    title: "Growth Scenario Evaluation"
-    labels: ["design", "usecase"]
-    markdown: "Assess strategic options under different business growth trajectories such as startup, rapid expansion, or mature operations."
+    title: "Growth Scenario Evaluation (v1)"
+    labels: ["design", "usecase", "v1"]
+    markdown: "Assess the same strategic or technical options under startup, scale-up, and mature-operation scenarios using one shared decision model."
   }
   "strategy.investment-decision": {
     name: "strategy.investment-decision"
-    title: "Strategic Investment Decision"
-    labels: ["design", "usecase"]
+    title: "Strategic Investment Decision (v2)"
+    labels: ["design", "usecase", "v2"]
     markdown: "Compare investment alternatives considering financial return, risk exposure, and long-term strategic impact."
   }
   "system.extensibility.methods": {
@@ -421,20 +421,20 @@ modules: ["design"]
   }
   "technology.architecture-choice": {
     name: "technology.architecture-choice"
-    title: "Software Architecture Decision"
-    labels: ["design", "usecase"]
+    title: "Software Architecture Decision (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Evaluate architectural approaches under different system growth conditions, performance requirements, and reliability expectations."
   }
   "technology.infrastructure-strategy": {
     name: "technology.infrastructure-strategy"
-    title: "Infrastructure Strategy Planning"
-    labels: ["design", "usecase"]
+    title: "Infrastructure Strategy Planning (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Assess infrastructure alternatives such as cloud providers or deployment models under varying operational scenarios."
   }
   "technology.platform-selection": {
     name: "technology.platform-selection"
-    title: "Technology Platform Selection"
-    labels: ["design", "usecase"]
+    title: "Technology Platform Selection (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Compare multiple technology platforms across operational scenarios such as startup, scale-up, and enterprise maturity."
   }
   "ux.model.guidance": {
@@ -445,14 +445,14 @@ modules: ["design"]
   }
   "vendor.service-provider-comparison": {
     name: "vendor.service-provider-comparison"
-    title: "Service Provider Comparison"
-    labels: ["design", "usecase"]
+    title: "Service Provider Comparison (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Compare service providers where priorities may change depending on scale, regulatory environment, or organizational maturity."
   }
   "vendor.supplier-selection": {
     name: "vendor.supplier-selection"
-    title: "Supplier or Vendor Selection"
-    labels: ["design", "usecase"]
+    title: "Supplier or Vendor Selection (v1)"
+    labels: ["design", "usecase", "v1"]
     markdown: "Evaluate competing suppliers using multiple criteria such as cost, reliability, and service quality under different operating conditions."
   }
 }

@@ -42,23 +42,23 @@ Primary use cases and example design anchors.
 
 ### Primary use cases
 
-#### General Multi-Criteria Ranking
+#### General Multi-Criteria Ranking (v1)
 
-Rank competing alternatives using multiple evaluation criteria and scenario-based priorities.
+Run a scenario-based CLI evaluation that ranks named alternatives from a structured config and emits decision reports for humans and tools.
 
-#### Robust Choice Identification
+#### Robust Choice Identification (v2)
 
-Identify alternatives that perform consistently well across different scenarios or changing assumptions.
+Identify alternatives that remain strong across scenarios and under changing assumptions, likely using robustness or sensitivity-oriented post-analysis.
 
-#### System Design Selection
+#### System Design Selection (v1)
 
 Compare system designs where trade-offs exist between cost, scalability, and reliability.
 
-#### Infrastructure Strategy Planning
+#### Infrastructure Strategy Planning (v1)
 
 Assess infrastructure alternatives such as cloud providers or deployment models under varying operational scenarios.
 
-#### Technology Platform Selection
+#### Technology Platform Selection (v1)
 
 Compare multiple technology platforms across operational scenarios such as startup, scale-up, and enterprise maturity.
 
