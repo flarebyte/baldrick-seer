@@ -59,6 +59,42 @@ modules: ["design"]
     labels: ["call", "design", "flow", "implementation"]
     markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
   }
+  "call.reports.generate": {
+    name: "call.reports.generate"
+    title: "Generate Reports Call"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Top-level CLI call flow for generating reports from an input decision model."
+  }
+  "call.reports.generate.parse-args": {
+    name: "call.reports.generate.parse-args"
+    title: "Parse Report Arguments"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Parse CLI arguments for report generation, including the config path, requested report names, and output options."
+  }
+  "call.reports.generate.shared-validation": {
+    name: "call.reports.generate.shared-validation"
+    title: "Reuse Shared Validation Flow"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs."
+  }
+  "call.reports.generate.compute-ahp-weights": {
+    name: "call.reports.generate.compute-ahp-weights"
+    title: "Compute Criteria Weights with AHP"
+    labels: ["call", "design", "flow", "implementation", "method"]
+    markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
+  }
+  "call.reports.generate.rank-alternatives-topsis": {
+    name: "call.reports.generate.rank-alternatives-topsis"
+    title: "Rank Alternatives with TOPSIS"
+    labels: ["call", "design", "flow", "implementation", "method"]
+    markdown: "Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS."
+  }
+  "call.reports.generate.render-output": {
+    name: "call.reports.generate.render-output"
+    title: "Render Requested Reports"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Render the requested markdown, JSON, or CSV reports from the computed ranking results."
+  }
   "criteria.pairwise.clarity": {
     name: "criteria.pairwise.clarity"
     title: "Clear Representation of Pairwise Judgments"
@@ -508,6 +544,29 @@ reports: [
         ]
       },
       {
+        title: "Report generation flow"
+        description: "CLI execution path for generating reports after the shared validation stage."
+        sections: [
+          {
+            title: "Generate reports"
+            notes: [
+              #notesByName["call.reports.generate"].name,
+              #notesByName["call.reports.generate.parse-args"].name,
+              #notesByName["call.reports.generate.shared-validation"].name,
+              #notesByName["call.validation.input-config.load-cue-config"].name,
+              #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
+              #notesByName["call.reports.generate.render-output"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.topsis"].name,
+              #notesByName["cli.output.machine"].name,
+              #notesByName["cli.output.readability"].name,
+            ]
+          },
+        ]
+      },
+      {
         title: "Referenced methods"
         description: "Algorithms and analysis techniques explicitly named in the design."
         sections: [
@@ -530,7 +589,7 @@ reports: [
   {
     title: "Execution Flows"
     filepath: "../design/flows.md"
-    description: "Call-oriented flows for CLI execution and validation."
+    description: "Call-oriented flows for CLI validation and report generation."
     sections: [
       {
         title: "Validation flows"
@@ -538,13 +597,13 @@ reports: [
         sections: [
           {
             title: "Input config validation graph"
-            description: "Mermaid graph for the validate-config call chain."
+            description: "Text graph for the validate-config call chain."
             arguments: [
               "graph-subject-label=call",
               "graph-edge-label=delegate_to",
               "graph-start-node=call.validation.input-config",
-              "graph-renderer=mermaid",
-              "mermaid-direction=TD",
+              "graph-renderer=markdown-text",
+              "cycle-policy=disallow",
             ]
           },
           {
@@ -557,6 +616,38 @@ reports: [
               #notesByName["input.format"].name,
               #notesByName["model.validation"].name,
               #notesByName["model.incomplete.data"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Report generation flows"
+        description: "Graph view for generating reports from a validated input config."
+        sections: [
+          {
+            title: "Report generation graph"
+            description: "Text graph for the report-generation call chain, reusing the shared validation path."
+            arguments: [
+              "graph-subject-label=call",
+              "graph-edge-label=delegate_to",
+              "graph-start-node=call.reports.generate",
+              "graph-renderer=markdown-text",
+              "cycle-policy=disallow",
+            ]
+          },
+          {
+            title: "Report generation notes"
+            notes: [
+              #notesByName["call.reports.generate"].name,
+              #notesByName["call.reports.generate.parse-args"].name,
+              #notesByName["call.reports.generate.shared-validation"].name,
+              #notesByName["call.validation.input-config.load-cue-config"].name,
+              #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
+              #notesByName["call.reports.generate.render-output"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.topsis"].name,
             ]
           },
         ]
@@ -646,6 +737,13 @@ argumentRegistry: {
       defaultValue: "markdown-text"
     },
     {
+      name: "cycle-policy"
+      valueType: "enum"
+      scopes: ["h3-section"]
+      allowedValues: ["allow", "disallow"]
+      defaultValue: "allow"
+    },
+    {
       name: "mermaid-direction"
       valueType: "enum"
       scopes: ["h3-section", "note"]
@@ -665,6 +763,12 @@ notes: [
   #notesByName["call.validation.input-config.parse-args"],
   #notesByName["call.validation.input-config.load-cue-config"],
   #notesByName["call.validation.input-config.validate-model"],
+  #notesByName["call.reports.generate"],
+  #notesByName["call.reports.generate.parse-args"],
+  #notesByName["call.reports.generate.shared-validation"],
+  #notesByName["call.reports.generate.compute-ahp-weights"],
+  #notesByName["call.reports.generate.rank-alternatives-topsis"],
+  #notesByName["call.reports.generate.render-output"],
   #notesByName["criteria.pairwise.clarity"],
   #notesByName["criteria.semantic.consistency"],
   #notesByName["decision.explainability"],
@@ -752,6 +856,18 @@ relationships: [
     labels: ["delegate_to"]
   },
   {
+    from: #notesByName["call.reports.generate"].name
+    to: #notesByName["call.reports.generate.parse-args"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.parse-args"].name
+    to: #notesByName["call.reports.generate.shared-validation"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
     from: #notesByName["call.validation.input-config.load-cue-config"].name
     to: #notesByName["input.format"].name
     label: "depends_on"
@@ -765,6 +881,54 @@ relationships: [
     from: #notesByName["call.validation.input-config.validate-model"].name
     to: #notesByName["model.incomplete.data"].name
     label: "checks_for"
+  },
+  {
+    from: #notesByName["call.reports.generate.shared-validation"].name
+    to: #notesByName["call.validation.input-config.load-cue-config"].name
+    label: "reuses"
+  },
+  {
+    from: #notesByName["call.reports.generate.shared-validation"].name
+    to: #notesByName["call.validation.input-config.validate-model"].name
+    label: "reuses"
+  },
+  {
+    from: #notesByName["call.reports.generate.compute-ahp-weights"].name
+    to: #notesByName["mcda.ahp"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.reports.generate.shared-validation"].name
+    to: #notesByName["call.reports.generate.compute-ahp-weights"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.compute-ahp-weights"].name
+    to: #notesByName["call.reports.generate.rank-alternatives-topsis"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.rank-alternatives-topsis"].name
+    to: #notesByName["mcda.topsis"].name
+    label: "implements"
+  },
+  {
+    from: #notesByName["call.reports.generate.rank-alternatives-topsis"].name
+    to: #notesByName["call.reports.generate.render-output"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output"].name
+    to: #notesByName["cli.output.machine"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output"].name
+    to: #notesByName["cli.output.readability"].name
+    label: "supports"
   },
   {
     from: #notesByName["criteria.pairwise.clarity"].name

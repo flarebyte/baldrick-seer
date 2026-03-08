@@ -86,6 +86,60 @@ Rank alternatives by their distance from an ideal best and an ideal worst soluti
 
 Identify a compromise solution that balances group utility and individual regret.
 
+## Report generation flow
+
+CLI execution path for generating reports after the shared validation stage.
+
+### Generate reports
+
+#### Generate Reports Call
+
+Top-level CLI call flow for generating reports from an input decision model.
+
+#### Compute Criteria Weights with AHP
+
+Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
+
+#### Parse Report Arguments
+
+Parse CLI arguments for report generation, including the config path, requested report names, and output options.
+
+#### Rank Alternatives with TOPSIS
+
+Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
+
+#### Render Requested Reports
+
+Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+
+#### Reuse Shared Validation Flow
+
+Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
+
+#### Load CUE Config
+
+Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
+
+#### Validate Config Model
+
+Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+
+#### Structured Output for Automation
+
+Provide machine-readable output such as JSON in addition to human-readable summaries.
+
+#### Readable CLI Output
+
+Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns.
+
+#### Analytic Hierarchy Process (AHP)
+
+Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
+
+#### TOPSIS
+
+Rank alternatives by their distance from an ideal best and an ideal worst solution.
+
 ## User experience and output
 
 Guidance for readable, reproducible, and automatable execution.
