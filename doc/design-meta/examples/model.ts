@@ -1,6 +1,7 @@
 export type Name = string;
 
 export type CriterionPolarity = "benefit" | "cost";
+export type ReportFormat = "markdown" | "json" | "csv";
 
 export type ScenarioAggregationMethod =
   | "weighted_average"
@@ -23,10 +24,25 @@ export interface McdaModel {
   modelType: "scenario_based_mcda";
   version: "1.0";
   problem: ProblemDefinition;
+  reports: ReportDefinition[];
   criteriaCatalog: CriterionDefinition[];
   alternatives: AlternativeDefinition[];
   scenarios: ScenarioDefinition[];
   aggregation: ScenarioAggregationDefinition;
+}
+
+export interface ReportDefinition {
+  name: Name;
+  title: string;
+  description?: string;
+  format: ReportFormat;
+  focus?: ReportFocusDefinition;
+}
+
+export interface ReportFocusDefinition {
+  scenarioNames?: Name[];
+  alternativeNames?: Name[];
+  criterionNames?: Name[];
 }
 
 export interface ProblemDefinition {

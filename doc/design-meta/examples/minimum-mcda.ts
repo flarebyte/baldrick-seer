@@ -10,6 +10,27 @@ export const minimalScenarioMcda: McdaModel = {
     goal: "Choose the best hosting provider across business scenarios"
   },
 
+  reports: [
+    {
+      name: "hosting-choice-summary",
+      title: "Hosting Choice Summary",
+      description: "Human-readable summary of rankings and scenario trade-offs.",
+      format: "markdown"
+    },
+    {
+      name: "hosting-choice-results",
+      title: "Hosting Choice Results",
+      description: "Structured ranking output for downstream tooling.",
+      format: "json"
+    },
+    {
+      name: "hosting-choice-scenario-scores",
+      title: "Hosting Choice Scenario Scores",
+      description: "Flat scenario and alternative scores for spreadsheet-style analysis.",
+      format: "csv"
+    }
+  ],
+
   criteriaCatalog: [
     { name: "cost", title: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
     { name: "speed", title: "Speed", polarity: "benefit", unit: "score", valueType: "number" },

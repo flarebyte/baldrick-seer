@@ -58,6 +58,7 @@ Readable draft examples for the future CUE input model.
 export type Name = string;
 
 export type CriterionPolarity = "benefit" | "cost";
+export type ReportFormat = "markdown" | "json" | "csv";
 
 export type ScenarioAggregationMethod =
   | "weighted_average"
@@ -80,10 +81,25 @@ export interface McdaModel {
   modelType: "scenario_based_mcda";
   version: "1.0";
   problem: ProblemDefinition;
+  reports: ReportDefinition[];
   criteriaCatalog: CriterionDefinition[];
   alternatives: AlternativeDefinition[];
   scenarios: ScenarioDefinition[];
   aggregation: ScenarioAggregationDefinition;
+}
+
+export interface ReportDefinition {
+  name: Name;
+  title: string;
+  description?: string;
+  format: ReportFormat;
+  focus?: ReportFocusDefinition;
+}
+
+export interface ReportFocusDefinition {
+  scenarioNames?: Name[];
+  alternativeNames?: Name[];
+  criterionNames?: Name[];
 }
 
 export interface ProblemDefinition {
@@ -263,6 +279,27 @@ export const minimalScenarioMcda: McdaModel = {
     goal: "Choose the best hosting provider across business scenarios"
   },
 
+  reports: [
+    {
+      name: "hosting-choice-summary",
+      title: "Hosting Choice Summary",
+      description: "Human-readable summary of rankings and scenario trade-offs.",
+      format: "markdown"
+    },
+    {
+      name: "hosting-choice-results",
+      title: "Hosting Choice Results",
+      description: "Structured ranking output for downstream tooling.",
+      format: "json"
+    },
+    {
+      name: "hosting-choice-scenario-scores",
+      title: "Hosting Choice Scenario Scores",
+      description: "Flat scenario and alternative scores for spreadsheet-style analysis.",
+      format: "csv"
+    }
+  ],
+
   criteriaCatalog: [
     { name: "cost", title: "Cost", polarity: "cost", unit: "USD/month", valueType: "number" },
     { name: "speed", title: "Speed", polarity: "benefit", unit: "score", valueType: "number" },
@@ -383,6 +420,34 @@ export const exampleScenarioBasedMcda: McdaModel = {
     description:
       "Evaluate the same candidate platforms for startup, unicorn, and established-enterprise contexts."
   },
+
+  reports: [
+    {
+      name: "platform-selection-decision-brief",
+      title: "Platform Selection Decision Brief",
+      description: "Narrative report for humans comparing the leading platforms across scenarios.",
+      format: "markdown",
+      focus: {
+        scenarioNames: ["startup", "unicorn", "established"]
+      }
+    },
+    {
+      name: "platform-selection-machine-results",
+      title: "Platform Selection Machine Results",
+      description: "Structured data for automation, reproducibility, and downstream processing.",
+      format: "json"
+    },
+    {
+      name: "platform-selection-scenario-matrix",
+      title: "Platform Selection Scenario Matrix",
+      description: "Tabular scenario, criterion, and alternative output for analytics workflows.",
+      format: "csv",
+      focus: {
+        criterionNames: ["cost", "time_to_market", "scalability", "reliability", "compliance"],
+        alternativeNames: ["platform_a", "platform_b", "platform_c"]
+      }
+    }
+  ],
 
   criteriaCatalog: [
     {
