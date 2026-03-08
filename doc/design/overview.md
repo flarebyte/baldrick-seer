@@ -2,40 +2,6 @@
 
 High-level overview of the baldrick-seer decision-model design.
 
-## Method references
-
-Decision methods and analysis techniques mentioned by the design.
-
-### Core methods
-
-#### Robustness Analysis
-
-Evaluate how stable a decision remains when assumptions, scenarios, or parameter ranges vary.
-
-#### Sensitivity Analysis
-
-Evaluate how changes in weights or inputs affect the ranking of alternatives.
-
-#### Analytic Hierarchy Process (AHP)
-
-Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
-
-#### ELECTRE Outranking Method
-
-Use concordance and discordance reasoning to determine whether one alternative sufficiently outranks another.
-
-#### PROMETHEE
-
-Compare alternatives pairwise with preference functions to produce a transparent ranking.
-
-#### TOPSIS
-
-Rank alternatives by their distance from an ideal best and an ideal worst solution.
-
-#### VIKOR
-
-Identify a compromise solution that balances group utility and individual regret.
-
 ## Scope
 
 Primary use cases and example design anchors.

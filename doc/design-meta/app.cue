@@ -546,24 +546,6 @@ reports: [
           },
         ]
       },
-      {
-        title: "Method references"
-        description: "Decision methods and analysis techniques mentioned by the design."
-        sections: [
-          {
-            title: "Core methods"
-            notes: [
-              #notesByName["analysis.robustness.method"].name,
-              #notesByName["analysis.sensitivity"].name,
-              #notesByName["mcda.ahp"].name,
-              #notesByName["mcda.electre"].name,
-              #notesByName["mcda.promethee"].name,
-              #notesByName["mcda.topsis"].name,
-              #notesByName["mcda.vikor"].name,
-            ]
-          },
-        ]
-      },
     ]
   },
   {
