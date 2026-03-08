@@ -2,7 +2,7 @@
 
 ## Result
 
-`Provider B` is the recommended overall choice.
+`Provider B` is the recommended overall choice with an aggregated score of `0.555`.
 
 ## Why
 
@@ -14,15 +14,15 @@
 
 ### Lean Startup
 
-1. `Provider A`
-2. `Provider B`
+1. `Provider A` (`0.61`)
+2. `Provider B` (`0.39`)
 
 ### Regulated Growth
 
-1. `Provider B`
-2. `Provider A`
+1. `Provider B` (`0.72`)
+2. `Provider A` (`0.28`)
 
 ## Final ranking
 
-1. `Provider B`
-2. `Provider A`
+1. `Provider B` (`0.555`)
+2. `Provider A` (`0.445`)

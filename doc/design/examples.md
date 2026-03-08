@@ -59,7 +59,7 @@ Illustrative outputs for the hosting-choice example across the main v1 report fo
 
 ## Result
 
-`Provider B` is the recommended overall choice.
+`Provider B` is the recommended overall choice with an aggregated score of `0.555`.
 
 ## Why
 
@@ -71,18 +71,18 @@ Illustrative outputs for the hosting-choice example across the main v1 report fo
 
 ### Lean Startup
 
-1. `Provider A`
-2. `Provider B`
+1. `Provider A` (`0.61`)
+2. `Provider B` (`0.39`)
 
 ### Regulated Growth
 
-1. `Provider B`
-2. `Provider A`
+1. `Provider B` (`0.72`)
+2. `Provider A` (`0.28`)
 
 ## Final ranking
 
-1. `Provider B`
-2. `Provider A`
+1. `Provider B` (`0.555`)
+2. `Provider A` (`0.445`)
 ```
 
 ## Hosting choice
@@ -380,7 +380,7 @@ export const minimalScenarioMcda: McdaModel = {
       title: "Hosting Choice Summary",
       description: "Human-readable summary of rankings and scenario trade-offs.",
       format: "markdown",
-      arguments: ["include-scenarios=all", "top-alternatives=2"]
+      arguments: ["include-scenarios=all", "top-alternatives=2", "include-scores=true"]
     },
     {
       name: "hosting-choice-results",

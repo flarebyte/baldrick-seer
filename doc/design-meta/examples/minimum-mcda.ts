@@ -16,7 +16,7 @@ export const minimalScenarioMcda: McdaModel = {
       title: "Hosting Choice Summary",
       description: "Human-readable summary of rankings and scenario trade-offs.",
       format: "markdown",
-      arguments: ["include-scenarios=all", "top-alternatives=2"]
+      arguments: ["include-scenarios=all", "top-alternatives=2", "include-scores=true"]
     },
     {
       name: "hosting-choice-results",
