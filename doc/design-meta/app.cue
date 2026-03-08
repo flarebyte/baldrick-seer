@@ -877,6 +877,21 @@ relationships: [
     label: "documents"
   },
   {
+    from: #notesByName["example.input-schema.ts"].name
+    to:   #notesByName["model.structure"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.input-platform-selection.ts"].name
+    to:   #notesByName["example.platform-selection"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.input-hosting-choice.ts"].name
+    to:   #notesByName["example.hosting-choice"].name
+    label: "documents"
+  },
+  {
     from: #notesByName["planning.lifecycle-decision"].name
     to: #notesByName["planning.long-term-option-evaluation"].name
     label: "relates_to"
