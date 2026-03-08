@@ -126,6 +126,10 @@ Derive criteria weights from pairwise comparisons and turn qualitative judgments
 
 Use concordance and discordance reasoning to determine whether one alternative sufficiently outranks another.
 
+#### Multi-Criteria Decision Analysis (MCDA)
+
+Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension.
+
 #### PROMETHEE
 
 Compare alternatives pairwise with preference functions to produce a transparent ranking.
@@ -212,22 +216,6 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
 
-#### Structured Output for Automation (v1)
-
-Provide machine-readable output such as JSON in addition to human-readable summaries.
-
-#### Readable CLI Output (v1)
-
-Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns.
-
-#### Analytic Hierarchy Process (AHP)
-
-Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
-
-#### TOPSIS
-
-Rank alternatives by their distance from an ideal best and an ideal worst solution.
-
 ## User experience and output
 
 Guidance for readable, reproducible, and automatable execution.
@@ -307,20 +295,4 @@ Check that report definitions use supported formats, valid focus selectors, and 
 #### Check Config Structure
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
-
-#### Clear Representation of Pairwise Judgments (v1)
-
-Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
-
-#### Handling Incomplete Information (v1)
-
-Detect missing comparisons or evaluation values early and return actionable diagnostics instead of attempting opaque implicit recovery.
-
-#### Model Validation (v1)
-
-Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
-
-#### Constraint Enforcement (v1)
-
-Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 

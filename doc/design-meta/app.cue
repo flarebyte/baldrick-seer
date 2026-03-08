@@ -341,6 +341,12 @@ modules: ["design"]
     labels: ["design", "method"]
     markdown: "Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system."
   }
+  "mcda.general": {
+    name: "mcda.general"
+    title: "Multi-Criteria Decision Analysis (MCDA)"
+    labels: ["design", "method"]
+    markdown: "Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension."
+  }
   "mcda.electre": {
     name: "mcda.electre"
     title: "ELECTRE Outranking Method"
@@ -625,6 +631,7 @@ reports: [
           {
             title: "Methods"
             notes: [
+              #notesByName["mcda.general"].name,
               #notesByName["analysis.robustness.method"].name,
               #notesByName["analysis.sensitivity"].name,
               #notesByName["mcda.ahp"].name,
@@ -652,24 +659,6 @@ reports: [
               #notesByName["scenario.aggregation.policy"].name,
               #notesByName["scenario.constraints"].name,
               #notesByName["scenario.isolation"].name,
-            ]
-          },
-        ]
-      },
-      {
-        title: "Execution concepts"
-        description: "Terms used in the CLI and report-generation design."
-        sections: [
-          {
-            title: "CLI and output"
-            notes: [
-              #notesByName["analysis.robustness"].name,
-              #notesByName["cli.output.machine"].name,
-              #notesByName["cli.output.readability"].name,
-              #notesByName["decision.explainability"].name,
-              #notesByName["decision.traceability"].name,
-              #notesByName["execution.reproducibility"].name,
-              #notesByName["system.extensibility.methods"].name,
             ]
           },
         ]
@@ -770,10 +759,6 @@ reports: [
               #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
               #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
               #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
-              #notesByName["model.validation"].name,
-              #notesByName["model.incomplete.data"].name,
-              #notesByName["criteria.pairwise.clarity"].name,
-              #notesByName["scenario.constraints"].name,
             ]
           },
         ]
@@ -802,10 +787,6 @@ reports: [
               #notesByName["call.reports.generate.render-output.render-markdown"].name,
               #notesByName["call.reports.generate.render-output.render-json"].name,
               #notesByName["call.reports.generate.render-output.render-csv"].name,
-              #notesByName["mcda.ahp"].name,
-              #notesByName["mcda.topsis"].name,
-              #notesByName["cli.output.machine"].name,
-              #notesByName["cli.output.readability"].name,
             ]
           },
         ]
@@ -819,6 +800,7 @@ reports: [
             notes: [
               #notesByName["analysis.robustness.method"].name,
               #notesByName["analysis.sensitivity"].name,
+              #notesByName["mcda.general"].name,
               #notesByName["mcda.ahp"].name,
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
@@ -1071,6 +1053,7 @@ notes: [
   #notesByName["infrastructure.system-design-selection"],
   #notesByName["input.format"],
   #notesByName["mcda.ahp"],
+  #notesByName["mcda.general"],
   #notesByName["mcda.electre"],
   #notesByName["mcda.promethee"],
   #notesByName["mcda.topsis"],
@@ -1377,6 +1360,11 @@ relationships: [
     label: "supports"
   },
   {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
+    label: "supports"
+  },
+  {
     from: #notesByName["call.reports.generate.future-rank-electre"].name
     to: #notesByName["mcda.electre"].name
     label: "implements"
@@ -1390,6 +1378,31 @@ relationships: [
     from: #notesByName["criteria.pairwise.clarity"].name
     to: #notesByName["mcda.ahp"].name
     label: "documents_method"
+  },
+  {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["mcda.ahp"].name
+    label: "includes_method"
+  },
+  {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["mcda.electre"].name
+    label: "includes_method"
+  },
+  {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["mcda.promethee"].name
+    label: "includes_method"
+  },
+  {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["mcda.topsis"].name
+    label: "includes_method"
+  },
+  {
+    from: #notesByName["mcda.general"].name
+    to: #notesByName["mcda.vikor"].name
+    label: "includes_method"
   },
   {
     from: #notesByName["criteria.semantic.consistency"].name

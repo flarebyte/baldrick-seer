@@ -24,6 +24,10 @@ Derive criteria weights from pairwise comparisons and turn qualitative judgments
 
 Use concordance and discordance reasoning to determine whether one alternative sufficiently outranks another.
 
+#### Multi-Criteria Decision Analysis (MCDA)
+
+Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension.
+
 #### PROMETHEE
 
 Compare alternatives pairwise with preference functions to produce a transparent ranking.
@@ -35,40 +39,6 @@ Rank alternatives by their distance from an ideal best and an ideal worst soluti
 #### VIKOR
 
 Identify a compromise solution that balances group utility and individual regret.
-
-## Execution concepts
-
-Terms used in the CLI and report-generation design.
-
-### CLI and output
-
-#### Sensitivity and Robustness Analysis (v2)
-
-Add post-ranking analysis that tests how changes in criteria importance or scenario assumptions affect the final result so users can judge stability.
-
-#### Structured Output for Automation (v1)
-
-Provide machine-readable output such as JSON in addition to human-readable summaries.
-
-#### Readable CLI Output (v1)
-
-Present results in a clear terminal-friendly format with summaries, tables, and scenario breakdowns.
-
-#### Explainable Results (v1)
-
-Explain ranking outputs in terms of criteria influence and scenario differences.
-
-#### Traceable Decision Process (v1)
-
-Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor.
-
-#### Reproducible Decision Runs (v1)
-
-Running the same model with the same inputs should always produce identical results for auditing and comparison.
-
-#### Extensible Decision Methods (v2)
-
-Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface.
 
 ## Modeling terms
 
