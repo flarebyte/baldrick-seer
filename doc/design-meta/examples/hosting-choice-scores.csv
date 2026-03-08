@@ -1,0 +1,7 @@
+scenario,alternative,score,rank
+lean_startup,provider_a,0.61,1
+lean_startup,provider_b,0.39,2
+regulated_growth,provider_b,0.72,1
+regulated_growth,provider_a,0.28,2
+overall,provider_b,0.555,1
+overall,provider_a,0.445,2

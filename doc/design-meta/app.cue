@@ -293,6 +293,24 @@ modules: ["design"]
     labels: ["design", "example", "source", "typescript"]
     filepath: "examples/minimum-mcda.ts"
   }
+  "example.output-hosting-choice.markdown": {
+    name: "example.output-hosting-choice.markdown"
+    title: "Hosting Choice Markdown Output"
+    labels: ["design", "example", "output", "markdown"]
+    filepath: "examples/hosting-choice-summary.md"
+  }
+  "example.output-hosting-choice.json": {
+    name: "example.output-hosting-choice.json"
+    title: "Hosting Choice JSON Output"
+    labels: ["design", "example", "output", "json"]
+    filepath: "examples/hosting-choice-results.json"
+  }
+  "example.output-hosting-choice.csv": {
+    name: "example.output-hosting-choice.csv"
+    title: "Hosting Choice CSV Output"
+    labels: ["design", "example", "output", "csv"]
+    filepath: "examples/hosting-choice-scores.csv"
+  }
   "example.platform-selection": {
     name: "example.platform-selection"
     title: "Platform Selection Example"
@@ -613,6 +631,20 @@ reports: [
             notes: [
               #notesByName["example.input-platform-selection.ts"].name,
               #notesByName["example.input-hosting-choice.ts"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Example outputs"
+        description: "Illustrative outputs for the hosting-choice example across the main v1 report formats."
+        sections: [
+          {
+            title: "Rendered reports"
+            notes: [
+              #notesByName["example.output-hosting-choice.markdown"].name,
+              #notesByName["example.output-hosting-choice.json"].name,
+              #notesByName["example.output-hosting-choice.csv"].name,
             ]
           },
         ]
@@ -1043,6 +1075,9 @@ notes: [
   #notesByName["example.hosting-choice.lean-startup"],
   #notesByName["example.hosting-choice.regulated-growth"],
   #notesByName["example.input-hosting-choice.ts"],
+  #notesByName["example.output-hosting-choice.csv"],
+  #notesByName["example.output-hosting-choice.json"],
+  #notesByName["example.output-hosting-choice.markdown"],
   #notesByName["example.input-platform-selection.ts"],
   #notesByName["example.input-schema.ts"],
   #notesByName["example.platform-selection"],
@@ -1581,6 +1616,21 @@ relationships: [
   },
   {
     from: #notesByName["example.input-hosting-choice.ts"].name
+    to:   #notesByName["example.hosting-choice"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.output-hosting-choice.markdown"].name
+    to:   #notesByName["example.hosting-choice"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.output-hosting-choice.json"].name
+    to:   #notesByName["example.hosting-choice"].name
+    label: "documents"
+  },
+  {
+    from: #notesByName["example.output-hosting-choice.csv"].name
     to:   #notesByName["example.hosting-choice"].name
     label: "documents"
   },

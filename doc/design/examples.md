@@ -2,6 +2,89 @@
 
 Scenario-based MCDA examples translated from the TypeScript design fixtures.
 
+## Example outputs
+
+Illustrative outputs for the hosting-choice example across the main v1 report formats.
+
+### Rendered reports
+
+#### Hosting Choice CSV Output
+
+| alternative | rank | scenario | score |
+| --- | --- | --- | --- |
+| provider_a | 1 | lean_startup | 0.61 |
+| provider_b | 2 | lean_startup | 0.39 |
+| provider_b | 1 | regulated_growth | 0.72 |
+| provider_a | 2 | regulated_growth | 0.28 |
+| provider_b | 1 | overall | 0.555 |
+| provider_a | 2 | overall | 0.445 |
+
+#### Hosting Choice JSON Output
+
+```json
+{
+  "problemName": "hosting-choice",
+  "reportName": "hosting-choice-results",
+  "format": "json",
+  "aggregation": {
+    "method": "equal_average"
+  },
+  "scenarioResults": [
+    {
+      "scenarioName": "lean_startup",
+      "ranking": [
+        { "alternativeName": "provider_a", "rank": 1, "score": 0.61 },
+        { "alternativeName": "provider_b", "rank": 2, "score": 0.39 }
+      ]
+    },
+    {
+      "scenarioName": "regulated_growth",
+      "ranking": [
+        { "alternativeName": "provider_b", "rank": 1, "score": 0.72 },
+        { "alternativeName": "provider_a", "rank": 2, "score": 0.28 }
+      ]
+    }
+  ],
+  "finalRanking": [
+    { "alternativeName": "provider_b", "rank": 1, "score": 0.555 },
+    { "alternativeName": "provider_a", "rank": 2, "score": 0.445 }
+  ]
+}
+```
+
+#### Hosting Choice Markdown Output
+
+```markdown
+# Hosting Choice Summary
+
+## Result
+
+`Provider B` is the recommended overall choice.
+
+## Why
+
+- `Provider A` is stronger on cost in the lean-startup scenario.
+- `Provider B` is materially stronger on speed and compliance.
+- With equal scenario aggregation, `Provider B` wins on combined score.
+
+## Scenario ranking
+
+### Lean Startup
+
+1. `Provider A`
+2. `Provider B`
+
+### Regulated Growth
+
+1. `Provider B`
+2. `Provider A`
+
+## Final ranking
+
+1. `Provider B`
+2. `Provider A`
+```
+
 ## Hosting choice
 
 Minimal example showing the same shape with fewer criteria and alternatives.
