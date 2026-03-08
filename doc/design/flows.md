@@ -96,6 +96,14 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
 
+#### Analytic Hierarchy Process (AHP)
+
+Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
+
+#### TOPSIS
+
+Rank alternatives by their distance from an ideal best and an ideal worst solution.
+
 ## Validation flows
 
 Graph view for validating an input config file.
@@ -156,4 +164,24 @@ Check that report definitions use supported formats, valid focus selectors, and 
 #### Check Config Structure
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
+
+#### Clear Representation of Pairwise Judgments
+
+Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
+
+#### Human and AI Friendly Input Format
+
+Use a semantic format such as JSON or YAML that is easy for humans and AI systems to read and generate.
+
+#### Handling Incomplete Information
+
+Detect missing comparisons or evaluation values and provide clear feedback, with any inferred values marked explicitly.
+
+#### Model Validation
+
+Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
+
+#### Constraint Enforcement
+
+Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 

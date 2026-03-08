@@ -572,6 +572,69 @@ reports: [
     ]
   },
   {
+    title: "Glossary"
+    filepath: "../design/glossary.md"
+    description: "Definitions of the main design terms, methods, and modeling concepts used by baldrick-seer."
+    sections: [
+      {
+        title: "Decision methods"
+        description: "Core MCDA methods and analysis terms referenced by the design."
+        sections: [
+          {
+            title: "Methods"
+            notes: [
+              #notesByName["analysis.robustness.method"].name,
+              #notesByName["analysis.sensitivity"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.electre"].name,
+              #notesByName["mcda.promethee"].name,
+              #notesByName["mcda.topsis"].name,
+              #notesByName["mcda.vikor"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Modeling terms"
+        description: "Important concepts used to describe the input model and its validation rules."
+        sections: [
+          {
+            title: "Model concepts"
+            notes: [
+              #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["input.format"].name,
+              #notesByName["model.documentation"].name,
+              #notesByName["model.incomplete.data"].name,
+              #notesByName["model.structure"].name,
+              #notesByName["model.validation"].name,
+              #notesByName["scenario.aggregation.policy"].name,
+              #notesByName["scenario.constraints"].name,
+              #notesByName["scenario.isolation"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Execution concepts"
+        description: "Terms used in the CLI and report-generation design."
+        sections: [
+          {
+            title: "CLI and output"
+            notes: [
+              #notesByName["analysis.robustness"].name,
+              #notesByName["cli.output.machine"].name,
+              #notesByName["cli.output.readability"].name,
+              #notesByName["decision.explainability"].name,
+              #notesByName["decision.traceability"].name,
+              #notesByName["execution.reproducibility"].name,
+              #notesByName["system.extensibility.methods"].name,
+            ]
+          },
+        ]
+      },
+    ]
+  },
+  {
     title: "Implementation Considerations"
     filepath: "../design/implementation.md"
     description: "Implementation guidance and method references for the CLI and model."
