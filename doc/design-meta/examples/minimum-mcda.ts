@@ -86,23 +86,7 @@ export const minimalScenarioMcda: McdaModel = {
             justification: "Budget matters more than peak performance."
           }
         ]
-      },
-      evaluations: [
-        {
-          alternativeName: "provider_a",
-          values: {
-            cost: { kind: "number", value: 100 },
-            speed: { kind: "number", value: 70 }
-          }
-        },
-        {
-          alternativeName: "provider_b",
-          values: {
-            cost: { kind: "number", value: 180 },
-            speed: { kind: "number", value: 90 }
-          }
-        }
-      ]
+      }
     },
     {
       name: "regulated_growth",
@@ -133,7 +117,34 @@ export const minimalScenarioMcda: McdaModel = {
             strength: 2
           }
         ]
-      },
+      }
+    }
+  ],
+
+  evaluations: [
+    {
+      scenarioName: "lean_startup",
+      description: "Assessment of hosting options for a lean startup context.",
+      evaluations: [
+        {
+          alternativeName: "provider_a",
+          values: {
+            cost: { kind: "number", value: 100 },
+            speed: { kind: "number", value: 70 }
+          }
+        },
+        {
+          alternativeName: "provider_b",
+          values: {
+            cost: { kind: "number", value: 180 },
+            speed: { kind: "number", value: 90 }
+          }
+        }
+      ]
+    },
+    {
+      scenarioName: "regulated_growth",
+      description: "Assessment of hosting options when compliance becomes critical.",
       evaluations: [
         {
           alternativeName: "provider_a",

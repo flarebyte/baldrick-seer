@@ -28,6 +28,7 @@ export interface McdaModel {
   criteriaCatalog: CriterionDefinition[];
   alternatives: AlternativeDefinition[];
   scenarios: ScenarioDefinition[];
+  evaluations: ScenarioEvaluationDefinition[];
   aggregation: ScenarioAggregationDefinition;
 }
 
@@ -107,16 +108,21 @@ export interface ScenarioDefinition {
   preferences?: ScenarioPreferences;
 
   /**
-   * Raw measurements / judgments for alternatives under this scenario.
-   * These are scenario-specific because candidate performance may change by context.
-   */
-  evaluations: AlternativeScenarioEvaluation[];
-
-  /**
    * Optional hard rules for filtering before scoring.
    * Helpful when some scenarios have non-negotiable requirements.
    */
   constraints?: ScenarioConstraint[];
+}
+
+export interface ScenarioEvaluationDefinition {
+  scenarioName: Name;
+  description?: string;
+
+  /**
+   * Raw measurements or judgments for alternatives under the referenced scenario.
+   * Keeping this outside the scenario definition makes re-evaluation easier.
+   */
+  evaluations: AlternativeScenarioEvaluation[];
 }
 
 export interface ScenarioCriterionRef {

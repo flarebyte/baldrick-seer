@@ -183,36 +183,7 @@ export const exampleScenarioBasedMcda: McdaModel = {
             confidence: "medium"
           }
         ]
-      },
-      evaluations: [
-        {
-          alternativeName: "platform_a",
-          values: {
-            cost: { kind: "number", value: 8000, source: "imported" },
-            time_to_market: { kind: "number", value: 4, source: "human" },
-            scalability: { kind: "number", value: 70, source: "hybrid" },
-            reliability: { kind: "number", value: 68, source: "hybrid" }
-          }
-        },
-        {
-          alternativeName: "platform_b",
-          values: {
-            cost: { kind: "number", value: 12000, source: "imported" },
-            time_to_market: { kind: "number", value: 6, source: "human" },
-            scalability: { kind: "number", value: 88, source: "hybrid" },
-            reliability: { kind: "number", value: 80, source: "hybrid" }
-          }
-        },
-        {
-          alternativeName: "platform_c",
-          values: {
-            cost: { kind: "number", value: 18000, source: "imported" },
-            time_to_market: { kind: "number", value: 10, source: "human" },
-            scalability: { kind: "number", value: 82, source: "hybrid" },
-            reliability: { kind: "number", value: 92, source: "hybrid" }
-          }
-        }
-      ]
+      }
     },
 
     {
@@ -290,36 +261,7 @@ export const exampleScenarioBasedMcda: McdaModel = {
             confidence: "medium"
           }
         ]
-      },
-      evaluations: [
-        {
-          alternativeName: "platform_a",
-          values: {
-            cost: { kind: "number", value: 10000, source: "imported" },
-            scalability: { kind: "number", value: 72, source: "hybrid" },
-            reliability: { kind: "number", value: 70, source: "hybrid" },
-            compliance: { kind: "number", value: 58, source: "hybrid" }
-          }
-        },
-        {
-          alternativeName: "platform_b",
-          values: {
-            cost: { kind: "number", value: 14000, source: "imported" },
-            scalability: { kind: "number", value: 93, source: "hybrid" },
-            reliability: { kind: "number", value: 84, source: "hybrid" },
-            compliance: { kind: "number", value: 76, source: "hybrid" }
-          }
-        },
-        {
-          alternativeName: "platform_c",
-          values: {
-            cost: { kind: "number", value: 21000, source: "imported" },
-            scalability: { kind: "number", value: 87, source: "hybrid" },
-            reliability: { kind: "number", value: 94, source: "hybrid" },
-            compliance: { kind: "number", value: 91, source: "hybrid" }
-          }
-        }
-      ]
+      }
     },
 
     {
@@ -408,7 +350,80 @@ export const exampleScenarioBasedMcda: McdaModel = {
           value: 70,
           justification: "Enterprise scenario requires minimum compliance readiness."
         }
-      ],
+      ]
+    }
+  ],
+
+  evaluations: [
+    {
+      scenarioName: "startup",
+      description: "Assessment of candidate platforms for an early-stage startup context.",
+      evaluations: [
+        {
+          alternativeName: "platform_a",
+          values: {
+            cost: { kind: "number", value: 8000, source: "imported" },
+            time_to_market: { kind: "number", value: 4, source: "human" },
+            scalability: { kind: "number", value: 70, source: "hybrid" },
+            reliability: { kind: "number", value: 68, source: "hybrid" }
+          }
+        },
+        {
+          alternativeName: "platform_b",
+          values: {
+            cost: { kind: "number", value: 12000, source: "imported" },
+            time_to_market: { kind: "number", value: 6, source: "human" },
+            scalability: { kind: "number", value: 88, source: "hybrid" },
+            reliability: { kind: "number", value: 80, source: "hybrid" }
+          }
+        },
+        {
+          alternativeName: "platform_c",
+          values: {
+            cost: { kind: "number", value: 18000, source: "imported" },
+            time_to_market: { kind: "number", value: 10, source: "human" },
+            scalability: { kind: "number", value: 82, source: "hybrid" },
+            reliability: { kind: "number", value: 92, source: "hybrid" }
+          }
+        }
+      ]
+    },
+    {
+      scenarioName: "unicorn",
+      description: "Assessment of candidate platforms during a hyper-growth phase.",
+      evaluations: [
+        {
+          alternativeName: "platform_a",
+          values: {
+            cost: { kind: "number", value: 10000, source: "imported" },
+            scalability: { kind: "number", value: 72, source: "hybrid" },
+            reliability: { kind: "number", value: 70, source: "hybrid" },
+            compliance: { kind: "number", value: 58, source: "hybrid" }
+          }
+        },
+        {
+          alternativeName: "platform_b",
+          values: {
+            cost: { kind: "number", value: 14000, source: "imported" },
+            scalability: { kind: "number", value: 93, source: "hybrid" },
+            reliability: { kind: "number", value: 84, source: "hybrid" },
+            compliance: { kind: "number", value: 76, source: "hybrid" }
+          }
+        },
+        {
+          alternativeName: "platform_c",
+          values: {
+            cost: { kind: "number", value: 21000, source: "imported" },
+            scalability: { kind: "number", value: 87, source: "hybrid" },
+            reliability: { kind: "number", value: 94, source: "hybrid" },
+            compliance: { kind: "number", value: 91, source: "hybrid" }
+          }
+        }
+      ]
+    },
+    {
+      scenarioName: "established",
+      description: "Assessment of candidate platforms for a mature enterprise context.",
       evaluations: [
         {
           alternativeName: "platform_a",
