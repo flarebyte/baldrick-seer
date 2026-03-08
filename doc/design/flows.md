@@ -12,16 +12,30 @@ Text graph for the report-generation call chain, reusing the shared validation p
 
 - <a id="graph-node-call-reports-generate"></a> Generate Reports Call: Top-level CLI call flow for generating reports from an input decision model.
   - <a id="graph-node-call-reports-generate-parse-args"></a> Parse Report Arguments: Parse CLI arguments for report generation, including the config path, requested report names, and output options.
-    - <a id="graph-node-call-reports-generate-shared-validation"></a> Reuse Shared Validation Flow: Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
-      - <a id="graph-node-call-reports-generate-compute-ahp-weights"></a> Compute Criteria Weights with AHP: Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
-        - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
-          - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+    - <a id="graph-node-call-reports-generate-select-reports"></a> Select Requested Reports: Resolve which report definitions should run, applying any CLI filtering by report name or output target.
+      - <a id="graph-node-call-reports-generate-shared-validation"></a> Reuse Shared Validation Flow: Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
+        - <a id="graph-node-call-reports-generate-build-ahp-inputs"></a> Build AHP Inputs: Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation.
+          - <a id="graph-node-call-reports-generate-compute-ahp-weights"></a> Compute Criteria Weights with AHP: Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
+            - <a id="graph-node-call-reports-generate-build-topsis-inputs"></a> Build TOPSIS Inputs: Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS.
+              - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
+                - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+                  - <a id="graph-node-call-reports-generate-render-output-render-csv"></a> Render CSV Report: Render flat tabular CSV output for spreadsheet analysis and data exchange.
+                  - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+                  - <a id="graph-node-call-reports-generate-render-output-render-markdown"></a> Render Markdown Report: Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
 
 ### Report generation notes
 
 #### Generate Reports Call
 
 Top-level CLI call flow for generating reports from an input decision model.
+
+#### Build AHP Inputs
+
+Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation.
+
+#### Build TOPSIS Inputs
+
+Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS.
 
 #### Compute Criteria Weights with AHP
 
@@ -38,6 +52,22 @@ Use the validated evaluations and AHP-derived weights to rank alternatives with 
 #### Render Requested Reports
 
 Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+
+#### Render CSV Report
+
+Render flat tabular CSV output for spreadsheet analysis and data exchange.
+
+#### Render JSON Report
+
+Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+
+#### Render Markdown Report
+
+Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
+
+#### Select Requested Reports
+
+Resolve which report definitions should run, applying any CLI filtering by report name or output target.
 
 #### Reuse Shared Validation Flow
 

@@ -107,17 +107,35 @@ modules: ["design"]
     labels: ["call", "design", "flow", "implementation"]
     markdown: "Parse CLI arguments for report generation, including the config path, requested report names, and output options."
   }
+  "call.reports.generate.select-reports": {
+    name: "call.reports.generate.select-reports"
+    title: "Select Requested Reports"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Resolve which report definitions should run, applying any CLI filtering by report name or output target."
+  }
   "call.reports.generate.shared-validation": {
     name: "call.reports.generate.shared-validation"
     title: "Reuse Shared Validation Flow"
     labels: ["call", "design", "flow", "implementation"]
     markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs."
   }
+  "call.reports.generate.build-ahp-inputs": {
+    name: "call.reports.generate.build-ahp-inputs"
+    title: "Build AHP Inputs"
+    labels: ["call", "design", "flow", "implementation", "method"]
+    markdown: "Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation."
+  }
   "call.reports.generate.compute-ahp-weights": {
     name: "call.reports.generate.compute-ahp-weights"
     title: "Compute Criteria Weights with AHP"
     labels: ["call", "design", "flow", "implementation", "method"]
     markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
+  }
+  "call.reports.generate.build-topsis-inputs": {
+    name: "call.reports.generate.build-topsis-inputs"
+    title: "Build TOPSIS Inputs"
+    labels: ["call", "design", "flow", "implementation", "method"]
+    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS."
   }
   "call.reports.generate.rank-alternatives-topsis": {
     name: "call.reports.generate.rank-alternatives-topsis"
@@ -130,6 +148,24 @@ modules: ["design"]
     title: "Render Requested Reports"
     labels: ["call", "design", "flow", "implementation"]
     markdown: "Render the requested markdown, JSON, or CSV reports from the computed ranking results."
+  }
+  "call.reports.generate.render-output.render-markdown": {
+    name: "call.reports.generate.render-output.render-markdown"
+    title: "Render Markdown Report"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries."
+  }
+  "call.reports.generate.render-output.render-json": {
+    name: "call.reports.generate.render-output.render-json"
+    title: "Render JSON Report"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility."
+  }
+  "call.reports.generate.render-output.render-csv": {
+    name: "call.reports.generate.render-output.render-csv"
+    title: "Render CSV Report"
+    labels: ["call", "design", "flow", "implementation"]
+    markdown: "Render flat tabular CSV output for spreadsheet analysis and data exchange."
   }
   "criteria.pairwise.clarity": {
     name: "criteria.pairwise.clarity"
@@ -596,12 +632,18 @@ reports: [
             notes: [
               #notesByName["call.reports.generate"].name,
               #notesByName["call.reports.generate.parse-args"].name,
+              #notesByName["call.reports.generate.select-reports"].name,
               #notesByName["call.reports.generate.shared-validation"].name,
               #notesByName["call.validation.input-config.load-cue-config"].name,
               #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.reports.generate.build-ahp-inputs"].name,
               #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.build-topsis-inputs"].name,
               #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
               #notesByName["call.reports.generate.render-output"].name,
+              #notesByName["call.reports.generate.render-output.render-markdown"].name,
+              #notesByName["call.reports.generate.render-output.render-json"].name,
+              #notesByName["call.reports.generate.render-output.render-csv"].name,
               #notesByName["mcda.ahp"].name,
               #notesByName["mcda.topsis"].name,
               #notesByName["cli.output.machine"].name,
@@ -692,12 +734,18 @@ reports: [
             notes: [
               #notesByName["call.reports.generate"].name,
               #notesByName["call.reports.generate.parse-args"].name,
+              #notesByName["call.reports.generate.select-reports"].name,
               #notesByName["call.reports.generate.shared-validation"].name,
               #notesByName["call.validation.input-config.load-cue-config"].name,
               #notesByName["call.validation.input-config.validate-model"].name,
+              #notesByName["call.reports.generate.build-ahp-inputs"].name,
               #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.build-topsis-inputs"].name,
               #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
               #notesByName["call.reports.generate.render-output"].name,
+              #notesByName["call.reports.generate.render-output.render-markdown"].name,
+              #notesByName["call.reports.generate.render-output.render-json"].name,
+              #notesByName["call.reports.generate.render-output.render-csv"].name,
               #notesByName["mcda.ahp"].name,
               #notesByName["mcda.topsis"].name,
             ]
@@ -823,10 +871,16 @@ notes: [
   #notesByName["call.validation.input-config.validate-model.check-report-definitions"],
   #notesByName["call.reports.generate"],
   #notesByName["call.reports.generate.parse-args"],
+  #notesByName["call.reports.generate.select-reports"],
   #notesByName["call.reports.generate.shared-validation"],
+  #notesByName["call.reports.generate.build-ahp-inputs"],
   #notesByName["call.reports.generate.compute-ahp-weights"],
+  #notesByName["call.reports.generate.build-topsis-inputs"],
   #notesByName["call.reports.generate.rank-alternatives-topsis"],
   #notesByName["call.reports.generate.render-output"],
+  #notesByName["call.reports.generate.render-output.render-markdown"],
+  #notesByName["call.reports.generate.render-output.render-json"],
+  #notesByName["call.reports.generate.render-output.render-csv"],
   #notesByName["criteria.pairwise.clarity"],
   #notesByName["criteria.semantic.consistency"],
   #notesByName["decision.explainability"],
@@ -957,6 +1011,12 @@ relationships: [
   },
   {
     from: #notesByName["call.reports.generate.parse-args"].name
+    to: #notesByName["call.reports.generate.select-reports"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.select-reports"].name
     to: #notesByName["call.reports.generate.shared-validation"].name
     label: "delegate_to"
     labels: ["delegate_to"]
@@ -1038,15 +1098,37 @@ relationships: [
   },
   {
     from: #notesByName["call.reports.generate.shared-validation"].name
+    to: #notesByName["call.reports.generate.build-ahp-inputs"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.build-ahp-inputs"].name
     to: #notesByName["call.reports.generate.compute-ahp-weights"].name
     label: "delegate_to"
     labels: ["delegate_to"]
   },
   {
+    from: #notesByName["call.reports.generate.build-ahp-inputs"].name
+    to: #notesByName["mcda.ahp"].name
+    label: "implements"
+  },
+  {
     from: #notesByName["call.reports.generate.compute-ahp-weights"].name
+    to: #notesByName["call.reports.generate.build-topsis-inputs"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.build-topsis-inputs"].name
     to: #notesByName["call.reports.generate.rank-alternatives-topsis"].name
     label: "delegate_to"
     labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.build-topsis-inputs"].name
+    to: #notesByName["mcda.topsis"].name
+    label: "implements"
   },
   {
     from: #notesByName["call.reports.generate.rank-alternatives-topsis"].name
@@ -1067,6 +1149,39 @@ relationships: [
   {
     from: #notesByName["call.reports.generate.render-output"].name
     to: #notesByName["cli.output.readability"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output"].name
+    to: #notesByName["call.reports.generate.render-output.render-markdown"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output"].name
+    to: #notesByName["call.reports.generate.render-output.render-json"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output"].name
+    to: #notesByName["call.reports.generate.render-output.render-csv"].name
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output.render-markdown"].name
+    to: #notesByName["cli.output.readability"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output.render-json"].name
+    to: #notesByName["cli.output.machine"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["call.reports.generate.render-output.render-csv"].name
+    to: #notesByName["cli.output.machine"].name
     label: "supports"
   },
   {

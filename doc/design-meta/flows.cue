@@ -61,12 +61,18 @@ reports: [{
           notes: [
             "call.reports.generate",
             "call.reports.generate.parse-args",
+            "call.reports.generate.select-reports",
             "call.reports.generate.shared-validation",
             "call.validation.input-config.load-cue-config",
             "call.validation.input-config.validate-model",
+            "call.reports.generate.build-ahp-inputs",
             "call.reports.generate.compute-ahp-weights",
+            "call.reports.generate.build-topsis-inputs",
             "call.reports.generate.rank-alternatives-topsis",
             "call.reports.generate.render-output",
+            "call.reports.generate.render-output.render-markdown",
+            "call.reports.generate.render-output.render-json",
+            "call.reports.generate.render-output.render-csv",
           ]
         },
       ]
@@ -148,16 +154,34 @@ notes: [
     markdown: "Parse CLI arguments for report generation, including the config path, requested report names, and output options."
   },
   {
+    name: "call.reports.generate.select-reports"
+    title: "Select Requested Reports"
+    labels: ["call", "flow", "implementation"]
+    markdown: "Resolve which report definitions should run, applying any CLI filtering by report name or output target."
+  },
+  {
     name: "call.reports.generate.shared-validation"
     title: "Reuse Shared Validation Flow"
     labels: ["call", "flow", "implementation"]
     markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs."
   },
   {
+    name: "call.reports.generate.build-ahp-inputs"
+    title: "Build AHP Inputs"
+    labels: ["call", "flow", "implementation", "method"]
+    markdown: "Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation."
+  },
+  {
     name: "call.reports.generate.compute-ahp-weights"
     title: "Compute Criteria Weights with AHP"
     labels: ["call", "flow", "implementation", "method"]
     markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
+  },
+  {
+    name: "call.reports.generate.build-topsis-inputs"
+    title: "Build TOPSIS Inputs"
+    labels: ["call", "flow", "implementation", "method"]
+    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS."
   },
   {
     name: "call.reports.generate.rank-alternatives-topsis"
@@ -170,6 +194,24 @@ notes: [
     title: "Render Requested Reports"
     labels: ["call", "flow", "implementation"]
     markdown: "Render the requested markdown, JSON, or CSV reports from the computed ranking results."
+  },
+  {
+    name: "call.reports.generate.render-output.render-markdown"
+    title: "Render Markdown Report"
+    labels: ["call", "flow", "implementation"]
+    markdown: "Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries."
+  },
+  {
+    name: "call.reports.generate.render-output.render-json"
+    title: "Render JSON Report"
+    labels: ["call", "flow", "implementation"]
+    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility."
+  },
+  {
+    name: "call.reports.generate.render-output.render-csv"
+    title: "Render CSV Report"
+    labels: ["call", "flow", "implementation"]
+    markdown: "Render flat tabular CSV output for spreadsheet analysis and data exchange."
   },
 ]
 
@@ -236,13 +278,19 @@ relationships: [
   },
   {
     from: "call.reports.generate.parse-args"
+    to: "call.reports.generate.select-reports"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.select-reports"
     to: "call.reports.generate.shared-validation"
     label: "delegate_to"
     labels: ["delegate_to"]
   },
   {
     from: "call.reports.generate.shared-validation"
-    to: "call.reports.generate.compute-ahp-weights"
+    to: "call.reports.generate.build-ahp-inputs"
     label: "delegate_to"
     labels: ["delegate_to"]
   },
@@ -257,7 +305,19 @@ relationships: [
     label: "reuses"
   },
   {
+    from: "call.reports.generate.build-ahp-inputs"
+    to: "call.reports.generate.compute-ahp-weights"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
     from: "call.reports.generate.compute-ahp-weights"
+    to: "call.reports.generate.build-topsis-inputs"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.build-topsis-inputs"
     to: "call.reports.generate.rank-alternatives-topsis"
     label: "delegate_to"
     labels: ["delegate_to"]
@@ -265,6 +325,24 @@ relationships: [
   {
     from: "call.reports.generate.rank-alternatives-topsis"
     to: "call.reports.generate.render-output"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.render-output"
+    to: "call.reports.generate.render-output.render-markdown"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.render-output"
+    to: "call.reports.generate.render-output.render-json"
+    label: "delegate_to"
+    labels: ["delegate_to"]
+  },
+  {
+    from: "call.reports.generate.render-output"
+    to: "call.reports.generate.render-output.render-csv"
     label: "delegate_to"
     labels: ["delegate_to"]
   },
