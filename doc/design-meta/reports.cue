@@ -13,18 +13,18 @@ reports: [
           {
             title: "Primary use cases"
             notes: [
-              "decision.multi-criteria-ranking",
-              "decision.robust-choice-identification",
-              "infrastructure.system-design-selection",
-              "technology.infrastructure-strategy",
-              "technology.platform-selection",
+              #notesByName["decision.multi-criteria-ranking"].name,
+              #notesByName["decision.robust-choice-identification"].name,
+              #notesByName["infrastructure.system-design-selection"].name,
+              #notesByName["technology.infrastructure-strategy"].name,
+              #notesByName["technology.platform-selection"].name,
             ]
           },
           {
             title: "Reference examples"
             notes: [
-              "example.hosting-choice",
-              "example.platform-selection",
+              #notesByName["example.hosting-choice"].name,
+              #notesByName["example.platform-selection"].name,
             ]
           },
         ]
@@ -36,13 +36,13 @@ reports: [
           {
             title: "Core methods"
             notes: [
-              "analysis.robustness.method",
-              "analysis.sensitivity",
-              "mcda.ahp",
-              "mcda.electre",
-              "mcda.promethee",
-              "mcda.topsis",
-              "mcda.vikor",
+              #notesByName["analysis.robustness.method"].name,
+              #notesByName["analysis.sensitivity"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.electre"].name,
+              #notesByName["mcda.promethee"].name,
+              #notesByName["mcda.topsis"].name,
+              #notesByName["mcda.vikor"].name,
             ]
           },
         ]
@@ -61,15 +61,15 @@ reports: [
           {
             title: "Model"
             notes: [
-              "example.platform-selection",
+              #notesByName["example.platform-selection"].name,
             ]
           },
           {
             title: "Scenarios"
             notes: [
-              "example.platform-selection.established-enterprise",
-              "example.platform-selection.startup",
-              "example.platform-selection.unicorn",
+              #notesByName["example.platform-selection.established-enterprise"].name,
+              #notesByName["example.platform-selection.startup"].name,
+              #notesByName["example.platform-selection.unicorn"].name,
             ]
           },
         ]
@@ -81,14 +81,14 @@ reports: [
           {
             title: "Model"
             notes: [
-              "example.hosting-choice",
+              #notesByName["example.hosting-choice"].name,
             ]
           },
           {
             title: "Scenarios"
             notes: [
-              "example.hosting-choice.lean-startup",
-              "example.hosting-choice.regulated-growth",
+              #notesByName["example.hosting-choice.lean-startup"].name,
+              #notesByName["example.hosting-choice.regulated-growth"].name,
             ]
           },
         ]
@@ -107,17 +107,17 @@ reports: [
           {
             title: "Model structure"
             notes: [
-              "criteria.pairwise.clarity",
-              "criteria.semantic.consistency",
-              "input.format",
-              "model.documentation",
-              "model.incomplete.data",
-              "model.structure",
-              "model.validation",
-              "scenario.aggregation.policy",
-              "scenario.constraints",
-              "scenario.isolation",
-              "system.extensibility.methods",
+              #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["criteria.semantic.consistency"].name,
+              #notesByName["input.format"].name,
+              #notesByName["model.documentation"].name,
+              #notesByName["model.incomplete.data"].name,
+              #notesByName["model.structure"].name,
+              #notesByName["model.validation"].name,
+              #notesByName["scenario.aggregation.policy"].name,
+              #notesByName["scenario.constraints"].name,
+              #notesByName["scenario.isolation"].name,
+              #notesByName["system.extensibility.methods"].name,
             ]
           },
         ]
@@ -129,13 +129,13 @@ reports: [
           {
             title: "CLI and explainability"
             notes: [
-              "analysis.robustness",
-              "cli.output.machine",
-              "cli.output.readability",
-              "decision.explainability",
-              "decision.traceability",
-              "execution.reproducibility",
-              "ux.model.guidance",
+              #notesByName["analysis.robustness"].name,
+              #notesByName["cli.output.machine"].name,
+              #notesByName["cli.output.readability"].name,
+              #notesByName["decision.explainability"].name,
+              #notesByName["decision.traceability"].name,
+              #notesByName["execution.reproducibility"].name,
+              #notesByName["ux.model.guidance"].name,
             ]
           },
         ]
@@ -147,13 +147,13 @@ reports: [
           {
             title: "Algorithms"
             notes: [
-              "analysis.robustness.method",
-              "analysis.sensitivity",
-              "mcda.ahp",
-              "mcda.electre",
-              "mcda.promethee",
-              "mcda.topsis",
-              "mcda.vikor",
+              #notesByName["analysis.robustness.method"].name,
+              #notesByName["analysis.sensitivity"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.electre"].name,
+              #notesByName["mcda.promethee"].name,
+              #notesByName["mcda.topsis"].name,
+              #notesByName["mcda.vikor"].name,
             ]
           },
         ]
@@ -172,13 +172,13 @@ reports: [
           {
             title: "Decision support"
             notes: [
-              "decision.multi-criteria-ranking",
-              "decision.robust-choice-identification",
-              "planning.lifecycle-decision",
-              "planning.long-term-option-evaluation",
-              "policy.policy-option-analysis",
-              "strategy.growth-scenario-evaluation",
-              "strategy.investment-decision",
+              #notesByName["decision.multi-criteria-ranking"].name,
+              #notesByName["decision.robust-choice-identification"].name,
+              #notesByName["planning.lifecycle-decision"].name,
+              #notesByName["planning.long-term-option-evaluation"].name,
+              #notesByName["policy.policy-option-analysis"].name,
+              #notesByName["strategy.growth-scenario-evaluation"].name,
+              #notesByName["strategy.investment-decision"].name,
             ]
           },
         ]
@@ -190,12 +190,12 @@ reports: [
           {
             title: "Technology and product choices"
             notes: [
-              "infrastructure.system-design-selection",
-              "product.feature-prioritization",
-              "product.roadmap-planning",
-              "technology.architecture-choice",
-              "technology.infrastructure-strategy",
-              "technology.platform-selection",
+              #notesByName["infrastructure.system-design-selection"].name,
+              #notesByName["product.feature-prioritization"].name,
+              #notesByName["product.roadmap-planning"].name,
+              #notesByName["technology.architecture-choice"].name,
+              #notesByName["technology.infrastructure-strategy"].name,
+              #notesByName["technology.platform-selection"].name,
             ]
           },
         ]
@@ -207,8 +207,8 @@ reports: [
           {
             title: "Vendors"
             notes: [
-              "vendor.service-provider-comparison",
-              "vendor.supplier-selection",
+              #notesByName["vendor.service-provider-comparison"].name,
+              #notesByName["vendor.supplier-selection"].name,
             ]
           },
         ]

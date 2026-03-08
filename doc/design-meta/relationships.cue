@@ -2,218 +2,218 @@ package flyb
 
 relationships: [
   {
-    from: "analysis.robustness"
-    to: "analysis.robustness.method"
+    from: #notesByName["analysis.robustness"].name
+    to: #notesByName["analysis.robustness.method"].name
     label: "uses_method"
   },
   {
-    from: "analysis.robustness"
-    to: "analysis.sensitivity"
+    from: #notesByName["analysis.robustness"].name
+    to: #notesByName["analysis.sensitivity"].name
     label: "uses_method"
   },
   {
-    from: "cli.output.machine"
-    to: "decision.traceability"
+    from: #notesByName["cli.output.machine"].name
+    to: #notesByName["decision.traceability"].name
     label: "supports"
   },
   {
-    from: "cli.output.readability"
-    to: "decision.explainability"
+    from: #notesByName["cli.output.readability"].name
+    to: #notesByName["decision.explainability"].name
     label: "supports"
   },
   {
-    from: "criteria.pairwise.clarity"
-    to: "mcda.ahp"
+    from: #notesByName["criteria.pairwise.clarity"].name
+    to: #notesByName["mcda.ahp"].name
     label: "documents_method"
   },
   {
-    from: "criteria.semantic.consistency"
-    to: "model.structure"
+    from: #notesByName["criteria.semantic.consistency"].name
+    to: #notesByName["model.structure"].name
     label: "refines"
   },
   {
-    from: "decision.explainability"
-    to: "decision.traceability"
+    from: #notesByName["decision.explainability"].name
+    to: #notesByName["decision.traceability"].name
     label: "reinforces"
   },
   {
-    from: "example.hosting-choice"
-    to: "decision.multi-criteria-ranking"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.hosting-choice"
-    to: "example.hosting-choice.lean-startup"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["example.hosting-choice.lean-startup"].name
     label: "contains_scenario"
   },
   {
-    from: "example.hosting-choice"
-    to: "example.hosting-choice.regulated-growth"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["example.hosting-choice.regulated-growth"].name
     label: "contains_scenario"
   },
   {
-    from: "example.hosting-choice"
-    to: "mcda.ahp"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["mcda.ahp"].name
     label: "uses_method"
   },
   {
-    from: "example.hosting-choice"
-    to: "technology.infrastructure-strategy"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["technology.infrastructure-strategy"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.hosting-choice"
-    to: "vendor.service-provider-comparison"
+    from: #notesByName["example.hosting-choice"].name
+    to: #notesByName["vendor.service-provider-comparison"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.platform-selection"
-    to: "decision.multi-criteria-ranking"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.platform-selection"
-    to: "decision.robust-choice-identification"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["decision.robust-choice-identification"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.platform-selection"
-    to: "example.platform-selection.established-enterprise"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["example.platform-selection.established-enterprise"].name
     label: "contains_scenario"
   },
   {
-    from: "example.platform-selection"
-    to: "example.platform-selection.startup"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["example.platform-selection.startup"].name
     label: "contains_scenario"
   },
   {
-    from: "example.platform-selection"
-    to: "example.platform-selection.unicorn"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["example.platform-selection.unicorn"].name
     label: "contains_scenario"
   },
   {
-    from: "example.platform-selection"
-    to: "infrastructure.system-design-selection"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["infrastructure.system-design-selection"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.platform-selection"
-    to: "mcda.ahp"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["mcda.ahp"].name
     label: "uses_method"
   },
   {
-    from: "example.platform-selection"
-    to: "strategy.growth-scenario-evaluation"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["strategy.growth-scenario-evaluation"].name
     label: "addresses_usecase"
   },
   {
-    from: "example.platform-selection"
-    to: "technology.platform-selection"
+    from: #notesByName["example.platform-selection"].name
+    to: #notesByName["technology.platform-selection"].name
     label: "addresses_usecase"
   },
   {
-    from: "execution.reproducibility"
-    to: "model.validation"
+    from: #notesByName["execution.reproducibility"].name
+    to: #notesByName["model.validation"].name
     label: "depends_on"
   },
   {
-    from: "input.format"
-    to: "model.structure"
+    from: #notesByName["input.format"].name
+    to: #notesByName["model.structure"].name
     label: "supports"
   },
   {
-    from: "model.validation"
-    to: "model.incomplete.data"
+    from: #notesByName["model.validation"].name
+    to: #notesByName["model.incomplete.data"].name
     label: "reinforces"
   },
   {
-    from: "model.documentation"
-    to: "model.structure"
+    from: #notesByName["model.documentation"].name
+    to: #notesByName["model.structure"].name
     label: "documents"
   },
   {
-    from: "planning.lifecycle-decision"
-    to: "planning.long-term-option-evaluation"
+    from: #notesByName["planning.lifecycle-decision"].name
+    to: #notesByName["planning.long-term-option-evaluation"].name
     label: "relates_to"
   },
   {
-    from: "planning.long-term-option-evaluation"
-    to: "decision.robust-choice-identification"
+    from: #notesByName["planning.long-term-option-evaluation"].name
+    to: #notesByName["decision.robust-choice-identification"].name
     label: "supports"
   },
   {
-    from: "policy.policy-option-analysis"
-    to: "decision.multi-criteria-ranking"
+    from: #notesByName["policy.policy-option-analysis"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
     label: "supports"
   },
   {
-    from: "product.feature-prioritization"
-    to: "decision.multi-criteria-ranking"
+    from: #notesByName["product.feature-prioritization"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
     label: "supports"
   },
   {
-    from: "product.roadmap-planning"
-    to: "planning.long-term-option-evaluation"
+    from: #notesByName["product.roadmap-planning"].name
+    to: #notesByName["planning.long-term-option-evaluation"].name
     label: "supports"
   },
   {
-    from: "scenario.aggregation.policy"
-    to: "analysis.robustness.method"
+    from: #notesByName["scenario.aggregation.policy"].name
+    to: #notesByName["analysis.robustness.method"].name
     label: "references_analysis"
   },
   {
-    from: "scenario.constraints"
-    to: "model.validation"
+    from: #notesByName["scenario.constraints"].name
+    to: #notesByName["model.validation"].name
     label: "depends_on"
   },
   {
-    from: "scenario.isolation"
-    to: "example.hosting-choice"
+    from: #notesByName["scenario.isolation"].name
+    to: #notesByName["example.hosting-choice"].name
     label: "illustrated_by"
   },
   {
-    from: "scenario.isolation"
-    to: "example.platform-selection"
+    from: #notesByName["scenario.isolation"].name
+    to: #notesByName["example.platform-selection"].name
     label: "illustrated_by"
   },
   {
-    from: "strategy.investment-decision"
-    to: "decision.multi-criteria-ranking"
+    from: #notesByName["strategy.investment-decision"].name
+    to: #notesByName["decision.multi-criteria-ranking"].name
     label: "supports"
   },
   {
-    from: "system.extensibility.methods"
-    to: "mcda.electre"
+    from: #notesByName["system.extensibility.methods"].name
+    to: #notesByName["mcda.electre"].name
     label: "enables"
   },
   {
-    from: "system.extensibility.methods"
-    to: "mcda.promethee"
+    from: #notesByName["system.extensibility.methods"].name
+    to: #notesByName["mcda.promethee"].name
     label: "enables"
   },
   {
-    from: "system.extensibility.methods"
-    to: "mcda.topsis"
+    from: #notesByName["system.extensibility.methods"].name
+    to: #notesByName["mcda.topsis"].name
     label: "enables"
   },
   {
-    from: "system.extensibility.methods"
-    to: "mcda.vikor"
+    from: #notesByName["system.extensibility.methods"].name
+    to: #notesByName["mcda.vikor"].name
     label: "enables"
   },
   {
-    from: "technology.architecture-choice"
-    to: "infrastructure.system-design-selection"
+    from: #notesByName["technology.architecture-choice"].name
+    to: #notesByName["infrastructure.system-design-selection"].name
     label: "relates_to"
   },
   {
-    from: "ux.model.guidance"
-    to: "model.structure"
+    from: #notesByName["ux.model.guidance"].name
+    to: #notesByName["model.structure"].name
     label: "supports"
   },
   {
-    from: "vendor.supplier-selection"
-    to: "vendor.service-provider-comparison"
+    from: #notesByName["vendor.supplier-selection"].name
+    to: #notesByName["vendor.service-provider-comparison"].name
     label: "relates_to"
   },
 ]
