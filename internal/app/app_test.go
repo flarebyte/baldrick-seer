@@ -3,34 +3,65 @@ package app
 import (
 	"path/filepath"
 	"testing"
+
+	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
-func TestRunValidate(t *testing.T) {
-	t.Parallel()
+func assertAppResult(t *testing.T, result domain.CommandResult, wantCommandName domain.CommandName, wantConfigPath string) {
+	t.Helper()
 
-	got, err := RunValidate(ValidateRequest{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
-	})
-	if err != nil {
-		t.Fatalf("RunValidate() error = %v", err)
+	if result.CommandName != wantCommandName {
+		t.Fatalf("CommandName = %q, want %q", result.CommandName, wantCommandName)
 	}
 
-	if want := validateStubOutput; got.Stdout != want {
-		t.Fatalf("Stdout = %q, want %q", got.Stdout, want)
+	if result.ValidatedModel == nil {
+		t.Fatal("ValidatedModel = nil, want value")
+	}
+
+	if result.ValidatedModel.ConfigPath != wantConfigPath {
+		t.Fatalf("ConfigPath = %q, want %q", result.ValidatedModel.ConfigPath, wantConfigPath)
 	}
 }
 
-func TestRunReportGenerate(t *testing.T) {
+func TestAppFlows(t *testing.T) {
 	t.Parallel()
 
-	got, err := RunReportGenerate(ReportGenerateRequest{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
-	})
-	if err != nil {
-		t.Fatalf("RunReportGenerate() error = %v", err)
+	tests := []struct {
+		name            string
+		run             func(domain.CommandRequest) (domain.CommandResult, error)
+		wantCommandName domain.CommandName
+	}{
+		{
+			name:            "validate",
+			run:             RunValidate,
+			wantCommandName: domain.CommandNameValidate,
+		},
+		{
+			name:            "report generate",
+			run:             RunReportGenerate,
+			wantCommandName: domain.CommandNameReportGenerate,
+		},
 	}
 
-	if want := reportGenerateStubOutput; got.Stdout != want {
-		t.Fatalf("Stdout = %q, want %q", got.Stdout, want)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := tt.run(domain.CommandRequest{
+				CommandName: tt.wantCommandName,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+			})
+			if err != nil {
+				t.Fatalf("run() error = %v", err)
+			}
+
+			assertAppResult(
+				t,
+				got,
+				tt.wantCommandName,
+				filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue")),
+			)
+		})
 	}
 }

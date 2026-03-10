@@ -1,10 +1,9 @@
 package cli
 
 import (
-	"errors"
 	"io"
 
-	"github.com/flarebyte/baldrick-seer/internal/app"
+	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
 func Execute(args []string, stdout io.Writer, stderr io.Writer) int {
@@ -15,10 +14,10 @@ func Execute(args []string, stdout io.Writer, stderr io.Writer) int {
 
 	if err := cmd.Execute(); err != nil {
 		_, _ = io.WriteString(stderr, renderFailure(err))
-		return 1
+		return int(domain.ExitCodeForError(err))
 	}
 
-	return 0
+	return int(domain.ExitCodeSuccess)
 }
 
 func renderValidateSuccess() string {
@@ -34,14 +33,11 @@ func renderFailure(err error) string {
 }
 
 func failureMessage(err error) string {
-	switch {
-	case errors.Is(err, app.ErrConfigPathRequired):
-		return "config flag is required"
-	case errors.Is(err, app.ErrConfigPathDoesNotExist):
-		return "config path does not exist"
-	case errors.Is(err, app.ErrConfigPathIsDirectory):
-		return "config path is a directory"
-	default:
-		return "command failed"
+	if failure := domain.AsCommandFailure(err); failure != nil {
+		if len(failure.Diagnostics) > 0 && failure.Diagnostics[0].Message != "" {
+			return failure.Diagnostics[0].Message
+		}
 	}
+
+	return "command failed"
 }

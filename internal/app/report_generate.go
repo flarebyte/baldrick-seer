@@ -1,22 +1,12 @@
 package app
 
-const reportGenerateStubOutput = "report generate: ok\n"
+import (
+	"github.com/flarebyte/baldrick-seer/internal/domain"
+	"github.com/flarebyte/baldrick-seer/internal/pipeline"
+)
 
-type ReportGenerateRequest struct {
-	ConfigPath string
-}
+var reportGenerateRunner = pipeline.NewDefaultRunner()
 
-type ReportGenerateResponse struct {
-	Stdout string
-}
-
-func RunReportGenerate(req ReportGenerateRequest) (ReportGenerateResponse, error) {
-	_, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
-	if err != nil {
-		return ReportGenerateResponse{}, err
-	}
-
-	return ReportGenerateResponse{
-		Stdout: reportGenerateStubOutput,
-	}, nil
+func RunReportGenerate(req domain.CommandRequest) (domain.CommandResult, error) {
+	return reportGenerateRunner.RunReportGenerate(req)
 }

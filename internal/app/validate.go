@@ -1,22 +1,12 @@
 package app
 
-const validateStubOutput = "validate: ok\n"
+import (
+	"github.com/flarebyte/baldrick-seer/internal/domain"
+	"github.com/flarebyte/baldrick-seer/internal/pipeline"
+)
 
-type ValidateRequest struct {
-	ConfigPath string
-}
+var validateRunner = pipeline.NewDefaultRunner()
 
-type ValidateResponse struct {
-	Stdout string
-}
-
-func RunValidate(req ValidateRequest) (ValidateResponse, error) {
-	_, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
-	if err != nil {
-		return ValidateResponse{}, err
-	}
-
-	return ValidateResponse{
-		Stdout: validateStubOutput,
-	}, nil
+func RunValidate(req domain.CommandRequest) (domain.CommandResult, error) {
+	return validateRunner.RunValidate(req)
 }
