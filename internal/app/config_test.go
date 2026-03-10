@@ -20,6 +20,15 @@ func TestLoadConfigExistingFile(t *testing.T) {
 	}
 }
 
+func TestLoadConfigMissingPath(t *testing.T) {
+	t.Parallel()
+
+	_, err := LoadConfig(ConfigRequest{})
+	if err != ErrConfigPathRequired {
+		t.Fatalf("error = %v, want %v", err, ErrConfigPathRequired)
+	}
+}
+
 func TestLoadConfigMissingFile(t *testing.T) {
 	t.Parallel()
 

@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/flarebyte/baldrick-seer/internal/cli"
 )
 
 func main() {
-	if err := cli.NewRootCmd().Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	exitCode := cli.Execute(os.Args[1:], os.Stdout, os.Stderr)
+	if exitCode != 0 {
+		os.Exit(exitCode)
 	}
 }

@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	ErrConfigPathRequired     = errors.New("config flag is required")
 	ErrConfigPathDoesNotExist = errors.New("config path does not exist")
 	ErrConfigPathIsDirectory  = errors.New("config path is a directory")
 )
@@ -20,6 +21,10 @@ type ConfigResult struct {
 }
 
 func LoadConfig(req ConfigRequest) (ConfigResult, error) {
+	if req.Path == "" {
+		return ConfigResult{}, ErrConfigPathRequired
+	}
+
 	info, err := os.Stat(req.Path)
 	if err != nil {
 		if os.IsNotExist(err) {

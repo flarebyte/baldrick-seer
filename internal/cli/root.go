@@ -42,18 +42,17 @@ func newValidateCmd(run validateRunner) *cobra.Command {
 		Use:   "validate",
 		Short: "Validate the input model",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			response, err := run(app.ValidateRequest{ConfigPath: configPath})
+			_, err := run(app.ValidateRequest{ConfigPath: configPath})
 			if err != nil {
 				return err
 			}
 
-			_, err = cmd.OutOrStdout().Write([]byte(response.Stdout))
+			_, err = cmd.OutOrStdout().Write([]byte(renderValidateSuccess()))
 			return err
 		},
 	}
 
 	cmd.Flags().StringVar(&configPath, configFlagName, "", "Path to the config file")
-	_ = cmd.MarkFlagRequired(configFlagName)
 
 	return cmd
 }
@@ -70,18 +69,17 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 		Use:   "generate",
 		Short: "Generate a report",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			response, err := run(app.ReportGenerateRequest{ConfigPath: configPath})
+			_, err := run(app.ReportGenerateRequest{ConfigPath: configPath})
 			if err != nil {
 				return err
 			}
 
-			_, err = cmd.OutOrStdout().Write([]byte(response.Stdout))
+			_, err = cmd.OutOrStdout().Write([]byte(renderReportGenerateSuccess()))
 			return err
 		},
 	}
 
 	generateCmd.Flags().StringVar(&configPath, configFlagName, "", "Path to the config file")
-	_ = generateCmd.MarkFlagRequired(configFlagName)
 
 	reportCmd.AddCommand(generateCmd)
 
