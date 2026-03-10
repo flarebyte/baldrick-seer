@@ -27,7 +27,7 @@ modules: ["design"]
     name: "cli.output.machine"
     title: "Structured Output for Automation (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Provide machine-readable output such as JSON in addition to human-readable summaries."
+    markdown: "Provide machine-readable output such as JSON in addition to human-readable summaries, while keeping validation diagnostics distinct from successful ranking reports."
   }
   "cli.output.readability": {
     name: "cli.output.readability"
@@ -39,7 +39,7 @@ modules: ["design"]
     name: "call.validation.input-config"
     title: "Validate Input Config Call"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for validating an input configuration file before any decision analysis runs."
+    markdown: "Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation."
   }
   "call.validation.input-config.parse-args": {
     name: "call.validation.input-config.parse-args"
@@ -57,7 +57,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model"
     title: "Validate Config Model"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations."
+    markdown: "Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations. For the `validate` command, this is the terminal result of the command."
   }
   "call.validation.input-config.validate-model.check-structure": {
     name: "call.validation.input-config.validate-model.check-structure"
@@ -99,7 +99,7 @@ modules: ["design"]
     name: "call.reports.generate"
     title: "Generate Reports Call"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for generating reports from an input decision model."
+    markdown: "Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid."
   }
   "call.reports.generate.parse-args": {
     name: "call.reports.generate.parse-args"
@@ -117,7 +117,7 @@ modules: ["design"]
     name: "call.reports.generate.shared-validation"
     title: "Reuse Shared Validation Flow"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs."
+    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced."
   }
   "call.reports.generate.build-ahp-inputs": {
     name: "call.reports.generate.build-ahp-inputs"
@@ -165,7 +165,7 @@ modules: ["design"]
     name: "call.reports.generate.render-output"
     title: "Render Requested Reports"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Render the requested markdown, JSON, or CSV reports from the computed ranking results."
+    markdown: "Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering."
   }
   "call.reports.generate.render-output.render-markdown": {
     name: "call.reports.generate.render-output.render-markdown"
@@ -177,7 +177,7 @@ modules: ["design"]
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails."
+    markdown: "Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report."
   }
   "call.reports.generate.render-output.render-csv": {
     name: "call.reports.generate.render-output.render-csv"

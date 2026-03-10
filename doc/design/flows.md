@@ -10,18 +10,18 @@ Graph view for generating reports from a validated input config.
 
 Text graph for the report-generation call chain, reusing the shared validation path.
 
-- <a id="graph-node-call-reports-generate"></a> Generate Reports Call: Top-level CLI call flow for generating reports from an input decision model.
+- <a id="graph-node-call-reports-generate"></a> Generate Reports Call: Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid.
   - <a id="graph-node-call-reports-generate-parse-args"></a> Parse Report Arguments: Parse CLI arguments for report generation, including the config path, requested report names, and output options.
     - <a id="graph-node-call-reports-generate-select-reports"></a> Select Requested Reports: Resolve which report definitions should run, applying any CLI filtering by report name or output target.
-      - <a id="graph-node-call-reports-generate-shared-validation"></a> Reuse Shared Validation Flow: Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
+      - <a id="graph-node-call-reports-generate-shared-validation"></a> Reuse Shared Validation Flow: Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced.
         - <a id="graph-node-call-reports-generate-build-ahp-inputs"></a> Build AHP Inputs: Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights.
           - <a id="graph-node-call-reports-generate-compute-ahp-weights"></a> Compute Criteria Weights with AHP: Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process.
             - <a id="graph-node-call-reports-generate-select-ranking-strategy"></a> Select Ranking Strategy: Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
               - <a id="graph-node-call-reports-generate-build-topsis-inputs"></a> Build TOPSIS Inputs: Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS.
                 - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS.
-                  - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+                  - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering.
                     - <a id="graph-node-call-reports-generate-render-output-render-csv"></a> Render CSV Report: Render flat tabular CSV output for spreadsheet analysis and data exchange.
-                    - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+                    - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
                     - <a id="graph-node-call-reports-generate-render-output-render-markdown"></a> Render Markdown Report: Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
               - <a id="graph-node-call-reports-generate-future-rank-electre"></a> Future Option: Rank with ELECTRE: Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS.
               - <a id="graph-node-call-reports-generate-future-rank-topsis-sensitivity"></a> Future Option: TOPSIS with Sensitivity Analysis: Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness.
@@ -30,7 +30,7 @@ Text graph for the report-generation call chain, reusing the shared validation p
 
 #### Generate Reports Call
 
-Top-level CLI call flow for generating reports from an input decision model.
+Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid.
 
 #### Build AHP Inputs
 
@@ -62,7 +62,7 @@ Use the validated evaluations and scenario-local criterion weights derived with 
 
 #### Render Requested Reports
 
-Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering.
 
 #### Render CSV Report
 
@@ -70,7 +70,7 @@ Render flat tabular CSV output for spreadsheet analysis and data exchange.
 
 #### Render JSON Report
 
-Render machine-readable JSON output for automation, downstream processing, and reproducibility.
+Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
 
 #### Render Markdown Report
 
@@ -86,7 +86,7 @@ Resolve which report definitions should run, applying any CLI filtering by repor
 
 #### Reuse Shared Validation Flow
 
-Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
+Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced.
 
 #### Load CUE Config
 
@@ -94,7 +94,7 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data. For the `validate` command, this is the terminal result of the command.
 
 ## Validation flows
 
@@ -104,10 +104,10 @@ Graph view for validating an input config file.
 
 Text graph for the validate-config call chain.
 
-- <a id="graph-node-call-validation-input-config"></a> Validate Input Config Call: Top-level CLI call flow for validating an input configuration file before any decision analysis runs.
+- <a id="graph-node-call-validation-input-config"></a> Validate Input Config Call: Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation.
   - <a id="graph-node-call-validation-input-config-parse-args"></a> Parse Validation Arguments: Parse CLI arguments for the validate command, including the config path and output flags.
     - <a id="graph-node-call-validation-input-config-load-cue-config"></a> Load CUE Config: Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
-      - <a id="graph-node-call-validation-input-config-validate-model"></a> Validate Config Model: Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+      - <a id="graph-node-call-validation-input-config-validate-model"></a> Validate Config Model: Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data. For the `validate` command, this is the terminal result of the command.
         - <a id="graph-node-call-validation-input-config-validate-model-check-structure"></a> Check Config Structure: Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
           - <a id="graph-node-call-validation-input-config-validate-model-check-references"></a> Check Named References: Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
             - <a id="graph-node-call-validation-input-config-validate-model-check-pairwise-comparisons"></a> Check Pairwise Comparisons: Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair.
@@ -119,7 +119,7 @@ Text graph for the validate-config call chain.
 
 #### Validate Input Config Call
 
-Top-level CLI call flow for validating an input configuration file before any decision analysis runs.
+Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation.
 
 #### Load CUE Config
 
@@ -131,7 +131,7 @@ Parse CLI arguments for the validate command, including the config path and outp
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
+Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data. For the `validate` command, this is the terminal result of the command.
 
 #### Check Scenario Constraints
 

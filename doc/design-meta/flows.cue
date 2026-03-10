@@ -88,7 +88,7 @@ notes: [
     name: "call.validation.input-config"
     title: "Validate Input Config Call"
     labels: ["call", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for validating an input configuration file before any decision analysis runs."
+    markdown: "Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation."
   },
   {
     name: "call.validation.input-config.parse-args"
@@ -106,7 +106,7 @@ notes: [
     name: "call.validation.input-config.validate-model"
     title: "Validate Config Model"
     labels: ["call", "flow", "implementation"]
-    markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data."
+    markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data. For the `validate` command, this is the terminal result of the command."
   },
   {
     name: "call.validation.input-config.validate-model.check-structure"
@@ -148,7 +148,7 @@ notes: [
     name: "call.reports.generate"
     title: "Generate Reports Call"
     labels: ["call", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for generating reports from an input decision model."
+    markdown: "Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid."
   },
   {
     name: "call.reports.generate.parse-args"
@@ -166,7 +166,7 @@ notes: [
     name: "call.reports.generate.shared-validation"
     title: "Reuse Shared Validation Flow"
     labels: ["call", "flow", "implementation"]
-    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs."
+    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced."
   },
   {
     name: "call.reports.generate.build-ahp-inputs"
@@ -214,7 +214,7 @@ notes: [
     name: "call.reports.generate.render-output"
     title: "Render Requested Reports"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render the requested markdown, JSON, or CSV reports from the computed ranking results."
+    markdown: "Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering."
   },
   {
     name: "call.reports.generate.render-output.render-markdown"
@@ -226,7 +226,7 @@ notes: [
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render machine-readable JSON output for automation, downstream processing, and reproducibility."
+    markdown: "Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report."
   },
   {
     name: "call.reports.generate.render-output.render-csv"

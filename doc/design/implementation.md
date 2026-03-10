@@ -186,7 +186,7 @@ CLI execution path for generating reports after the shared validation stage.
 
 #### Generate Reports Call
 
-Top-level CLI call flow for generating reports from an input decision model.
+Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid.
 
 #### Build AHP Inputs
 
@@ -218,7 +218,7 @@ Use the validated evaluations and scenario-local criterion weights derived with 
 
 #### Render Requested Reports
 
-Render the requested markdown, JSON, or CSV reports from the computed ranking results.
+Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering.
 
 #### Render CSV Report
 
@@ -226,7 +226,7 @@ Render flat tabular CSV output for spreadsheet analysis and data exchange.
 
 #### Render JSON Report
 
-Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails.
+Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
 
 #### Render Markdown Report
 
@@ -242,7 +242,7 @@ Resolve which report definitions should run, applying any CLI filtering by repor
 
 #### Reuse Shared Validation Flow
 
-Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs.
+Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced.
 
 #### Load CUE Config
 
@@ -250,7 +250,7 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
+Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations. For the `validate` command, this is the terminal result of the command.
 
 ## User experience and output
 
@@ -264,7 +264,7 @@ Add post-ranking analysis that tests how changes in criteria importance or scena
 
 #### Structured Output for Automation (v1)
 
-Provide machine-readable output such as JSON in addition to human-readable summaries.
+Provide machine-readable output such as JSON in addition to human-readable summaries, while keeping validation diagnostics distinct from successful ranking reports.
 
 #### Readable CLI Output (v1)
 
@@ -294,7 +294,7 @@ Early CLI execution path for reading and validating an input config file.
 
 #### Validate Input Config Call
 
-Top-level CLI call flow for validating an input configuration file before any decision analysis runs.
+Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation.
 
 #### Load CUE Config
 
@@ -306,7 +306,7 @@ Parse CLI arguments for the validate command, including the config path and outp
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
+Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations. For the `validate` command, this is the terminal result of the command.
 
 #### Check Scenario Constraints
 
