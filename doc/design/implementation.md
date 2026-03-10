@@ -98,15 +98,19 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, boolean constraint operators, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, compatible constraint operator/value combinations, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 
 Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth.
 
+#### Constraint Semantics (v1)
+
+Keep the `ScenarioConstraint` shape as `criterionName`, `operator`, and `value`, but interpret it by criterion type. Number criteria accept numeric values with `<=`, `>=`, `=`, or `!=` for threshold-style rules. Ordinal criteria accept integer values within the defined scale with `<=`, `>=`, `=`, or `!=`, following the criterion's ordering. Boolean criteria accept only `=` or `!=` with `true` or `false`; comparison operators such as `<=` and `>=` are invalid.
+
 #### Constraint Enforcement (v1)
 
-Allow scenarios to define hard requirements that can exclude alternatives before ranking.
+Allow scenarios to define hard requirements that can exclude alternatives before ranking, using constraint operators and values that remain compatible with each referenced criterion type.
 
 #### Scenario Isolation (v1)
 
@@ -302,7 +306,7 @@ Run structural and graph validation on the loaded config and emit diagnostics wi
 
 #### Check Scenario Constraints
 
-Check that scenario constraints target known criteria and use operators and values compatible with the referenced criterion types, including requiring equality-only constraints for boolean criteria.
+Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error.
 
 #### Check Evaluation Coverage
 

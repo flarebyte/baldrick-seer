@@ -87,7 +87,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that scenario constraints target known criteria and use operators and values compatible with the referenced criterion types, including requiring equality-only constraints for boolean criteria."
+    markdown: "Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error."
   }
   "call.validation.input-config.validate-model.check-report-definitions": {
     name: "call.validation.input-config.validate-model.check-report-definitions"
@@ -214,6 +214,12 @@ modules: ["design"]
     title: "Criterion Value Normalization (v1)"
     labels: ["design", "implementation", "method", "validation", "v1"]
     markdown: "Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`."
+  }
+  "scenario.constraint-semantics.v1": {
+    name: "scenario.constraint-semantics.v1"
+    title: "Constraint Semantics (v1)"
+    labels: ["design", "implementation", "validation", "v1"]
+    markdown: "Keep the `ScenarioConstraint` shape as `criterionName`, `operator`, and `value`, but interpret it by criterion type. Number criteria accept numeric values with `<=`, `>=`, `=`, or `!=` for threshold-style rules. Ordinal criteria accept integer values within the defined scale with `<=`, `>=`, `=`, or `!=`, following the criterion's ordering. Boolean criteria accept only `=` or `!=` with `true` or `false`; comparison operators such as `<=` and `>=` are invalid."
   }
   "decision.explainability": {
     name: "decision.explainability"
@@ -459,7 +465,7 @@ modules: ["design"]
     name: "model.validation"
     title: "Model Validation (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, boolean constraint operators, and alternative evaluation coverage before computation."
+    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, compatible constraint operator/value combinations, and alternative evaluation coverage before computation."
   }
   "planning.lifecycle-decision": {
     name: "planning.lifecycle-decision"
@@ -501,7 +507,7 @@ modules: ["design"]
     name: "scenario.constraints"
     title: "Constraint Enforcement (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Allow scenarios to define hard requirements that can exclude alternatives before ranking."
+    markdown: "Allow scenarios to define hard requirements that can exclude alternatives before ranking, using constraint operators and values that remain compatible with each referenced criterion type."
   }
   "scenario.isolation": {
     name: "scenario.isolation"
@@ -751,6 +757,7 @@ reports: [
               #notesByName["model.structure"].name,
               #notesByName["model.validation"].name,
               #notesByName["scenario.aggregation.policy"].name,
+              #notesByName["scenario.constraint-semantics.v1"].name,
               #notesByName["scenario.constraints"].name,
               #notesByName["scenario.isolation"].name,
             ]
@@ -782,6 +789,7 @@ reports: [
               #notesByName["model.structure"].name,
               #notesByName["model.validation"].name,
               #notesByName["scenario.aggregation.policy"].name,
+              #notesByName["scenario.constraint-semantics.v1"].name,
               #notesByName["scenario.constraints"].name,
               #notesByName["scenario.isolation"].name,
               #notesByName["system.extensibility.methods"].name,
@@ -1180,6 +1188,7 @@ notes: [
   #notesByName["product.feature-prioritization"],
   #notesByName["product.roadmap-planning"],
   #notesByName["scenario.aggregation.policy"],
+  #notesByName["scenario.constraint-semantics.v1"],
   #notesByName["scenario.constraints"],
   #notesByName["scenario.isolation"],
   #notesByName["stack.cli.cobra"],
@@ -1500,6 +1509,11 @@ relationships: [
     from: #notesByName["criteria.value-normalization.v1"].name
     to: #notesByName["mcda.topsis"].name
     label: "supports"
+  },
+  {
+    from: #notesByName["scenario.constraint-semantics.v1"].name
+    to: #notesByName["scenario.constraints"].name
+    label: "refines"
   },
   {
     from: #notesByName["criteria.scale-guidance.ordinal"].name

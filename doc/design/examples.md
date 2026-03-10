@@ -411,7 +411,10 @@ export interface ScenarioConstraint {
   criterionName: Name;
   operator: "<=" | ">=" | "=" | "!=";
   /**
-   * For boolean criteria in v1, only equality operators are valid.
+   * Constraint values must match the referenced criterion type in v1.
+   * - number criteria: numeric values with <=, >=, =, or !=
+   * - ordinal criteria: integer values with <=, >=, =, or !=
+   * - boolean criteria: true/false values with = or != only
    */
   value: number | boolean;
   justification?: string;
