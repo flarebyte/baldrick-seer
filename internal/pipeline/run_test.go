@@ -96,18 +96,34 @@ func (f *fakeReportRenderer) RenderReports(RenderReportsInput) (RenderReportsOut
 	}, nil
 }
 
+func newFakeRunner(order *[]string) Runner {
+	return Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: order},
+		ModelValidator:     &fakeModelValidator{recorder: order},
+		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: order},
+		ScenarioRanker:     &fakeScenarioRanker{recorder: order},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: order},
+		ReportRenderer:     &fakeReportRenderer{recorder: order},
+	}
+}
+
+func assertValidatedModelPath(t *testing.T, result domain.CommandResult, wantPath string) {
+	t.Helper()
+
+	if result.ValidatedModel == nil {
+		t.Fatal("ValidatedModel = nil, want value")
+	}
+
+	if result.ValidatedModel.ConfigPath != wantPath {
+		t.Fatalf("ConfigPath = %q, want %q", result.ValidatedModel.ConfigPath, wantPath)
+	}
+}
+
 func TestRunValidateStageOrdering(t *testing.T) {
 	t.Parallel()
 
 	order := []string{}
-	runner := Runner{
-		ConfigLoader:       &fakeConfigLoader{recorder: &order},
-		ModelValidator:     &fakeModelValidator{recorder: &order},
-		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
-		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
-		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
-		ReportRenderer:     &fakeReportRenderer{recorder: &order},
-	}
+	runner := newFakeRunner(&order)
 
 	_, err := runner.RunValidate(domain.CommandRequest{
 		CommandName: domain.CommandNameValidate,
@@ -128,14 +144,7 @@ func TestRunReportGenerateStageOrdering(t *testing.T) {
 	t.Parallel()
 
 	order := []string{}
-	runner := Runner{
-		ConfigLoader:       &fakeConfigLoader{recorder: &order},
-		ModelValidator:     &fakeModelValidator{recorder: &order},
-		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
-		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
-		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
-		ReportRenderer:     &fakeReportRenderer{recorder: &order},
-	}
+	runner := newFakeRunner(&order)
 
 	_, err := runner.RunReportGenerate(domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
@@ -275,29 +284,19 @@ func TestStageIOContractsCanBeConstructed(t *testing.T) {
 func TestRunReportGenerateIsDeterministic(t *testing.T) {
 	t.Parallel()
 
-	buildRunner := func() Runner {
-		order := []string{}
-		return Runner{
-			ConfigLoader:       &fakeConfigLoader{recorder: &order},
-			ModelValidator:     &fakeModelValidator{recorder: &order},
-			CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
-			ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
-			ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
-			ReportRenderer:     &fakeReportRenderer{recorder: &order},
-		}
-	}
-
 	command := domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
 	}
 
-	first, err := buildRunner().RunReportGenerate(command)
+	firstOrder := []string{}
+	first, err := newFakeRunner(&firstOrder).RunReportGenerate(command)
 	if err != nil {
 		t.Fatalf("first RunReportGenerate() error = %v", err)
 	}
 
-	second, err := buildRunner().RunReportGenerate(command)
+	secondOrder := []string{}
+	second, err := newFakeRunner(&secondOrder).RunReportGenerate(command)
 	if err != nil {
 		t.Fatalf("second RunReportGenerate() error = %v", err)
 	}
@@ -307,49 +306,48 @@ func TestRunReportGenerateIsDeterministic(t *testing.T) {
 	}
 }
 
-func TestRunValidateUsesFixtureDrivenConfigPath(t *testing.T) {
+func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 	t.Parallel()
 
-	runner := NewDefaultRunner()
-	command := domain.CommandRequest{
-		CommandName: domain.CommandNameValidate,
-		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+	tests := []struct {
+		name    string
+		command domain.CommandRequest
+		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+	}{
+		{
+			name: "validate",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+			},
+			run: Runner.RunValidate,
+		},
+		{
+			name: "report generate",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+			},
+			run: Runner.RunReportGenerate,
+		},
 	}
 
-	got, err := runner.RunValidate(command)
-	if err != nil {
-		t.Fatalf("RunValidate() error = %v", err)
-	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	if got.ValidatedModel == nil {
-		t.Fatal("ValidatedModel = nil, want value")
-	}
+			got, err := tt.run(NewDefaultRunner(), tt.command)
+			if err != nil {
+				t.Fatalf("run() error = %v", err)
+			}
 
-	if want := filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue")); got.ValidatedModel.ConfigPath != want {
-		t.Fatalf("ConfigPath = %q, want %q", got.ValidatedModel.ConfigPath, want)
-	}
-}
-
-func TestRunReportGenerateUsesFixtureDrivenConfigPath(t *testing.T) {
-	t.Parallel()
-
-	runner := NewDefaultRunner()
-	command := domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
-	}
-
-	got, err := runner.RunReportGenerate(command)
-	if err != nil {
-		t.Fatalf("RunReportGenerate() error = %v", err)
-	}
-
-	if got.ValidatedModel == nil {
-		t.Fatal("ValidatedModel = nil, want value")
-	}
-
-	if want := filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue")); got.ValidatedModel.ConfigPath != want {
-		t.Fatalf("ConfigPath = %q, want %q", got.ValidatedModel.ConfigPath, want)
+			assertValidatedModelPath(
+				t,
+				got,
+				filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue")),
+			)
+		})
 	}
 }
 
