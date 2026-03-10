@@ -1481,6 +1481,16 @@ relationships: [
     label: "documents_method"
   },
   {
+    from: #notesByName["criteria.value-types.v1"].name
+    to: #notesByName["model.structure"].name
+    label: "refines"
+  },
+  {
+    from: #notesByName["criteria.scale-guidance.ordinal"].name
+    to: #notesByName["model.validation"].name
+    label: "supports"
+  },
+  {
     from: #notesByName["mcda.general"].name
     to: #notesByName["mcda.ahp"].name
     label: "includes_method"
@@ -1499,6 +1509,21 @@ relationships: [
     from: #notesByName["mcda.general"].name
     to: #notesByName["mcda.topsis"].name
     label: "includes_method"
+  },
+  {
+    from: #notesByName["mcda.topsis"].name
+    to: #notesByName["scoring.number-normalization.v1"].name
+    label: "uses_method"
+  },
+  {
+    from: #notesByName["mcda.topsis"].name
+    to: #notesByName["scoring.ordinal-normalization.v1"].name
+    label: "uses_method"
+  },
+  {
+    from: #notesByName["mcda.topsis"].name
+    to: #notesByName["scoring.boolean-normalization.v1"].name
+    label: "uses_method"
   },
   {
     from: #notesByName["mcda.general"].name

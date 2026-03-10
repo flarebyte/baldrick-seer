@@ -130,13 +130,13 @@ notes: [
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
     title: "Check Evaluation Coverage"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria."
+    markdown: "Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans."
   },
   {
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types."
+    markdown: "Check that scenario constraints target known criteria and use operators and values compatible with the referenced criterion types, including requiring equality-only constraints for boolean criteria."
   },
   {
     name: "call.validation.input-config.validate-model.check-report-definitions"

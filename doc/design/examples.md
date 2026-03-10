@@ -267,7 +267,11 @@ export interface CriterionDefinition {
   description?: string;
   polarity: CriterionPolarity;
   unit?: string;
-  valueType?: "number" | "ordinal" | "boolean" | "text";
+  valueType?: "number" | "ordinal" | "boolean";
+  /**
+   * For ordinal criteria in v1, document the meaning of each integer level,
+   * for example "1=poor, 2=fair, 3=good, 4=excellent".
+   */
   scaleGuidance?: string;
 }
 
@@ -362,8 +366,7 @@ export interface AlternativeScenarioEvaluation {
 export type CriterionValue =
   | NumericCriterionValue
   | BooleanCriterionValue
-  | OrdinalCriterionValue
-  | TextCriterionValue;
+  | OrdinalCriterionValue;
 
 export interface NumericCriterionValue {
   kind: "number";
@@ -382,15 +385,11 @@ export interface BooleanCriterionValue {
 
 export interface OrdinalCriterionValue {
   kind: "ordinal";
+  /**
+   * Ordinal values are integer levels in v1.
+   */
   value: number;
   label?: string;
-  source?: "human" | "ai" | "hybrid" | "measured" | "imported";
-  justification?: string;
-}
-
-export interface TextCriterionValue {
-  kind: "text";
-  value: string;
   source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
 }
@@ -403,7 +402,10 @@ export interface EvidenceRef {
 export interface ScenarioConstraint {
   criterionName: Name;
   operator: "<=" | ">=" | "=" | "!=";
-  value: number | boolean | string;
+  /**
+   * For boolean criteria in v1, only equality operators are valid.
+   */
+  value: number | boolean;
   justification?: string;
 }
 

@@ -40,6 +40,18 @@ Rank alternatives by their distance from an ideal best and an ideal worst soluti
 
 Identify a compromise solution that balances group utility and individual regret.
 
+#### Boolean Criterion Scoring (v1)
+
+Normalize boolean criterion values before scoring by mapping `true` to `1` and `false` to `0`. Criterion polarity determines whether `true` or `false` is preferred in the ranking.
+
+#### Numeric Criterion Scoring (v1)
+
+Treat numeric criterion values as measurable quantities used directly in the decision matrix. Criterion polarity determines whether higher or lower values are preferred during normalization and ranking.
+
+#### Ordinal Criterion Scoring (v1)
+
+Treat ordinal criterion values as ordered integer levels used numerically in the decision matrix. Higher integers represent a higher level of the criterion, polarity determines desirability, and ordinal criteria should include `scaleGuidance`.
+
 ## Modeling terms
 
 Important concepts used to describe the input model and its validation rules.
@@ -49,6 +61,14 @@ Important concepts used to describe the input model and its validation rules.
 #### Clear Representation of Pairwise Judgments (v1)
 
 Represent pairwise comparisons explicitly with named criteria and a single canonical direction, using one field for the more important criterion and one field for the less important criterion, so humans and AI can validate and generate exactly one comparison for each unordered criterion pair.
+
+#### Document Ordinal Scales (v1)
+
+Require ordinal criteria to document their scale with `scaleGuidance`, so each integer level has a clear ordered meaning before scoring.
+
+#### Supported Criterion Value Types (v1)
+
+Support only three criterion value types in v1: number, ordinal, and boolean. Text criterion values are not part of the v1 model.
 
 #### Human and AI Friendly Input Format (v1)
 
@@ -68,7 +88,7 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, ordinal scale documentation, boolean constraint operators, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 
