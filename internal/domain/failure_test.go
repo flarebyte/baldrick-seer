@@ -83,3 +83,11 @@ func TestFailureCarriesWrappedError(t *testing.T) {
 		t.Fatalf("Error() = %q, want %q", got, want)
 	}
 }
+
+func TestAsCommandFailureReturnsNilForUnknownError(t *testing.T) {
+	t.Parallel()
+
+	if got := AsCommandFailure(errors.New("plain")); got != nil {
+		t.Fatalf("AsCommandFailure() = %#v, want nil", got)
+	}
+}
