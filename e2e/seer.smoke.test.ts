@@ -7,16 +7,26 @@ async function readGolden(name: string): Promise<string> {
   return Bun.file(`testdata/golden/${name}`).text();
 }
 
+async function runSeer(args: string[]) {
+  const proc = Bun.spawn([binary, ...args], {
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+
+  return { exitCode, stdout, stderr };
+}
+
 describe('seer CLI smoke test', () => {
   test('runs validate', async () => {
-    const proc = Bun.spawn([binary, 'validate', '--config', config], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    const { exitCode, stdout, stderr } = await runSeer([
+      'validate',
+      '--config',
+      config,
+    ]);
 
     expect(exitCode).toBe(0);
     expect(stdout).toBe(await readGolden('validate_success.stdout.golden'));
@@ -24,14 +34,12 @@ describe('seer CLI smoke test', () => {
   });
 
   test('runs report generate', async () => {
-    const proc = Bun.spawn([binary, 'report', 'generate', '--config', config], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    const { exitCode, stdout, stderr } = await runSeer([
+      'report',
+      'generate',
+      '--config',
+      config,
+    ]);
 
     expect(exitCode).toBe(0);
     expect(stdout).toBe(
@@ -41,14 +49,7 @@ describe('seer CLI smoke test', () => {
   });
 
   test('fails without config', async () => {
-    const proc = Bun.spawn([binary, 'validate'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-
-    const stdout = await new Response(proc.stdout).text();
-    const stderr = await new Response(proc.stderr).text();
-    const exitCode = await proc.exited;
+    const { exitCode, stdout, stderr } = await runSeer(['validate']);
 
     expect(exitCode).toBe(1);
     expect(stdout).toBe('');
@@ -56,26 +57,12 @@ describe('seer CLI smoke test', () => {
   });
 
   test('is deterministic across repeated runs', async () => {
-    const proc1 = Bun.spawn([binary, 'validate', '--config', config], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
-    const proc2 = Bun.spawn([binary, 'validate', '--config', config], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
+    const first = await runSeer(['validate', '--config', config]);
+    const second = await runSeer(['validate', '--config', config]);
 
-    const stdout1 = await new Response(proc1.stdout).text();
-    const stderr1 = await new Response(proc1.stderr).text();
-    const exitCode1 = await proc1.exited;
-
-    const stdout2 = await new Response(proc2.stdout).text();
-    const stderr2 = await new Response(proc2.stderr).text();
-    const exitCode2 = await proc2.exited;
-
-    expect(exitCode1).toBe(0);
-    expect(exitCode2).toBe(0);
-    expect(stdout1).toBe(stdout2);
-    expect(stderr1).toBe(stderr2);
+    expect(first.exitCode).toBe(0);
+    expect(second.exitCode).toBe(0);
+    expect(first.stdout).toBe(second.stdout);
+    expect(first.stderr).toBe(second.stderr);
   });
 });
