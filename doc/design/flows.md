@@ -111,7 +111,7 @@ Text graph for the validate-config call chain.
         - <a id="graph-node-call-validation-input-config-validate-model-check-structure"></a> Check Config Structure: Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
           - <a id="graph-node-call-validation-input-config-validate-model-check-references"></a> Check Named References: Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
             - <a id="graph-node-call-validation-input-config-validate-model-check-pairwise-comparisons"></a> Check Pairwise Comparisons: Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair.
-              - <a id="graph-node-call-validation-input-config-validate-model-check-evaluation-coverage"></a> Check Evaluation Coverage: Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans.
+              - <a id="graph-node-call-validation-input-config-validate-model-check-evaluation-coverage"></a> Check Evaluation Coverage: Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values.
                 - <a id="graph-node-call-validation-input-config-validate-model-check-constraints"></a> Check Scenario Constraints: Check that scenario constraints target known criteria and use operators and values compatible with the referenced criterion types, including requiring equality-only constraints for boolean criteria.
                   - <a id="graph-node-call-validation-input-config-validate-model-check-report-definitions"></a> Check Report Definitions: Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing.
 
@@ -139,7 +139,7 @@ Check that scenario constraints target known criteria and use operators and valu
 
 #### Check Evaluation Coverage
 
-Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans.
+Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values.
 
 #### Check Pairwise Comparisons
 

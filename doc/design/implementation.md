@@ -72,6 +72,10 @@ Require ordinal criteria to document their scale with `scaleGuidance`, so each i
 
 Keep each criterion semantically stable across scenarios even when its importance changes.
 
+#### Criterion Value Normalization (v1)
+
+Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
+
 #### Supported Criterion Value Types (v1)
 
 Support only three criterion value types in v1: number, ordinal, and boolean. Text criterion values are not part of the v1 model.
@@ -94,7 +98,7 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, ordinal scale documentation, boolean constraint operators, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, boolean constraint operators, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 
@@ -125,6 +129,10 @@ Evaluate how stable a decision remains when assumptions, scenarios, or parameter
 #### Sensitivity Analysis
 
 Evaluate how changes in weights or inputs affect the ranking of alternatives.
+
+#### Criterion Value Normalization (v1)
+
+Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
 
 #### Analytic Hierarchy Process (AHP)
 
@@ -298,7 +306,7 @@ Check that scenario constraints target known criteria and use operators and valu
 
 #### Check Evaluation Coverage
 
-Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans.
+Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values.
 
 #### Check Pairwise Comparisons
 

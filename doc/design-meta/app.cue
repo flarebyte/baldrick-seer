@@ -81,7 +81,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
     title: "Check Evaluation Coverage"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans."
+    markdown: "Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values."
   }
   "call.validation.input-config.validate-model.check-constraints": {
     name: "call.validation.input-config.validate-model.check-constraints"
@@ -208,6 +208,12 @@ modules: ["design"]
     title: "Document Ordinal Scales (v1)"
     labels: ["design", "implementation", "validation", "v1"]
     markdown: "Require ordinal criteria to document their scale with `scaleGuidance`, so each integer level has a clear ordered meaning before scoring."
+  }
+  "criteria.value-normalization.v1": {
+    name: "criteria.value-normalization.v1"
+    title: "Criterion Value Normalization (v1)"
+    labels: ["design", "implementation", "method", "validation", "v1"]
+    markdown: "Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`."
   }
   "decision.explainability": {
     name: "decision.explainability"
@@ -453,7 +459,7 @@ modules: ["design"]
     name: "model.validation"
     title: "Model Validation (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, ordinal scale documentation, boolean constraint operators, and alternative evaluation coverage before computation."
+    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, boolean constraint operators, and alternative evaluation coverage before computation."
   }
   "planning.lifecycle-decision": {
     name: "planning.lifecycle-decision"
@@ -719,6 +725,7 @@ reports: [
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
               #notesByName["mcda.topsis"].name,
+              #notesByName["criteria.value-normalization.v1"].name,
               #notesByName["scoring.number-normalization.v1"].name,
               #notesByName["scoring.ordinal-normalization.v1"].name,
               #notesByName["scoring.boolean-normalization.v1"].name,
@@ -737,6 +744,7 @@ reports: [
               #notesByName["criteria.pairwise.clarity"].name,
               #notesByName["criteria.value-types.v1"].name,
               #notesByName["criteria.scale-guidance.ordinal"].name,
+              #notesByName["criteria.value-normalization.v1"].name,
               #notesByName["input.format"].name,
               #notesByName["model.documentation"].name,
               #notesByName["model.incomplete.data"].name,
@@ -767,6 +775,7 @@ reports: [
               #notesByName["criteria.semantic.consistency"].name,
               #notesByName["criteria.value-types.v1"].name,
               #notesByName["criteria.scale-guidance.ordinal"].name,
+              #notesByName["criteria.value-normalization.v1"].name,
               #notesByName["input.format"].name,
               #notesByName["model.documentation"].name,
               #notesByName["model.incomplete.data"].name,
@@ -893,6 +902,7 @@ reports: [
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
               #notesByName["mcda.topsis"].name,
+              #notesByName["criteria.value-normalization.v1"].name,
               #notesByName["scoring.number-normalization.v1"].name,
               #notesByName["scoring.ordinal-normalization.v1"].name,
               #notesByName["scoring.boolean-normalization.v1"].name,
@@ -1121,6 +1131,7 @@ notes: [
   #notesByName["criteria.pairwise.clarity"],
   #notesByName["criteria.value-types.v1"],
   #notesByName["criteria.scale-guidance.ordinal"],
+  #notesByName["criteria.value-normalization.v1"],
   #notesByName["criteria.semantic.consistency"],
   #notesByName["decision.explainability"],
   #notesByName["decision.multi-criteria-ranking"],
@@ -1484,6 +1495,11 @@ relationships: [
     from: #notesByName["criteria.value-types.v1"].name
     to: #notesByName["model.structure"].name
     label: "refines"
+  },
+  {
+    from: #notesByName["criteria.value-normalization.v1"].name
+    to: #notesByName["mcda.topsis"].name
+    label: "supports"
   },
   {
     from: #notesByName["criteria.scale-guidance.ordinal"].name

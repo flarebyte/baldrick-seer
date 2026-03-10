@@ -16,6 +16,10 @@ Evaluate how stable a decision remains when assumptions, scenarios, or parameter
 
 Evaluate how changes in weights or inputs affect the ranking of alternatives.
 
+#### Criterion Value Normalization (v1)
+
+Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
+
 #### Analytic Hierarchy Process (AHP)
 
 Derive criterion weights within a scenario from pairwise criterion comparisons and turn qualitative judgments into a consistent numerical weighting system.
@@ -66,6 +70,10 @@ Represent pairwise comparisons explicitly with named criteria and a single canon
 
 Require ordinal criteria to document their scale with `scaleGuidance`, so each integer level has a clear ordered meaning before scoring.
 
+#### Criterion Value Normalization (v1)
+
+Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
+
 #### Supported Criterion Value Types (v1)
 
 Support only three criterion value types in v1: number, ordinal, and boolean. Text criterion values are not part of the v1 model.
@@ -88,7 +96,7 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, ordinal scale documentation, boolean constraint operators, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, boolean constraint operators, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 

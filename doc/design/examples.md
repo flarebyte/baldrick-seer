@@ -370,6 +370,10 @@ export type CriterionValue =
 
 export interface NumericCriterionValue {
   kind: "number";
+  /**
+   * Numeric values represent measurable quantities and are used directly in
+   * the decision matrix in v1.
+   */
   value: number;
   estimated?: boolean;
   source?: "human" | "ai" | "hybrid" | "measured" | "imported";
@@ -378,6 +382,9 @@ export interface NumericCriterionValue {
 
 export interface BooleanCriterionValue {
   kind: "boolean";
+  /**
+   * Boolean values are normalized before scoring in v1: true = 1, false = 0.
+   */
   value: boolean;
   source?: "human" | "ai" | "hybrid" | "measured" | "imported";
   justification?: string;
@@ -386,7 +393,8 @@ export interface BooleanCriterionValue {
 export interface OrdinalCriterionValue {
   kind: "ordinal";
   /**
-   * Ordinal values are integer levels in v1.
+   * Ordinal values are integer levels in v1 and are treated numerically after
+   * validation.
    */
   value: number;
   label?: string;
