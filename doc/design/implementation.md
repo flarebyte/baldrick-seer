@@ -122,7 +122,7 @@ Evaluate each scenario independently with its own priorities and candidate evalu
 
 #### Extensible Decision Methods (v2)
 
-Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface.
+Extend the v1 AHP + TOPSIS pipeline so additional MCDA methods can be added later without replacing the overall CLI shape. Future methods such as ELECTRE, PROMETHEE, or VIKOR may require additional optional metadata or method-specific configuration beyond the v1 model.
 
 ## Referenced methods
 
@@ -152,7 +152,7 @@ Use concordance and discordance reasoning to determine whether one alternative s
 
 #### Multi-Criteria Decision Analysis (MCDA)
 
-Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension.
+Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension. In this design, v1 applies MCDA through an AHP-derived weighting stage followed by TOPSIS ranking.
 
 #### PROMETHEE
 
@@ -234,7 +234,7 @@ Render narrative markdown output for human readers, including rankings, explanat
 
 #### Select Ranking Strategy
 
-Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
+Select the ranking pipeline after computing scenario-local criterion weights with AHP. In v1, the design is built around an AHP + TOPSIS pipeline; v2 may add alternatives such as ELECTRE or TOPSIS followed by sensitivity analysis.
 
 #### Select Requested Reports
 

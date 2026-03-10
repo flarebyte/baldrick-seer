@@ -184,7 +184,7 @@ notes: [
     name: "call.reports.generate.select-ranking-strategy"
     title: "Select Ranking Strategy"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. In v1, the design is built around an AHP + TOPSIS pipeline; v2 may add alternatives such as ELECTRE or TOPSIS followed by sensitivity analysis."
   },
   {
     name: "call.reports.generate.build-topsis-inputs"

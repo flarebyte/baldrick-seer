@@ -135,7 +135,7 @@ modules: ["design"]
     name: "call.reports.generate.select-ranking-strategy"
     title: "Select Ranking Strategy"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. In v1, the design is built around an AHP + TOPSIS pipeline; v2 may add alternatives such as ELECTRE or TOPSIS followed by sensitivity analysis."
   }
   "call.reports.generate.build-topsis-inputs": {
     name: "call.reports.generate.build-topsis-inputs"
@@ -405,7 +405,7 @@ modules: ["design"]
     name: "mcda.general"
     title: "Multi-Criteria Decision Analysis (MCDA)"
     labels: ["design", "method"]
-    markdown: "Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension."
+    markdown: "Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension. In this design, v1 applies MCDA through an AHP-derived weighting stage followed by TOPSIS ranking."
   }
   "mcda.electre": {
     name: "mcda.electre"
@@ -561,7 +561,7 @@ modules: ["design"]
     name: "system.extensibility.methods"
     title: "Extensible Decision Methods (v2)"
     labels: ["design", "implementation", "v2"]
-    markdown: "Generalize the pipeline so additional MCDA methods can be added later without redesigning the data model or CLI interface."
+    markdown: "Extend the v1 AHP + TOPSIS pipeline so additional MCDA methods can be added later without replacing the overall CLI shape. Future methods such as ELECTRE, PROMETHEE, or VIKOR may require additional optional metadata or method-specific configuration beyond the v1 model."
   }
   "testing.e2e.bun-typescript": {
     name: "testing.e2e.bun-typescript"

@@ -30,7 +30,7 @@ Use concordance and discordance reasoning to determine whether one alternative s
 
 #### Multi-Criteria Decision Analysis (MCDA)
 
-Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension.
+Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension. In this design, v1 applies MCDA through an AHP-derived weighting stage followed by TOPSIS ranking.
 
 #### PROMETHEE
 
