@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**/*.mts", "**/*.ts", "**/*.json"],
+    "includes": ["e2e/**/*.ts", "package.json", "tsconfig.json", "biome.json"],
     "ignoreUnknown": false
   },
   "formatter": {

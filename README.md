@@ -94,11 +94,30 @@ See:
 
 ## Status
 
-This repository currently captures the design and examples for the tool. The v1 expectation is clear:
+This repository currently captures the design and examples for the tool. The current skeleton includes:
 - Go CLI
 - Cobra for command and argument parsing
-- CUE for config loading and validation
+- placeholder `seer validate`
+- placeholder `seer report generate`
 - Bun + TypeScript for end-to-end tests
+
+## Local commands
+
+```sh
+make build
+make test
+make test-unit
+make test-e2e
+make lint
+make format
+```
+
+## Stub commands
+
+```sh
+seer validate
+seer report generate
+```
 
 ## Why this shape
 
