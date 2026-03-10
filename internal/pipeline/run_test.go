@@ -9,116 +9,6 @@ import (
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
-type fakeConfigLoader struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
-	*f.recorder = append(*f.recorder, "load")
-	if f.err != nil {
-		return LoadConfigOutput{}, f.err
-	}
-	return LoadConfigOutput{ConfigPath: input.ConfigPath}, nil
-}
-
-type fakeModelValidator struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
-	*f.recorder = append(*f.recorder, "validate")
-	if f.err != nil {
-		return ValidateModelOutput{}, f.err
-	}
-	return ValidateModelOutput{
-		ValidatedModel: domain.ValidatedModelSummary{
-			ConfigPath: input.Config.ConfigPath,
-		},
-	}, nil
-}
-
-type fakeCriteriaWeighter struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
-	*f.recorder = append(*f.recorder, "weight")
-	if f.err != nil {
-		return WeightCriteriaOutput{}, f.err
-	}
-	return WeightCriteriaOutput{}, nil
-}
-
-type fakeScenarioRanker struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {
-	*f.recorder = append(*f.recorder, "rank")
-	if f.err != nil {
-		return RankScenariosOutput{}, f.err
-	}
-	return RankScenariosOutput{}, nil
-}
-
-type fakeScenarioAggregator struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {
-	*f.recorder = append(*f.recorder, "aggregate")
-	if f.err != nil {
-		return AggregateScenariosOutput{}, f.err
-	}
-	return AggregateScenariosOutput{}, nil
-}
-
-type fakeReportRenderer struct {
-	recorder *[]string
-	err      error
-}
-
-func (f *fakeReportRenderer) RenderReports(RenderReportsInput) (RenderReportsOutput, error) {
-	*f.recorder = append(*f.recorder, "render")
-	if f.err != nil {
-		return RenderReportsOutput{}, f.err
-	}
-	return RenderReportsOutput{
-		ReportDefinitions: []domain.ReportDefinition{
-			{Name: "zeta", Title: "Zeta", Format: "json"},
-			{Name: "alpha", Title: "Alpha", Format: "markdown"},
-		},
-	}, nil
-}
-
-func newFakeRunner(order *[]string) Runner {
-	return Runner{
-		ConfigLoader:       &fakeConfigLoader{recorder: order},
-		ModelValidator:     &fakeModelValidator{recorder: order},
-		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: order},
-		ScenarioRanker:     &fakeScenarioRanker{recorder: order},
-		ScenarioAggregator: &fakeScenarioAggregator{recorder: order},
-		ReportRenderer:     &fakeReportRenderer{recorder: order},
-	}
-}
-
-func assertValidatedModelPath(t *testing.T, result domain.CommandResult, wantPath string) {
-	t.Helper()
-
-	if result.ValidatedModel == nil {
-		t.Fatal("ValidatedModel = nil, want value")
-	}
-
-	if result.ValidatedModel.ConfigPath != wantPath {
-		t.Fatalf("ConfigPath = %q, want %q", result.ValidatedModel.ConfigPath, wantPath)
-	}
-}
-
 func TestRunValidateStageOrdering(t *testing.T) {
 	t.Parallel()
 
@@ -318,7 +208,7 @@ func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 			name: "validate",
 			command: domain.CommandRequest{
 				CommandName: domain.CommandNameValidate,
-				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+				ConfigPath:  fixtureConfigPath(),
 			},
 			run: Runner.RunValidate,
 		},
@@ -326,7 +216,7 @@ func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 			name: "report generate",
 			command: domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
-				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+				ConfigPath:  fixtureConfigPath(),
 			},
 			run: Runner.RunReportGenerate,
 		},
@@ -345,7 +235,7 @@ func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 			assertValidatedModelPath(
 				t,
 				got,
-				filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue")),
+				filepath.Clean(fixtureConfigPath()),
 			)
 		})
 	}
@@ -357,13 +247,13 @@ func TestDefaultConfigLoader(t *testing.T) {
 	loader := DefaultConfigLoader{}
 
 	got, err := loader.LoadConfig(LoadConfigInput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+		ConfigPath: fixtureConfigPath(),
 	})
 	if err != nil {
 		t.Fatalf("LoadConfig() error = %v", err)
 	}
 
-	want := filepath.Clean(filepath.Join("..", "..", "testdata", "config", "minimal.cue"))
+	want := filepath.Clean(fixtureConfigPath())
 	if got.ConfigPath != want {
 		t.Fatalf("ConfigPath = %q, want %q", got.ConfigPath, want)
 	}
