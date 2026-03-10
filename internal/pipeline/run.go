@@ -38,12 +38,12 @@ func (r Runner) RunValidate(command domain.CommandRequest) (domain.CommandResult
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)
 	}
 
-	return domain.CommandResult{
+	return domain.CanonicalCommandResult(domain.CommandResult{
 		CommandName:       command.CommandName,
 		Diagnostics:       validation.Diagnostics,
 		ValidatedModel:    &validation.ValidatedModel,
 		ReportDefinitions: validation.ReportDefinitions,
-	}, nil
+	}), nil
 }
 
 func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.CommandResult, error) {
@@ -98,12 +98,12 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryRendering, "rendering.failed", command.ConfigPath, "command failed", err)
 	}
 
-	return domain.CommandResult{
+	return domain.CanonicalCommandResult(domain.CommandResult{
 		CommandName:       command.CommandName,
 		Diagnostics:       validation.Diagnostics,
 		ValidatedModel:    &validation.ValidatedModel,
 		ScenarioResults:   scenarios.ScenarioResults,
 		FinalRanking:      &aggregated.FinalRanking,
 		ReportDefinitions: rendered.ReportDefinitions,
-	}, nil
+	}), nil
 }

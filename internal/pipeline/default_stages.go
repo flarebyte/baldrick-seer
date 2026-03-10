@@ -36,9 +36,9 @@ type DefaultModelValidator struct{}
 
 func (DefaultModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
 	return ValidateModelOutput{
-		ValidatedModel: domain.ValidatedModelSummary{
+		ValidatedModel: domain.CanonicalValidatedModelSummary(domain.ValidatedModelSummary{
 			ConfigPath: input.Config.ConfigPath,
-		},
+		}),
 	}, nil
 }
 
@@ -51,19 +51,23 @@ func (DefaultCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriter
 type DefaultScenarioRanker struct{}
 
 func (DefaultScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {
-	return RankScenariosOutput{}, nil
+	return RankScenariosOutput{
+		ScenarioResults: domain.CanonicalScenarioResults(nil),
+	}, nil
 }
 
 type DefaultScenarioAggregator struct{}
 
 func (DefaultScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {
-	return AggregateScenariosOutput{}, nil
+	return AggregateScenariosOutput{
+		FinalRanking: domain.CanonicalAggregatedRankingResult(domain.AggregatedRankingResult{}),
+	}, nil
 }
 
 type DefaultReportRenderer struct{}
 
 func (DefaultReportRenderer) RenderReports(input RenderReportsInput) (RenderReportsOutput, error) {
 	return RenderReportsOutput{
-		ReportDefinitions: input.ReportDefinitions,
+		ReportDefinitions: domain.CanonicalReportDefinitions(input.ReportDefinitions),
 	}, nil
 }
