@@ -290,12 +290,6 @@ export interface ScenarioDefinition {
   narrative?: string;
 
   /**
-   * Optional scenario importance for final aggregation.
-   * This is an input assumption, not a computed field.
-   */
-  importanceWeight?: number;
-
-  /**
    * Criteria used in this scenario.
    * Allows each scenario to activate only relevant criteria.
    */
@@ -404,9 +398,10 @@ export interface ScenarioAggregationDefinition {
   method: ScenarioAggregationMethod;
 
   /**
-   * Optional explicit scenario weights.
+   * Optional explicit scenario aggregation weights.
    * Recommended when method = weighted_average.
-   * Keys are scenario names.
+   * Keys are scenario names and this is the single source of truth for
+   * cross-scenario weighting in v1.
    */
   scenarioWeights?: Record<Name, number>;
 
@@ -715,7 +710,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Small company with budget pressure and need for rapid experimentation",
       narrative:
         "In this scenario, low cost and fast deployment matter more than enterprise controls.",
-      importanceWeight: 0.4,
       activeCriteria: [
         { criterionName: "cost", description: "Startup budgets remain tightly constrained." },
         {
@@ -793,7 +787,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Rapidly scaling company with strong growth pressure",
       narrative:
         "In this scenario, scalability becomes dominant, while cost still matters but less than growth readiness.",
-      importanceWeight: 0.35,
       activeCriteria: [
         { criterionName: "cost", description: "Cost still matters, but it no longer dominates." },
         {
@@ -871,7 +864,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Mature organization with governance, reliability, and compliance needs",
       narrative:
         "In this scenario, operational stability and compliance dominate speed and startup efficiency.",
-      importanceWeight: 0.25,
       activeCriteria: [
         {
           criterionName: "cost",

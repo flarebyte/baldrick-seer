@@ -459,7 +459,7 @@ modules: ["design"]
     name: "scenario.aggregation.policy"
     title: "Scenario Aggregation Strategy (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights."
+    markdown: "Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth."
   }
   "scenario.constraints": {
     name: "scenario.constraints"

@@ -90,12 +90,6 @@ export interface ScenarioDefinition {
   narrative?: string;
 
   /**
-   * Optional scenario importance for final aggregation.
-   * This is an input assumption, not a computed field.
-   */
-  importanceWeight?: number;
-
-  /**
    * Criteria used in this scenario.
    * Allows each scenario to activate only relevant criteria.
    */
@@ -204,9 +198,10 @@ export interface ScenarioAggregationDefinition {
   method: ScenarioAggregationMethod;
 
   /**
-   * Optional explicit scenario weights.
+   * Optional explicit scenario aggregation weights.
    * Recommended when method = weighted_average.
-   * Keys are scenario names.
+   * Keys are scenario names and this is the single source of truth for
+   * cross-scenario weighting in v1.
    */
   scenarioWeights?: Record<Name, number>;
 

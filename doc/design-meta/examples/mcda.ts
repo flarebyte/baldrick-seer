@@ -114,7 +114,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Small company with budget pressure and need for rapid experimentation",
       narrative:
         "In this scenario, low cost and fast deployment matter more than enterprise controls.",
-      importanceWeight: 0.4,
       activeCriteria: [
         { criterionName: "cost", description: "Startup budgets remain tightly constrained." },
         {
@@ -192,7 +191,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Rapidly scaling company with strong growth pressure",
       narrative:
         "In this scenario, scalability becomes dominant, while cost still matters but less than growth readiness.",
-      importanceWeight: 0.35,
       activeCriteria: [
         { criterionName: "cost", description: "Cost still matters, but it no longer dominates." },
         {
@@ -270,7 +268,6 @@ export const exampleScenarioBasedMcda: McdaModel = {
       description: "Mature organization with governance, reliability, and compliance needs",
       narrative:
         "In this scenario, operational stability and compliance dominate speed and startup efficiency.",
-      importanceWeight: 0.25,
       activeCriteria: [
         {
           criterionName: "cost",
