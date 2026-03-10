@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/flarebyte/baldrick-seer/internal/app"
+	"github.com/flarebyte/baldrick-seer/internal/pipeline"
 )
 
 func Execute(args []string, stdout io.Writer, stderr io.Writer) int {
@@ -35,11 +35,11 @@ func renderFailure(err error) string {
 
 func failureMessage(err error) string {
 	switch {
-	case errors.Is(err, app.ErrConfigPathRequired):
+	case errors.Is(err, pipeline.ErrConfigPathRequired):
 		return "config flag is required"
-	case errors.Is(err, app.ErrConfigPathDoesNotExist):
+	case errors.Is(err, pipeline.ErrConfigPathDoesNotExist):
 		return "config path does not exist"
-	case errors.Is(err, app.ErrConfigPathIsDirectory):
+	case errors.Is(err, pipeline.ErrConfigPathIsDirectory):
 		return "config path is a directory"
 	default:
 		return "command failed"
