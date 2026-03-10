@@ -1,0 +1,28 @@
+{
+  "problemName": "hosting-choice",
+  "reportName": "hosting-choice-results",
+  "format": "json",
+  "aggregation": {
+    "method": "equal_average"
+  },
+  "scenarioResults": [
+    {
+      "scenarioName": "lean_startup",
+      "ranking": [
+        { "alternativeName": "provider_a", "rank": 1, "score": 0.61 },
+        { "alternativeName": "provider_b", "rank": 2, "score": 0.39 }
+      ]
+    },
+    {
+      "scenarioName": "regulated_growth",
+      "ranking": [
+        { "alternativeName": "provider_b", "rank": 1, "score": 0.72 },
+        { "alternativeName": "provider_a", "rank": 2, "score": 0.28 }
+      ]
+    }
+  ],
+  "finalRanking": [
+    { "alternativeName": "provider_b", "rank": 1, "score": 0.555 },
+    { "alternativeName": "provider_a", "rank": 2, "score": 0.445 }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "status": "invalid",
+  "problemName": "hosting-choice",
+  "diagnostics": [
+    {
+      "code": "UNKNOWN_REFERENCE",
+      "severity": "error",
+      "path": "evaluations[1].scenarioName",
+      "location": "evaluations/regulated_growthh/scenarioName",
+      "message": "Unknown scenario name: regulated_growthh"
+    },
+    {
+      "code": "MISSING_EVALUATION_VALUE",
+      "severity": "error",
+      "path": "evaluations[0].evaluations[1].values",
+      "location": "evaluations/lean_startup/provider_b/values/speed",
+      "message": "Missing value for active criterion: speed"
+    },
+    {
+      "code": "INVALID_REPORT_ARGUMENT",
+      "severity": "error",
+      "path": "reports[0].arguments[2]",
+      "location": "reports/hosting-choice-summary/arguments/include-score=yes",
+      "message": "Unsupported argument: include-score=yes"
+    }
+  ]
+}

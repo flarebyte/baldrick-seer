@@ -1,0 +1,10 @@
+name: github/flarebyte/baldrick-seer
+role: dev
+description: |-
+     CLI for scenario-based decision support for comparing alternatives across multiple criteria and multiple future contexts.
+notes: |-
+    Project for dev role
+tags:
+    org: flarebyte
+    source: github
+    version: 0.9.0
