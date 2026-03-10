@@ -1,22 +1,17 @@
 package app
 
-const reportGenerateStubOutput = "report generate: ok\n"
+import "github.com/flarebyte/baldrick-seer/internal/domain"
 
-type ReportGenerateRequest struct {
-	ConfigPath string
-}
-
-type ReportGenerateResponse struct {
-	Stdout string
-}
-
-func RunReportGenerate(req ReportGenerateRequest) (ReportGenerateResponse, error) {
-	_, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
+func RunReportGenerate(req domain.CommandRequest) (domain.CommandResult, error) {
+	config, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
 	if err != nil {
-		return ReportGenerateResponse{}, err
+		return domain.CommandResult{}, err
 	}
 
-	return ReportGenerateResponse{
-		Stdout: reportGenerateStubOutput,
+	return domain.CommandResult{
+		CommandName: domain.CommandNameReportGenerate,
+		ValidatedModel: &domain.ValidatedModelSummary{
+			ConfigPath: config.Path,
+		},
 	}, nil
 }

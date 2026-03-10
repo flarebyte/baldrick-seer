@@ -1,22 +1,17 @@
 package app
 
-const validateStubOutput = "validate: ok\n"
+import "github.com/flarebyte/baldrick-seer/internal/domain"
 
-type ValidateRequest struct {
-	ConfigPath string
-}
-
-type ValidateResponse struct {
-	Stdout string
-}
-
-func RunValidate(req ValidateRequest) (ValidateResponse, error) {
-	_, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
+func RunValidate(req domain.CommandRequest) (domain.CommandResult, error) {
+	config, err := LoadConfig(ConfigRequest{Path: req.ConfigPath})
 	if err != nil {
-		return ValidateResponse{}, err
+		return domain.CommandResult{}, err
 	}
 
-	return ValidateResponse{
-		Stdout: validateStubOutput,
+	return domain.CommandResult{
+		CommandName: domain.CommandNameValidate,
+		ValidatedModel: &domain.ValidatedModelSummary{
+			ConfigPath: config.Path,
+		},
 	}, nil
 }

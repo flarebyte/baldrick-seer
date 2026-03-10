@@ -2,13 +2,14 @@ package cli
 
 import (
 	"github.com/flarebyte/baldrick-seer/internal/app"
+	"github.com/flarebyte/baldrick-seer/internal/domain"
 	"github.com/spf13/cobra"
 )
 
 const configFlagName = "config"
 
-type validateRunner func(app.ValidateRequest) (app.ValidateResponse, error)
-type reportGenerateRunner func(app.ReportGenerateRequest) (app.ReportGenerateResponse, error)
+type validateRunner func(domain.CommandRequest) (domain.CommandResult, error)
+type reportGenerateRunner func(domain.CommandRequest) (domain.CommandResult, error)
 
 type dependencies struct {
 	runValidate       validateRunner
@@ -42,7 +43,10 @@ func newValidateCmd(run validateRunner) *cobra.Command {
 		Use:   "validate",
 		Short: "Validate the input model",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_, err := run(app.ValidateRequest{ConfigPath: configPath})
+			_, err := run(domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  configPath,
+			})
 			if err != nil {
 				return err
 			}
@@ -69,7 +73,10 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 		Use:   "generate",
 		Short: "Generate a report",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_, err := run(app.ReportGenerateRequest{ConfigPath: configPath})
+			_, err := run(domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  configPath,
+			})
 			if err != nil {
 				return err
 			}

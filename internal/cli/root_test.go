@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/flarebyte/baldrick-seer/internal/app"
+	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
 func testConfigPath() string {
@@ -112,17 +112,20 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(req app.ValidateRequest) (app.ValidateResponse, error) {
+		runValidate: func(req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if req.CommandName != domain.CommandNameValidate {
+				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameValidate)
+			}
 			if want := testConfigPath(); req.ConfigPath != want {
 				t.Fatalf("ConfigPath = %q, want %q", req.ConfigPath, want)
 			}
 
-			return app.ValidateResponse{Stdout: "validate: ok\n"}, nil
+			return domain.CommandResult{CommandName: domain.CommandNameValidate}, nil
 		},
-		runReportGenerate: func(app.ReportGenerateRequest) (app.ReportGenerateResponse, error) {
+		runReportGenerate: func(domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runReportGenerate should not be called")
-			return app.ReportGenerateResponse{}, nil
+			return domain.CommandResult{}, nil
 		},
 	})
 
@@ -149,17 +152,20 @@ func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(app.ValidateRequest) (app.ValidateResponse, error) {
+		runValidate: func(domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runValidate should not be called")
-			return app.ValidateResponse{}, nil
+			return domain.CommandResult{}, nil
 		},
-		runReportGenerate: func(req app.ReportGenerateRequest) (app.ReportGenerateResponse, error) {
+		runReportGenerate: func(req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if req.CommandName != domain.CommandNameReportGenerate {
+				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameReportGenerate)
+			}
 			if want := testConfigPath(); req.ConfigPath != want {
 				t.Fatalf("ConfigPath = %q, want %q", req.ConfigPath, want)
 			}
 
-			return app.ReportGenerateResponse{Stdout: "report generate: ok\n"}, nil
+			return domain.CommandResult{CommandName: domain.CommandNameReportGenerate}, nil
 		},
 	})
 
