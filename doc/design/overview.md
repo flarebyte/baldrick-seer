@@ -44,7 +44,7 @@ Collect the validated full pairwise comparison set for each scenario into the no
 
 #### Build TOPSIS Inputs
 
-Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS.
+Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS, after removing any alternatives excluded by scenario constraints.
 
 #### Compute Criteria Weights with AHP
 
@@ -56,7 +56,7 @@ Parse CLI arguments for report generation, including the config path, requested 
 
 #### Rank Alternatives with TOPSIS
 
-Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS.
+Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS among the alternatives that remain eligible after scenario-local constraint enforcement.
 
 #### Render Requested Reports
 
@@ -68,11 +68,11 @@ Render flat tabular CSV output for spreadsheet analysis and data exchange.
 
 #### Render JSON Report
 
-Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
+Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. Scenario-level output should indicate alternatives excluded by constraints and omit scenario scores or ranks for them, while final aggregated rankings omit alternatives made ineligible by participating scenario constraints. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
 
 #### Render Markdown Report
 
-Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
+Render narrative markdown output for human readers, including rankings, explanations, scenario summaries, and clear indication when an alternative was excluded by a scenario constraint. Final aggregated rankings include only alternatives that remain eligible across all participating scenarios.
 
 #### Select Ranking Strategy
 
@@ -144,7 +144,7 @@ Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model
 
 #### Scenario Aggregation Strategy (v1)
 
-Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth.
+Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth. In v1, if an alternative is excluded by constraints in any scenario that participates in the aggregation, that alternative is ineligible for the final ranking and must not appear in the final aggregated list.
 
 #### Constraint Semantics (v1)
 
@@ -152,7 +152,7 @@ Keep the `ScenarioConstraint` shape as `criterionName`, `operator`, and `value`,
 
 #### Constraint Enforcement (v1)
 
-Allow scenarios to define hard requirements that can exclude alternatives before ranking, using constraint operators and values that remain compatible with each referenced criterion type.
+Allow scenarios to define hard requirements that are enforced within each scenario before ranking, using constraint operators and values that remain compatible with each referenced criterion type. Alternatives that violate a scenario constraint are excluded from that scenario's scoring and ranking, receive no scenario score or rank there, and should be reported as excluded due to constraints.
 
 #### Scenario Isolation (v1)
 
@@ -174,7 +174,7 @@ Treat ordinal criterion values as ordered integer levels used numerically in the
 
 #### Check Scenario Constraints
 
-Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error.
+Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error. Constraint enforcement itself happens during scenario-local scoring, where violating alternatives are excluded before ranking.
 
 #### Check Evaluation Coverage
 

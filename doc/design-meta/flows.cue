@@ -99,7 +99,7 @@ notes: [
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Validate constraint operator and value compatibility."
+    markdown: "Validate constraint operator and value compatibility, then apply constraints during scenario-local scoring to exclude violating alternatives before ranking."
   },
   {
     name: "call.validation.input-config.validate-model.check-report-definitions"
@@ -153,13 +153,13 @@ notes: [
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Assemble TOPSIS decision matrices from validated evaluations, polarity, and AHP-derived weights."
+    markdown: "Assemble TOPSIS decision matrices from validated evaluations, polarity, and AHP-derived weights after filtering out alternatives excluded by scenario constraints."
   },
   {
     name: "call.reports.generate.rank-alternatives-topsis"
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Rank alternatives with TOPSIS using validated evaluations and scenario-local criterion weights."
+    markdown: "Rank the alternatives that remain eligible after scenario-local constraint enforcement."
   },
   {
     name: "call.reports.generate.future-rank-electre"
@@ -177,19 +177,19 @@ notes: [
     name: "call.reports.generate.render-output"
     title: "Render Requested Reports"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render requested outputs after validation succeeds and ranking results exist."
+    markdown: "Render requested outputs after validation succeeds, constraints are enforced, and ranking results exist for eligible alternatives. Final aggregated rankings omit alternatives made ineligible by participating scenario constraints."
   },
   {
     name: "call.reports.generate.render-output.render-markdown"
     title: "Render Markdown Report"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries."
+    markdown: "Render markdown rankings and scenario summaries, including explicit exclusion status when constraints remove an alternative and omitting ineligible alternatives from the final aggregated ranking."
   },
   {
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render JSON ranking output after successful validation and scoring."
+    markdown: "Render JSON ranking output after successful validation, constraint enforcement, and scoring, while indicating scenario-level exclusions and omitting ineligible alternatives from the final aggregated ranking."
   },
   {
     name: "call.reports.generate.render-output.render-csv"

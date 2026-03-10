@@ -60,7 +60,7 @@ Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model
 
 #### Scenario Aggregation Strategy (v1)
 
-Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth.
+Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth. In v1, if an alternative is excluded by constraints in any scenario that participates in the aggregation, that alternative is ineligible for the final ranking and must not appear in the final aggregated list.
 
 #### Scenario Isolation (v1)
 

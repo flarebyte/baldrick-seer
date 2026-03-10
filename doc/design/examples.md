@@ -187,7 +187,7 @@ Scenario-based MCDA example that compares candidate platforms across startup, un
 
 #### Established Enterprise Scenario
 
-Mature-organization scenario where reliability and compliance dominate cost and future flexibility.
+Mature-organization scenario where reliability and compliance dominate cost and future flexibility. The example constraint can exclude alternatives within this scenario before ranking; in v1, any alternative excluded in an aggregated scenario becomes ineligible for the final ranking.
 
 #### Startup Scenario
 

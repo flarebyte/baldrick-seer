@@ -87,7 +87,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error."
+    markdown: "Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error. Constraint enforcement itself happens during scenario-local scoring, where violating alternatives are excluded before ranking."
   }
   "call.validation.input-config.validate-model.check-report-definitions": {
     name: "call.validation.input-config.validate-model.check-report-definitions"
@@ -141,13 +141,13 @@ modules: ["design"]
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS."
+    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS, after removing any alternatives excluded by scenario constraints."
   }
   "call.reports.generate.rank-alternatives-topsis": {
     name: "call.reports.generate.rank-alternatives-topsis"
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS."
+    markdown: "Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS among the alternatives that remain eligible after scenario-local constraint enforcement."
   }
   "call.reports.generate.future-rank-electre": {
     name: "call.reports.generate.future-rank-electre"
@@ -171,13 +171,13 @@ modules: ["design"]
     name: "call.reports.generate.render-output.render-markdown"
     title: "Render Markdown Report"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries."
+    markdown: "Render narrative markdown output for human readers, including rankings, explanations, scenario summaries, and clear indication when an alternative was excluded by a scenario constraint. Final aggregated rankings include only alternatives that remain eligible across all participating scenarios."
   }
   "call.reports.generate.render-output.render-json": {
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "design", "flow", "implementation"]
-    markdown: "Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report."
+    markdown: "Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. Scenario-level output should indicate alternatives excluded by constraints and omit scenario scores or ranks for them, while final aggregated rankings omit alternatives made ineligible by participating scenario constraints. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report."
   }
   "call.reports.generate.render-output.render-csv": {
     name: "call.reports.generate.render-output.render-csv"
@@ -363,7 +363,7 @@ modules: ["design"]
     name: "example.platform-selection.established-enterprise"
     title: "Established Enterprise Scenario"
     labels: ["design", "example", "flow"]
-    markdown: "Mature-organization scenario where reliability and compliance dominate cost and future flexibility."
+    markdown: "Mature-organization scenario where reliability and compliance dominate cost and future flexibility. The example constraint can exclude alternatives within this scenario before ranking; in v1, any alternative excluded in an aggregated scenario becomes ineligible for the final ranking."
   }
   "example.platform-selection.startup": {
     name: "example.platform-selection.startup"
@@ -513,13 +513,13 @@ modules: ["design"]
     name: "scenario.aggregation.policy"
     title: "Scenario Aggregation Strategy (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth."
+    markdown: "Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth. In v1, if an alternative is excluded by constraints in any scenario that participates in the aggregation, that alternative is ineligible for the final ranking and must not appear in the final aggregated list."
   }
   "scenario.constraints": {
     name: "scenario.constraints"
     title: "Constraint Enforcement (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Allow scenarios to define hard requirements that can exclude alternatives before ranking, using constraint operators and values that remain compatible with each referenced criterion type."
+    markdown: "Allow scenarios to define hard requirements that are enforced within each scenario before ranking, using constraint operators and values that remain compatible with each referenced criterion type. Alternatives that violate a scenario constraint are excluded from that scenario's scoring and ranking, receive no scenario score or rank there, and should be reported as excluded due to constraints."
   }
   "scenario.isolation": {
     name: "scenario.isolation"
