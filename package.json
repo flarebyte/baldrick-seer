@@ -1,0 +1,16 @@
+{
+  "name": "baldrick-seer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "biome": "biome",
+    "test:e2e": "bun test ./e2e",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.5",
+    "@types/bun": "^1.3.0",
+    "typescript": "^5.9.2"
+  }
+}
