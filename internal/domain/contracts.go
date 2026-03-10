@@ -34,7 +34,14 @@ type CommandResult struct {
 type Diagnostic struct {
 	Severity DiagnosticSeverity
 	Code     string
+	Path     string
+	Location DiagnosticLocation
 	Message  string
+}
+
+type DiagnosticLocation struct {
+	Line   int
+	Column int
 }
 
 type ReportDefinition struct {

@@ -173,6 +173,15 @@ func TestRunReportGenerateFailsFast(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, wantErr)
 	}
 
+	failure := domain.AsCommandFailure(err)
+	if failure == nil {
+		t.Fatal("AsCommandFailure(err) = nil, want value")
+	}
+
+	if failure.Category != domain.FailureCategoryExecution {
+		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
+	}
+
 	if got, want := order, []string{"load", "validate", "weight"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("order = %#v, want %#v", got, want)
 	}
@@ -207,6 +216,15 @@ func TestDefaultConfigLoaderMissingFile(t *testing.T) {
 	if !errors.Is(err, ErrConfigPathDoesNotExist) {
 		t.Fatalf("error = %v, want %v", err, ErrConfigPathDoesNotExist)
 	}
+
+	failure := domain.AsCommandFailure(err)
+	if failure == nil {
+		t.Fatal("AsCommandFailure(err) = nil, want value")
+	}
+
+	if failure.Category != domain.FailureCategoryInput {
+		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryInput)
+	}
 }
 
 func TestDefaultConfigLoaderDirectoryPath(t *testing.T) {
@@ -219,5 +237,14 @@ func TestDefaultConfigLoaderDirectoryPath(t *testing.T) {
 	})
 	if !errors.Is(err, ErrConfigPathIsDirectory) {
 		t.Fatalf("error = %v, want %v", err, ErrConfigPathIsDirectory)
+	}
+
+	failure := domain.AsCommandFailure(err)
+	if failure == nil {
+		t.Fatal("AsCommandFailure(err) = nil, want value")
+	}
+
+	if failure.Category != domain.FailureCategoryInput {
+		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryInput)
 	}
 }

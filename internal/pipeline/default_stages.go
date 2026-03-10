@@ -11,20 +11,20 @@ type DefaultConfigLoader struct{}
 
 func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
 	if input.ConfigPath == "" {
-		return LoadConfigOutput{}, ErrConfigPathRequired
+		return LoadConfigOutput{}, NewInputFailure("config.required", "", "config flag is required", ErrConfigPathRequired)
 	}
 
 	info, err := os.Stat(input.ConfigPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return LoadConfigOutput{}, ErrConfigPathDoesNotExist
+			return LoadConfigOutput{}, NewInputFailure("config.not_found", input.ConfigPath, "config path does not exist", ErrConfigPathDoesNotExist)
 		}
 
-		return LoadConfigOutput{}, err
+		return LoadConfigOutput{}, WrapStageFailure(domain.FailureCategoryInternal, "config.stat_failed", input.ConfigPath, "command failed", err)
 	}
 
 	if info.IsDir() {
-		return LoadConfigOutput{}, ErrConfigPathIsDirectory
+		return LoadConfigOutput{}, NewInputFailure("config.is_directory", input.ConfigPath, "config path is a directory", ErrConfigPathIsDirectory)
 	}
 
 	return LoadConfigOutput{

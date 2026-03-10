@@ -27,7 +27,7 @@ func (r Runner) RunValidate(command domain.CommandRequest) (domain.CommandResult
 		ConfigPath: command.ConfigPath,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryInput, "config.load_failed", command.ConfigPath, "command failed", err)
 	}
 
 	validation, err := r.ModelValidator.ValidateModel(ValidateModelInput{
@@ -35,7 +35,7 @@ func (r Runner) RunValidate(command domain.CommandRequest) (domain.CommandResult
 		Config:  config,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)
 	}
 
 	return domain.CommandResult{
@@ -51,7 +51,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ConfigPath: command.ConfigPath,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryInput, "config.load_failed", command.ConfigPath, "command failed", err)
 	}
 
 	validation, err := r.ModelValidator.ValidateModel(ValidateModelInput{
@@ -59,7 +59,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		Config:  config,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)
 	}
 
 	weights, err := r.CriteriaWeighter.WeightCriteria(WeightCriteriaInput{
@@ -67,7 +67,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ValidatedModel: validation.ValidatedModel,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "weighting.failed", command.ConfigPath, "command failed", err)
 	}
 
 	scenarios, err := r.ScenarioRanker.RankScenarios(RankScenariosInput{
@@ -76,7 +76,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		CriterionWeights: weights.CriterionWeights,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "ranking.failed", command.ConfigPath, "command failed", err)
 	}
 
 	aggregated, err := r.ScenarioAggregator.AggregateScenarios(AggregateScenariosInput{
@@ -84,7 +84,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ScenarioResults: scenarios.ScenarioResults,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "aggregation.failed", command.ConfigPath, "command failed", err)
 	}
 
 	rendered, err := r.ReportRenderer.RenderReports(RenderReportsInput{
@@ -95,7 +95,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ReportDefinitions: validation.ReportDefinitions,
 	})
 	if err != nil {
-		return domain.CommandResult{}, err
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryRendering, "rendering.failed", command.ConfigPath, "command failed", err)
 	}
 
 	return domain.CommandResult{
