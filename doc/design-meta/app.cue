@@ -93,7 +93,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-report-definitions"
     title: "Check Report Definitions"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing."
+    markdown: "Check that report definitions use supported formats, valid focus selectors, and strictly validated report arguments. In v1 every report argument must use `key=value`, unknown arguments are validation errors, argument names must be allowed globally or for the selected format, format-specific arguments must match the report format, invalid values must be rejected, and duplicate keys are invalid unless explicitly defined otherwise."
   }
   "call.reports.generate": {
     name: "call.reports.generate"
@@ -449,6 +449,12 @@ modules: ["design"]
     labels: ["design", "implementation", "v1"]
     markdown: "Allow decision models to carry descriptions, notes, and justifications for comparisons and values."
   }
+  "report.arguments.validation.v1": {
+    name: "report.arguments.validation.v1"
+    title: "Report Argument Validation (v1)"
+    labels: ["design", "implementation", "validation", "v1"]
+    markdown: "Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model stays extensible, but validate it strictly in v1. Only documented arguments are accepted, unknown keys are errors, some keys may be shared across formats while others are format-specific, incompatible format-specific keys must be rejected, values must match the argument definition, and duplicate keys are invalid unless the spec explicitly allows them."
+  }
   "model.incomplete.data": {
     name: "model.incomplete.data"
     title: "Handling Incomplete Information (v1)"
@@ -525,7 +531,7 @@ modules: ["design"]
     name: "stack.cli.cobra"
     title: "Cobra Command and Argument Parsing (v1)"
     labels: ["design", "implementation", "stack", "v1"]
-    markdown: "Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model."
+    markdown: "Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model, while keeping report arguments extensible in representation but strictly validated against documented v1 argument definitions."
   }
   "stack.config.cue": {
     name: "stack.config.cue"
@@ -756,6 +762,7 @@ reports: [
               #notesByName["model.incomplete.data"].name,
               #notesByName["model.structure"].name,
               #notesByName["model.validation"].name,
+              #notesByName["report.arguments.validation.v1"].name,
               #notesByName["scenario.aggregation.policy"].name,
               #notesByName["scenario.constraint-semantics.v1"].name,
               #notesByName["scenario.constraints"].name,
@@ -842,6 +849,7 @@ reports: [
               #notesByName["stack.cli.go"].name,
               #notesByName["stack.cli.cobra"].name,
               #notesByName["stack.config.cue"].name,
+              #notesByName["report.arguments.validation.v1"].name,
               #notesByName["testing.e2e.bun-typescript"].name,
             ]
           },
@@ -864,6 +872,7 @@ reports: [
               #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
               #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
               #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
+              #notesByName["report.arguments.validation.v1"].name,
             ]
           },
         ]
@@ -1182,6 +1191,7 @@ notes: [
   #notesByName["model.incomplete.data"],
   #notesByName["model.structure"],
   #notesByName["model.validation"],
+  #notesByName["report.arguments.validation.v1"],
   #notesByName["planning.lifecycle-decision"],
   #notesByName["planning.long-term-option-evaluation"],
   #notesByName["policy.policy-option-analysis"],
@@ -1724,6 +1734,16 @@ relationships: [
     from: #notesByName["model.documentation"].name
     to: #notesByName["model.structure"].name
     label: "documents"
+  },
+  {
+    from: #notesByName["report.arguments.validation.v1"].name
+    to: #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name
+    label: "supports"
+  },
+  {
+    from: #notesByName["stack.cli.cobra"].name
+    to: #notesByName["report.arguments.validation.v1"].name
+    label: "supports"
   },
   {
     from: #notesByName["example.input-schema.ts"].name

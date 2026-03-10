@@ -38,9 +38,13 @@ Primary languages, libraries, and tools chosen for the first release.
 
 ### Runtime and tooling
 
+#### Report Argument Validation (v1)
+
+Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model stays extensible, but validate it strictly in v1. Only documented arguments are accepted, unknown keys are errors, some keys may be shared across formats while others are format-specific, incompatible format-specific keys must be rejected, values must match the argument definition, and duplicate keys are invalid unless the spec explicitly allows them.
+
 #### Cobra Command and Argument Parsing (v1)
 
-Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model.
+Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model, while keeping report arguments extensible in representation but strictly validated against documented v1 argument definitions.
 
 #### Go CLI Implementation (v1)
 
@@ -322,9 +326,13 @@ Check that all named references resolve, including criteria names, scenario name
 
 #### Check Report Definitions
 
-Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing.
+Check that report definitions use supported formats, valid focus selectors, and strictly validated report arguments. In v1 every report argument must use `key=value`, unknown arguments are validation errors, argument names must be allowed globally or for the selected format, format-specific arguments must match the report format, invalid values must be rejected, and duplicate keys are invalid unless explicitly defined otherwise.
 
 #### Check Config Structure
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
+
+#### Report Argument Validation (v1)
+
+Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model stays extensible, but validate it strictly in v1. Only documented arguments are accepted, unknown keys are errors, some keys may be shared across formats while others are format-specific, incompatible format-specific keys must be rejected, values must match the argument definition, and duplicate keys are invalid unless the spec explicitly allows them.
 

@@ -41,6 +41,11 @@ export interface ReportDefinition {
    * Optional report parameters using the same key=value convention as CLI args.
    * These are intended to be parsed with the same Cobra-based argument handling
    * used by the CLI so report-level customization stays consistent.
+   * In v1 the representation remains extensible, but validation is strict:
+   * every entry must use key=value form, only documented arguments are allowed,
+   * format-specific arguments must match the report format, invalid values are
+   * rejected, and duplicate keys are invalid unless explicitly defined
+   * otherwise by the spec.
    */
   arguments?: string[];
   focus?: ReportFocusDefinition;

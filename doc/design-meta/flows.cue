@@ -142,7 +142,7 @@ notes: [
     name: "call.validation.input-config.validate-model.check-report-definitions"
     title: "Check Report Definitions"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that report definitions use supported formats, valid focus selectors, and well-formed argument lists for later Cobra-style parsing."
+    markdown: "Check that report definitions use supported formats, valid focus selectors, and strictly validated report arguments. In v1 every report argument must use `key=value`, unknown arguments are validation errors, argument names must be allowed globally or for the selected format, format-specific arguments must match the report format, invalid values must be rejected, and duplicate keys are invalid unless explicitly defined otherwise."
   },
   {
     name: "call.reports.generate"
