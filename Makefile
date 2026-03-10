@@ -7,28 +7,49 @@
 
 BIOME := npx @biomejs/biome
 BUN := bun
+GO := go
+GOLINT := golangci-lint
+GO_ENV := GOCACHE=$(PWD)/.gocache GOMODCACHE=$(PWD)/.gomodcache
+GOLINT_ENV := $(GO_ENV) GOLANGCI_LINT_CACHE=$(PWD)/.golangci-lint-cache
+
 
 lint:
 	$(BIOME) check
+	$(GO_ENV) $(GO) vet ./...
+	$(GOLINT_ENV) $(GOLINT) run
 
 format:
+	find . -type f -name '*.go' \
+		-not -path './.git/*' \
+		-not -path './.gocache/*' \
+		-not -path './.gomodcache/*' \
+		-not -path './.e2e-bin/*' \
+		-not -path './node_modules/*' \
+		-print0 | xargs -0 -r gofmt -w
 	$(BIOME) format --write .
 	$(BIOME) check --unsafe --write
 
 test:
-	npm run test
+	$(GO_ENV) $(GO) test -coverprofile=coverage.out ./...
+	$(GO_ENV) $(GO) tool cover -func=coverage.out
 
 cov:
 	npm run test:cov
 
 build:
-	npm run build
+	$(BUN) run build-go.ts
+
+build-dev:
+	mkdir -p .e2e-bin
+	$(GO_ENV) CGO_ENABLED=0 $(GO) build -o .e2e-bin/seer ./cmd/seer
 
 typecheck:
 	npm run typecheck
 
 e2e:
-	npm run test:e2e
+	mkdir -p .e2e-bin
+	$(GO_ENV) $(GO) build -o .e2e-bin/seer ./cmd/seer
+	$(BUN) test script/e2e
 
 doc-design:
 	mkdir -p doc/design
@@ -37,18 +58,20 @@ doc-design:
 	flyb validate --config doc/design-meta/flows.cue
 	flyb generate markdown --config doc/design-meta/flows.cue
 
-release: build
-	@printf "Artifacts in ./build (checksums.txt included)\n"
+release:
+	$(BUN) run release-go.ts
 
 clean:
 	npm run clean
 
 complexity:
+	scc --sort complexity --by-file -i go . | head -n 15
 	scc --sort complexity --by-file -i ts . | head -n 15
 
 sec:
 	semgrep scan --config auto
 dup:
+	npx jscpd --format go --min-lines 10 --ignore "**/.gomodcache/**,**/.gocache/**,**/.e2e-bin/**,**/node_modules/**,**/dist/**" --gitignore .
 	npx jscpd --format typescript --min-lines 10 --gitignore .
 
 help:
