@@ -75,7 +75,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
     title: "Check Pairwise Comparisons"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting."
+    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP-based criterion weights within a scenario."
   }
   "call.validation.input-config.validate-model.check-evaluation-coverage": {
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
@@ -123,31 +123,31 @@ modules: ["design"]
     name: "call.reports.generate.build-ahp-inputs"
     title: "Build AHP Inputs"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation."
+    markdown: "Collect pairwise criterion comparisons for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights."
   }
   "call.reports.generate.compute-ahp-weights": {
     name: "call.reports.generate.compute-ahp-weights"
     title: "Compute Criteria Weights with AHP"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
+    markdown: "Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process."
   }
   "call.reports.generate.select-ranking-strategy": {
     name: "call.reports.generate.select-ranking-strategy"
     title: "Select Ranking Strategy"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
   }
   "call.reports.generate.build-topsis-inputs": {
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS."
+    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS."
   }
   "call.reports.generate.rank-alternatives-topsis": {
     name: "call.reports.generate.rank-alternatives-topsis"
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS."
+    markdown: "Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS."
   }
   "call.reports.generate.future-rank-electre": {
     name: "call.reports.generate.future-rank-electre"
@@ -219,7 +219,7 @@ modules: ["design"]
     name: "decision.traceability"
     title: "Traceable Decision Process (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor."
+    markdown: "Show the reasoning path from inputs to outputs, including scenario-local criterion weights, scenario aggregation weights, and contribution of each factor."
   }
   "engineering.deterministic-ordering": {
     name: "engineering.deterministic-ordering"
@@ -369,7 +369,7 @@ modules: ["design"]
     name: "mcda.ahp"
     title: "Analytic Hierarchy Process (AHP)"
     labels: ["design", "method"]
-    markdown: "Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system."
+    markdown: "Derive criterion weights within a scenario from pairwise criterion comparisons and turn qualitative judgments into a consistent numerical weighting system."
   }
   "mcda.general": {
     name: "mcda.general"
@@ -459,7 +459,7 @@ modules: ["design"]
     name: "scenario.aggregation.policy"
     title: "Scenario Aggregation Strategy (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Define how multiple scenarios are combined into a final decision, starting with practical v1 aggregation approaches such as equal or weighted averaging."
+    markdown: "Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights."
   }
   "scenario.constraints": {
     name: "scenario.constraints"

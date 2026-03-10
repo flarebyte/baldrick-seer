@@ -21,7 +21,7 @@ Text graph for the report-generation call chain, reusing the shared validation p
                 - <a id="graph-node-call-reports-generate-rank-alternatives-topsis"></a> Rank Alternatives with TOPSIS: Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
                   - <a id="graph-node-call-reports-generate-render-output"></a> Render Requested Reports: Render the requested markdown, JSON, or CSV reports from the computed ranking results.
                     - <a id="graph-node-call-reports-generate-render-output-render-csv"></a> Render CSV Report: Render flat tabular CSV output for spreadsheet analysis and data exchange.
-                    - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails.
+                    - <a id="graph-node-call-reports-generate-render-output-render-json"></a> Render JSON Report: Render machine-readable JSON output for automation, downstream processing, and reproducibility.
                     - <a id="graph-node-call-reports-generate-render-output-render-markdown"></a> Render Markdown Report: Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
               - <a id="graph-node-call-reports-generate-future-rank-electre"></a> Future Option: Rank with ELECTRE: Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS.
               - <a id="graph-node-call-reports-generate-future-rank-topsis-sensitivity"></a> Future Option: TOPSIS with Sensitivity Analysis: Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness.
@@ -70,7 +70,7 @@ Render flat tabular CSV output for spreadsheet analysis and data exchange.
 
 #### Render JSON Report
 
-Render machine-readable JSON output for automation, downstream processing, and reproducibility, including structured diagnostics when validation fails.
+Render machine-readable JSON output for automation, downstream processing, and reproducibility.
 
 #### Render Markdown Report
 
@@ -94,15 +94,7 @@ Load and evaluate the CUE configuration package so the CLI works with a concrete
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
-
-#### Analytic Hierarchy Process (AHP)
-
-Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
-
-#### TOPSIS
-
-Rank alternatives by their distance from an ideal best and an ideal worst solution.
+Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
 
 ## Validation flows
 
@@ -115,7 +107,7 @@ Text graph for the validate-config call chain.
 - <a id="graph-node-call-validation-input-config"></a> Validate Input Config Call: Top-level CLI call flow for validating an input configuration file before any decision analysis runs.
   - <a id="graph-node-call-validation-input-config-parse-args"></a> Parse Validation Arguments: Parse CLI arguments for the validate command, including the config path and output flags.
     - <a id="graph-node-call-validation-input-config-load-cue-config"></a> Load CUE Config: Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
-      - <a id="graph-node-call-validation-input-config-validate-model"></a> Validate Config Model: Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
+      - <a id="graph-node-call-validation-input-config-validate-model"></a> Validate Config Model: Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
         - <a id="graph-node-call-validation-input-config-validate-model-check-structure"></a> Check Config Structure: Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
           - <a id="graph-node-call-validation-input-config-validate-model-check-references"></a> Check Named References: Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
             - <a id="graph-node-call-validation-input-config-validate-model-check-pairwise-comparisons"></a> Check Pairwise Comparisons: Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting.
@@ -139,7 +131,7 @@ Parse CLI arguments for the validate command, including the config path and outp
 
 #### Validate Config Model
 
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations.
+Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data.
 
 #### Check Scenario Constraints
 
@@ -164,24 +156,4 @@ Check that report definitions use supported formats, valid focus selectors, and 
 #### Check Config Structure
 
 Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
-
-#### Clear Representation of Pairwise Judgments (v1)
-
-Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
-
-#### Human and AI Friendly Input Format (v1)
-
-Use a semantic format such as CUE that remains readable for humans and AI systems while supporting strong validation.
-
-#### Handling Incomplete Information (v1)
-
-Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
-
-#### Model Validation (v1)
-
-Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
-
-#### Constraint Enforcement (v1)
-
-Allow scenarios to define hard requirements that can exclude alternatives before ranking.
 

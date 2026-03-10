@@ -90,7 +90,7 @@ Validate referenced criteria, pairwise comparison completeness, and alternative 
 
 #### Scenario Aggregation Strategy (v1)
 
-Define how multiple scenarios are combined into a final decision, starting with practical v1 aggregation approaches such as equal or weighted averaging.
+Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights.
 
 #### Constraint Enforcement (v1)
 
@@ -120,7 +120,7 @@ Evaluate how changes in weights or inputs affect the ranking of alternatives.
 
 #### Analytic Hierarchy Process (AHP)
 
-Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
+Derive criterion weights within a scenario from pairwise criterion comparisons and turn qualitative judgments into a consistent numerical weighting system.
 
 #### ELECTRE Outranking Method
 
@@ -154,15 +154,15 @@ Top-level CLI call flow for generating reports from an input decision model.
 
 #### Build AHP Inputs
 
-Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation.
+Collect pairwise criterion comparisons for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights.
 
 #### Build TOPSIS Inputs
 
-Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS.
+Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS.
 
 #### Compute Criteria Weights with AHP
 
-Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process.
+Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process.
 
 #### Future Option: Rank with ELECTRE
 
@@ -178,7 +178,7 @@ Parse CLI arguments for report generation, including the config path, requested 
 
 #### Rank Alternatives with TOPSIS
 
-Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS.
+Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS.
 
 #### Render Requested Reports
 
@@ -198,7 +198,7 @@ Render narrative markdown output for human readers, including rankings, explanat
 
 #### Select Ranking Strategy
 
-Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
+Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis.
 
 #### Select Requested Reports
 
@@ -240,7 +240,7 @@ Explain ranking outputs in terms of criteria influence and scenario differences.
 
 #### Traceable Decision Process (v1)
 
-Show the reasoning path from inputs to outputs, including scenario weights, criteria importance, and contribution of each factor.
+Show the reasoning path from inputs to outputs, including scenario-local criterion weights, scenario aggregation weights, and contribution of each factor.
 
 #### Reproducible Decision Runs (v1)
 
@@ -282,7 +282,7 @@ Check that evaluations reference known scenarios and alternatives and provide th
 
 #### Check Pairwise Comparisons
 
-Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting.
+Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP-based criterion weights within a scenario.
 
 #### Check Named References
 

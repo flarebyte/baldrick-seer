@@ -18,7 +18,7 @@ Evaluate how changes in weights or inputs affect the ranking of alternatives.
 
 #### Analytic Hierarchy Process (AHP)
 
-Derive criteria weights from pairwise comparisons and turn qualitative judgments into a consistent numerical weighting system.
+Derive criterion weights within a scenario from pairwise criterion comparisons and turn qualitative judgments into a consistent numerical weighting system.
 
 #### ELECTRE Outranking Method
 
@@ -72,7 +72,7 @@ Validate referenced criteria, pairwise comparison completeness, and alternative 
 
 #### Scenario Aggregation Strategy (v1)
 
-Define how multiple scenarios are combined into a final decision, starting with practical v1 aggregation approaches such as equal or weighted averaging.
+Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights.
 
 #### Constraint Enforcement (v1)
 
