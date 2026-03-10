@@ -48,7 +48,7 @@ Important concepts used to describe the input model and its validation rules.
 
 #### Clear Representation of Pairwise Judgments (v1)
 
-Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
+Represent pairwise comparisons explicitly with named criteria and a single canonical direction, using one field for the more important criterion and one field for the less important criterion, so humans and AI can validate and generate exactly one comparison for each unordered criterion pair.
 
 #### Human and AI Friendly Input Format (v1)
 
@@ -60,7 +60,7 @@ Allow decision models to carry descriptions, notes, and justifications for compa
 
 #### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
+Detect missing pairwise comparisons required for full AHP coverage or missing evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
 
 #### Decision Model Structure (v1)
 
@@ -68,7 +68,7 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 

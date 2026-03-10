@@ -62,7 +62,7 @@ Recommendations about the decision-model shape and validation.
 
 #### Clear Representation of Pairwise Judgments (v1)
 
-Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them.
+Represent pairwise comparisons explicitly with named criteria and a single canonical direction, using one field for the more important criterion and one field for the less important criterion, so humans and AI can validate and generate exactly one comparison for each unordered criterion pair.
 
 #### Consistent Criteria Interpretation (v1)
 
@@ -78,7 +78,7 @@ Allow decision models to carry descriptions, notes, and justifications for compa
 
 #### Handling Incomplete Information (v1)
 
-Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
+Detect missing pairwise comparisons required for full AHP coverage or missing evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
 
 #### Decision Model Structure (v1)
 
@@ -86,7 +86,7 @@ Represent the decision problem with clear structures for criteria, alternatives,
 
 #### Model Validation (v1)
 
-Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation.
+Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, and alternative evaluation coverage before computation.
 
 #### Scenario Aggregation Strategy (v1)
 
@@ -154,7 +154,7 @@ Top-level CLI call flow for generating reports from an input decision model.
 
 #### Build AHP Inputs
 
-Collect pairwise criterion comparisons for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights.
+Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights.
 
 #### Build TOPSIS Inputs
 
@@ -282,7 +282,7 @@ Check that evaluations reference known scenarios and alternatives and provide th
 
 #### Check Pairwise Comparisons
 
-Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP-based criterion weights within a scenario.
+Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair.
 
 #### Check Named References
 

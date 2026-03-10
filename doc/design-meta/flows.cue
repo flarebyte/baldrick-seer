@@ -124,7 +124,7 @@ notes: [
     name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
     title: "Check Pairwise Comparisons"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP weighting."
+    markdown: "Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair."
   },
   {
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
@@ -172,31 +172,31 @@ notes: [
     name: "call.reports.generate.build-ahp-inputs"
     title: "Build AHP Inputs"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Collect scenario pairwise comparisons into the normalized input structures needed for AHP weight computation."
+    markdown: "Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights."
   },
   {
     name: "call.reports.generate.compute-ahp-weights"
     title: "Compute Criteria Weights with AHP"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Transform pairwise scenario preferences into normalized criteria weights using Analytic Hierarchy Process."
+    markdown: "Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process."
   },
   {
     name: "call.reports.generate.select-ranking-strategy"
     title: "Select Ranking Strategy"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Select the ranking pipeline after AHP weighting. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
+    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. The current default path is TOPSIS, while v2 may add ELECTRE or TOPSIS followed by sensitivity analysis."
   },
   {
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived weights into the decision matrices required by TOPSIS."
+    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS."
   },
   {
     name: "call.reports.generate.rank-alternatives-topsis"
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Use the validated evaluations and AHP-derived weights to rank alternatives with TOPSIS."
+    markdown: "Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS."
   },
   {
     name: "call.reports.generate.future-rank-electre"

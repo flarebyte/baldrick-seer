@@ -75,7 +75,7 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
     title: "Check Pairwise Comparisons"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that pairwise comparisons are valid for each scenario, with known criteria, no self-comparisons, and sufficient coverage for AHP-based criterion weights within a scenario."
+    markdown: "Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair."
   }
   "call.validation.input-config.validate-model.check-evaluation-coverage": {
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
@@ -123,7 +123,7 @@ modules: ["design"]
     name: "call.reports.generate.build-ahp-inputs"
     title: "Build AHP Inputs"
     labels: ["call", "design", "flow", "implementation", "method"]
-    markdown: "Collect pairwise criterion comparisons for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights."
+    markdown: "Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights."
   }
   "call.reports.generate.compute-ahp-weights": {
     name: "call.reports.generate.compute-ahp-weights"
@@ -189,7 +189,7 @@ modules: ["design"]
     name: "criteria.pairwise.clarity"
     title: "Clear Representation of Pairwise Judgments (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Represent pairwise comparisons explicitly with named criteria instead of positional matrices so humans and AI can validate and generate them."
+    markdown: "Represent pairwise comparisons explicitly with named criteria and a single canonical direction, using one field for the more important criterion and one field for the less important criterion, so humans and AI can validate and generate exactly one comparison for each unordered criterion pair."
   }
   "criteria.semantic.consistency": {
     name: "criteria.semantic.consistency"
@@ -411,7 +411,7 @@ modules: ["design"]
     name: "model.incomplete.data"
     title: "Handling Incomplete Information (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Detect missing comparisons or evaluation values early and return actionable diagnostics with both precise paths and readable named locations."
+    markdown: "Detect missing pairwise comparisons required for full AHP coverage or missing evaluation values early and return actionable diagnostics with both precise paths and readable named locations."
   }
   "model.structure": {
     name: "model.structure"
@@ -423,7 +423,7 @@ modules: ["design"]
     name: "model.validation"
     title: "Model Validation (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Validate referenced criteria, pairwise comparison completeness, and alternative evaluation coverage before computation."
+    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, and alternative evaluation coverage before computation."
   }
   "planning.lifecycle-decision": {
     name: "planning.lifecycle-decision"

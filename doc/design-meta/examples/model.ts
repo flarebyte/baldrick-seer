@@ -127,11 +127,24 @@ export interface ScenarioCriterionRef {
 export interface ScenarioPreferences {
   method: "ahp_pairwise";
   scale: "saaty_1_9";
+  /**
+   * For v1, scenarios using AHP must provide exactly one comparison for every
+   * unordered pair of distinct active criteria. Duplicate comparisons, inverse
+   * duplicates, and self-comparisons are invalid.
+   */
   comparisons: PairwiseComparison[];
 }
 
 export interface PairwiseComparison {
+  /**
+   * Canonical v1 direction: name the criterion judged more important for this
+   * unordered pair.
+   */
   moreImportantCriterionName: Name;
+  /**
+   * Canonical v1 direction: name the criterion judged less important for this
+   * unordered pair.
+   */
   lessImportantCriterionName: Name;
   strength: PairwiseStrength;
   justification?: string;
