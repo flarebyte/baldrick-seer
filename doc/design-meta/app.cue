@@ -81,13 +81,13 @@ modules: ["design"]
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
     title: "Check Evaluation Coverage"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that evaluations reference known scenarios and alternatives and provide the values required by each scenario's active criteria."
+    markdown: "Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: numbers, integer ordinals, or booleans."
   }
   "call.validation.input-config.validate-model.check-constraints": {
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "design", "flow", "implementation", "validation"]
-    markdown: "Check that scenario constraints target known criteria and use operators and values that are compatible with the referenced criterion types."
+    markdown: "Check that scenario constraints target known criteria and use operators and values compatible with the referenced criterion types, including requiring equality-only constraints for boolean criteria."
   }
   "call.validation.input-config.validate-model.check-report-definitions": {
     name: "call.validation.input-config.validate-model.check-report-definitions"
@@ -196,6 +196,18 @@ modules: ["design"]
     title: "Consistent Criteria Interpretation (v1)"
     labels: ["design", "implementation", "v1"]
     markdown: "Keep each criterion semantically stable across scenarios even when its importance changes."
+  }
+  "criteria.value-types.v1": {
+    name: "criteria.value-types.v1"
+    title: "Supported Criterion Value Types (v1)"
+    labels: ["design", "implementation", "v1"]
+    markdown: "Support only three criterion value types in v1: number, ordinal, and boolean. Text criterion values are not part of the v1 model."
+  }
+  "criteria.scale-guidance.ordinal": {
+    name: "criteria.scale-guidance.ordinal"
+    title: "Document Ordinal Scales (v1)"
+    labels: ["design", "implementation", "validation", "v1"]
+    markdown: "Require ordinal criteria to document their scale with `scaleGuidance`, so each integer level has a clear ordered meaning before scoring."
   }
   "decision.explainability": {
     name: "decision.explainability"
@@ -395,6 +407,24 @@ modules: ["design"]
     labels: ["design", "method"]
     markdown: "Rank alternatives by their distance from an ideal best and an ideal worst solution."
   }
+  "scoring.number-normalization.v1": {
+    name: "scoring.number-normalization.v1"
+    title: "Numeric Criterion Scoring (v1)"
+    labels: ["design", "implementation", "method", "v1"]
+    markdown: "Treat numeric criterion values as measurable quantities used directly in the decision matrix. Criterion polarity determines whether higher or lower values are preferred during normalization and ranking."
+  }
+  "scoring.ordinal-normalization.v1": {
+    name: "scoring.ordinal-normalization.v1"
+    title: "Ordinal Criterion Scoring (v1)"
+    labels: ["design", "implementation", "method", "validation", "v1"]
+    markdown: "Treat ordinal criterion values as ordered integer levels used numerically in the decision matrix. Higher integers represent a higher level of the criterion, polarity determines desirability, and ordinal criteria should include `scaleGuidance`."
+  }
+  "scoring.boolean-normalization.v1": {
+    name: "scoring.boolean-normalization.v1"
+    title: "Boolean Criterion Scoring (v1)"
+    labels: ["design", "implementation", "method", "validation", "v1"]
+    markdown: "Normalize boolean criterion values before scoring by mapping `true` to `1` and `false` to `0`. Criterion polarity determines whether `true` or `false` is preferred in the ranking."
+  }
   "mcda.vikor": {
     name: "mcda.vikor"
     title: "VIKOR"
@@ -423,7 +453,7 @@ modules: ["design"]
     name: "model.validation"
     title: "Model Validation (v1)"
     labels: ["design", "implementation", "v1"]
-    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, and alternative evaluation coverage before computation."
+    markdown: "Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, ordinal scale documentation, boolean constraint operators, and alternative evaluation coverage before computation."
   }
   "planning.lifecycle-decision": {
     name: "planning.lifecycle-decision"
@@ -689,6 +719,9 @@ reports: [
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
               #notesByName["mcda.topsis"].name,
+              #notesByName["scoring.number-normalization.v1"].name,
+              #notesByName["scoring.ordinal-normalization.v1"].name,
+              #notesByName["scoring.boolean-normalization.v1"].name,
               #notesByName["mcda.vikor"].name,
             ]
           },
@@ -702,6 +735,8 @@ reports: [
             title: "Model concepts"
             notes: [
               #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["criteria.value-types.v1"].name,
+              #notesByName["criteria.scale-guidance.ordinal"].name,
               #notesByName["input.format"].name,
               #notesByName["model.documentation"].name,
               #notesByName["model.incomplete.data"].name,
@@ -730,6 +765,8 @@ reports: [
             notes: [
               #notesByName["criteria.pairwise.clarity"].name,
               #notesByName["criteria.semantic.consistency"].name,
+              #notesByName["criteria.value-types.v1"].name,
+              #notesByName["criteria.scale-guidance.ordinal"].name,
               #notesByName["input.format"].name,
               #notesByName["model.documentation"].name,
               #notesByName["model.incomplete.data"].name,
@@ -856,6 +893,9 @@ reports: [
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
               #notesByName["mcda.topsis"].name,
+              #notesByName["scoring.number-normalization.v1"].name,
+              #notesByName["scoring.ordinal-normalization.v1"].name,
+              #notesByName["scoring.boolean-normalization.v1"].name,
               #notesByName["mcda.vikor"].name,
             ]
           },
@@ -1079,6 +1119,8 @@ notes: [
   #notesByName["call.reports.generate.render-output.render-json"],
   #notesByName["call.reports.generate.render-output.render-csv"],
   #notesByName["criteria.pairwise.clarity"],
+  #notesByName["criteria.value-types.v1"],
+  #notesByName["criteria.scale-guidance.ordinal"],
   #notesByName["criteria.semantic.consistency"],
   #notesByName["decision.explainability"],
   #notesByName["decision.multi-criteria-ranking"],
@@ -1113,6 +1155,9 @@ notes: [
   #notesByName["mcda.electre"],
   #notesByName["mcda.promethee"],
   #notesByName["mcda.topsis"],
+  #notesByName["scoring.number-normalization.v1"],
+  #notesByName["scoring.ordinal-normalization.v1"],
+  #notesByName["scoring.boolean-normalization.v1"],
   #notesByName["mcda.vikor"],
   #notesByName["model.documentation"],
   #notesByName["model.incomplete.data"],
