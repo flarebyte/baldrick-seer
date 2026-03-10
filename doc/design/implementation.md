@@ -1,6 +1,6 @@
 # Implementation Considerations
 
-Implementation guidance and method references for the CLI and model.
+Engineering guidance, conventions, and implementation choices for the CLI.
 
 ## Engineering conventions
 
@@ -38,10 +38,6 @@ Primary languages, libraries, and tools chosen for the first release.
 
 ### Runtime and tooling
 
-#### Report Argument Validation (v1)
-
-Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model stays extensible, but validate it strictly in v1. Only documented arguments are accepted, unknown keys are errors, some keys may be shared across formats while others are format-specific, incompatible format-specific keys must be rejected, values must match the argument definition, and duplicate keys are invalid unless the spec explicitly allows them.
-
 #### Cobra Command and Argument Parsing (v1)
 
 Use Cobra for CLI command structure and argument parsing so command behavior and report argument handling follow one consistent model, while keeping report arguments extensible in representation but strictly validated against documented v1 argument definitions.
@@ -54,203 +50,13 @@ Implement the production CLI in Go so the tool remains fast, portable, and strai
 
 Use CUE as the configuration source of truth so schema, defaults, validation, and concrete config evaluation live in one place.
 
-#### Bun and TypeScript for E2E Tests (v1)
-
-Implement end-to-end tests in TypeScript with Bun so CLI scenarios can be expressed tersely while staying fast to run in CI.
-
-## Modeling guidance
-
-Recommendations about the decision-model shape and validation.
-
-### Model structure
-
-#### Clear Representation of Pairwise Judgments (v1)
-
-Represent pairwise comparisons explicitly with named criteria and a single canonical direction, using one field for the more important criterion and one field for the less important criterion, so humans and AI can validate and generate exactly one comparison for each unordered criterion pair.
-
-#### Document Ordinal Scales (v1)
-
-Require ordinal criteria to document their scale with `scaleGuidance`, so each integer level has a clear ordered meaning before scoring.
-
-#### Consistent Criteria Interpretation (v1)
-
-Keep each criterion semantically stable across scenarios even when its importance changes.
-
-#### Criterion Value Normalization (v1)
-
-Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
-
-#### Supported Criterion Value Types (v1)
-
-Support only three criterion value types in v1: number, ordinal, and boolean. Text criterion values are not part of the v1 model.
-
-#### Human and AI Friendly Input Format (v1)
-
-Use a semantic format such as CUE that remains readable for humans and AI systems while supporting strong validation.
-
-#### Model Documentation (v1)
-
-Allow decision models to carry descriptions, notes, and justifications for comparisons and values.
-
-#### Handling Incomplete Information (v1)
-
-Detect missing pairwise comparisons required for full AHP coverage or missing evaluation values early and return actionable diagnostics with both precise paths and readable named locations.
-
-#### Decision Model Structure (v1)
-
-Represent the decision problem with clear structures for criteria, alternatives, and scenarios that remain understandable to humans and AI.
-
-#### Model Validation (v1)
-
-Validate referenced criteria, exact full pairwise comparison coverage for each AHP scenario, supported v1 value types, integer ordinal values, ordinal scale documentation, boolean true-or-false values, compatible constraint operator/value combinations, and alternative evaluation coverage before computation.
-
-#### Scenario Aggregation Strategy (v1)
-
-Define how multiple scenarios are combined through cross-scenario aggregation into a final decision, starting with practical v1 approaches such as equal averaging or weighted averaging with explicit scenario aggregation weights defined in the aggregation configuration as the single source of truth.
-
-#### Constraint Semantics (v1)
-
-Keep the `ScenarioConstraint` shape as `criterionName`, `operator`, and `value`, but interpret it by criterion type. Number criteria accept numeric values with `<=`, `>=`, `=`, or `!=` for threshold-style rules. Ordinal criteria accept integer values within the defined scale with `<=`, `>=`, `=`, or `!=`, following the criterion's ordering. Boolean criteria accept only `=` or `!=` with `true` or `false`; comparison operators such as `<=` and `>=` are invalid.
-
-#### Constraint Enforcement (v1)
-
-Allow scenarios to define hard requirements that can exclude alternatives before ranking, using constraint operators and values that remain compatible with each referenced criterion type.
-
-#### Scenario Isolation (v1)
-
-Evaluate each scenario independently with its own priorities and candidate evaluations.
-
 #### Extensible Decision Methods (v2)
 
 Extend the v1 AHP + TOPSIS pipeline so additional MCDA methods can be added later without replacing the overall CLI shape. Future methods such as ELECTRE, PROMETHEE, or VIKOR may require additional optional metadata or method-specific configuration beyond the v1 model.
 
-## Referenced methods
+#### Bun and TypeScript for E2E Tests (v1)
 
-Algorithms and analysis techniques explicitly named in the design.
-
-### Algorithms
-
-#### Robustness Analysis
-
-Evaluate how stable a decision remains when assumptions, scenarios, or parameter ranges vary.
-
-#### Sensitivity Analysis
-
-Evaluate how changes in weights or inputs affect the ranking of alternatives.
-
-#### Criterion Value Normalization (v1)
-
-Define explicit v1 normalization rules for criterion values before ranking. Numbers are used directly in the decision matrix, ordinal values are validated as integers and then treated numerically, and boolean values are normalized to numeric form with `true = 1` and `false = 0`.
-
-#### Analytic Hierarchy Process (AHP)
-
-Derive criterion weights within a scenario from pairwise criterion comparisons and turn qualitative judgments into a consistent numerical weighting system.
-
-#### ELECTRE Outranking Method
-
-Use concordance and discordance reasoning to determine whether one alternative sufficiently outranks another.
-
-#### Multi-Criteria Decision Analysis (MCDA)
-
-Evaluate alternatives against multiple criteria instead of reducing the decision to a single input dimension. In this design, v1 applies MCDA through an AHP-derived weighting stage followed by TOPSIS ranking.
-
-#### PROMETHEE
-
-Compare alternatives pairwise with preference functions to produce a transparent ranking.
-
-#### TOPSIS
-
-Rank alternatives by their distance from an ideal best and an ideal worst solution.
-
-#### VIKOR
-
-Identify a compromise solution that balances group utility and individual regret.
-
-#### Boolean Criterion Scoring (v1)
-
-Normalize boolean criterion values before scoring by mapping `true` to `1` and `false` to `0`. Criterion polarity determines whether `true` or `false` is preferred in the ranking.
-
-#### Numeric Criterion Scoring (v1)
-
-Treat numeric criterion values as measurable quantities used directly in the decision matrix. Criterion polarity determines whether higher or lower values are preferred during normalization and ranking.
-
-#### Ordinal Criterion Scoring (v1)
-
-Treat ordinal criterion values as ordered integer levels used numerically in the decision matrix. Higher integers represent a higher level of the criterion, polarity determines desirability, and ordinal criteria should include `scaleGuidance`.
-
-## Report generation flow
-
-CLI execution path for generating reports after the shared validation stage.
-
-### Generate reports
-
-#### Generate Reports Call
-
-Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid.
-
-#### Build AHP Inputs
-
-Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights.
-
-#### Build TOPSIS Inputs
-
-Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS.
-
-#### Compute Criteria Weights with AHP
-
-Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process.
-
-#### Future Option: Rank with ELECTRE
-
-Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS.
-
-#### Future Option: TOPSIS with Sensitivity Analysis
-
-Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness.
-
-#### Parse Report Arguments
-
-Parse CLI arguments for report generation, including the config path, requested report names, and output options.
-
-#### Rank Alternatives with TOPSIS
-
-Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS.
-
-#### Render Requested Reports
-
-Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering.
-
-#### Render CSV Report
-
-Render flat tabular CSV output for spreadsheet analysis and data exchange.
-
-#### Render JSON Report
-
-Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report.
-
-#### Render Markdown Report
-
-Render narrative markdown output for human readers, including rankings, explanations, and scenario summaries.
-
-#### Select Ranking Strategy
-
-Select the ranking pipeline after computing scenario-local criterion weights with AHP. In v1, the design is built around an AHP + TOPSIS pipeline; v2 may add alternatives such as ELECTRE or TOPSIS followed by sensitivity analysis.
-
-#### Select Requested Reports
-
-Resolve which report definitions should run, applying any CLI filtering by report name or output target.
-
-#### Reuse Shared Validation Flow
-
-Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced.
-
-#### Load CUE Config
-
-Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
-
-#### Validate Config Model
-
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations. For the `validate` command, this is the terminal result of the command.
+Implement end-to-end tests in TypeScript with Bun so CLI scenarios can be expressed tersely while staying fast to run in CI.
 
 ## User experience and output
 
@@ -285,54 +91,4 @@ Running the same model with the same inputs should always produce identical resu
 #### Guidance for Model Creation (v2)
 
 Provide richer prompts and guidance that help users define criteria, comparisons, and scenario descriptions with fewer modeling errors.
-
-## Validation call flow
-
-Early CLI execution path for reading and validating an input config file.
-
-### Input config validation
-
-#### Validate Input Config Call
-
-Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation.
-
-#### Load CUE Config
-
-Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value.
-
-#### Parse Validation Arguments
-
-Parse CLI arguments for the validate command, including the config path and output flags.
-
-#### Validate Config Model
-
-Run structural and graph validation on the loaded config and emit diagnostics with both machine paths and human-readable locations. For the `validate` command, this is the terminal result of the command.
-
-#### Check Scenario Constraints
-
-Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error.
-
-#### Check Evaluation Coverage
-
-Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values.
-
-#### Check Pairwise Comparisons
-
-Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair.
-
-#### Check Named References
-
-Check that all named references resolve, including criteria names, scenario names, alternative names, and report focus selectors.
-
-#### Check Report Definitions
-
-Check that report definitions use supported formats, valid focus selectors, and strictly validated report arguments. In v1 every report argument must use `key=value`, unknown arguments are validation errors, argument names must be allowed globally or for the selected format, format-specific arguments must match the report format, invalid values must be rejected, and duplicate keys are invalid unless explicitly defined otherwise.
-
-#### Check Config Structure
-
-Check that the loaded config matches the expected top-level shape, required sections, and field types after CUE evaluation.
-
-#### Report Argument Validation (v1)
-
-Keep `ReportDefinition.arguments` as `string[]` in `key=value` form so the model stays extensible, but validate it strictly in v1. Only documented arguments are accepted, unknown keys are errors, some keys may be shared across formats while others are format-specific, incompatible format-specific keys must be rejected, values must match the argument definition, and duplicate keys are invalid unless the spec explicitly allows them.
 

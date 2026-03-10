@@ -7,11 +7,11 @@ modules: ["design", "flow"]
 reports: [{
   title: "Execution Flows"
   filepath: "../design/flows.md"
-  description: "Call-oriented flows for CLI validation and report generation."
+  description: "Call-oriented CLI graphs. Normative semantics are defined in the specification."
   sections: [
     {
       title: "Validation flows"
-      description: "Graph view for validating an input config file."
+      description: "Graph view for validating an input config file. Refer to the normative specification for validation rules."
       sections: [
         {
           title: "Input config validation graph"
@@ -24,26 +24,11 @@ reports: [{
             "cycle-policy=disallow",
           ]
         },
-        {
-          title: "Input config validation notes"
-          notes: [
-            "call.validation.input-config",
-            "call.validation.input-config.parse-args",
-            "call.validation.input-config.load-cue-config",
-            "call.validation.input-config.validate-model",
-            "call.validation.input-config.validate-model.check-structure",
-            "call.validation.input-config.validate-model.check-references",
-            "call.validation.input-config.validate-model.check-pairwise-comparisons",
-            "call.validation.input-config.validate-model.check-evaluation-coverage",
-            "call.validation.input-config.validate-model.check-constraints",
-            "call.validation.input-config.validate-model.check-report-definitions",
-          ]
-        },
       ]
     },
     {
       title: "Report generation flows"
-      description: "Graph view for generating reports from a validated input config."
+      description: "Graph view for generating reports from a validated input config. Refer to the normative specification for scoring and failure behavior."
       sections: [
         {
           title: "Report generation graph"
@@ -56,28 +41,6 @@ reports: [{
             "cycle-policy=disallow",
           ]
         },
-        {
-          title: "Report generation notes"
-          notes: [
-            "call.reports.generate",
-            "call.reports.generate.parse-args",
-            "call.reports.generate.select-reports",
-            "call.reports.generate.shared-validation",
-            "call.validation.input-config.load-cue-config",
-            "call.validation.input-config.validate-model",
-            "call.reports.generate.build-ahp-inputs",
-            "call.reports.generate.compute-ahp-weights",
-            "call.reports.generate.select-ranking-strategy",
-            "call.reports.generate.build-topsis-inputs",
-            "call.reports.generate.rank-alternatives-topsis",
-            "call.reports.generate.future-rank-electre",
-            "call.reports.generate.future-rank-topsis-sensitivity",
-            "call.reports.generate.render-output",
-            "call.reports.generate.render-output.render-markdown",
-            "call.reports.generate.render-output.render-json",
-            "call.reports.generate.render-output.render-csv",
-          ]
-        },
       ]
     },
   ]
@@ -88,7 +51,7 @@ notes: [
     name: "call.validation.input-config"
     title: "Validate Input Config Call"
     labels: ["call", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for validating an input configuration file and returning validation results only, without scoring or report generation."
+    markdown: "Top-level validate-command call chain. See the normative specification for authoritative command semantics."
   },
   {
     name: "call.validation.input-config.parse-args"
@@ -100,13 +63,13 @@ notes: [
     name: "call.validation.input-config.load-cue-config"
     title: "Load CUE Config"
     labels: ["call", "cue", "flow", "implementation"]
-    markdown: "Load and evaluate the CUE configuration package so the CLI works with a concrete validated config value."
+    markdown: "Load and evaluate the CUE configuration package before validation."
   },
   {
     name: "call.validation.input-config.validate-model"
     title: "Validate Config Model"
     labels: ["call", "flow", "implementation"]
-    markdown: "Run structural and graph validation on the loaded config and emit diagnostics for any invalid references or incomplete model data. For the `validate` command, this is the terminal result of the command."
+    markdown: "Run the shared validation stage and emit diagnostics. See the normative specification for exact validation behavior."
   },
   {
     name: "call.validation.input-config.validate-model.check-structure"
@@ -124,31 +87,31 @@ notes: [
     name: "call.validation.input-config.validate-model.check-pairwise-comparisons"
     title: "Check Pairwise Comparisons"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that each scenario using AHP provides pairwise comparisons only between known active criteria, never compares a criterion with itself, and includes exactly one canonical comparison for every unordered pair of distinct active criteria. Reject duplicate comparisons, inverse duplicates, or any missing pair."
+    markdown: "Validate AHP pairwise-comparison coverage and canonical comparison structure."
   },
   {
     name: "call.validation.input-config.validate-model.check-evaluation-coverage"
     title: "Check Evaluation Coverage"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that evaluations reference known scenarios and alternatives and provide supported v1 criterion values for each scenario's active criteria: measurable numbers, integer ordinals, or booleans with only `true` and `false` values."
+    markdown: "Validate evaluation coverage and supported value forms for active criteria."
   },
   {
     name: "call.validation.input-config.validate-model.check-constraints"
     title: "Check Scenario Constraints"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that each scenario constraint uses an operator and value compatible with the referenced criterion type: number criteria allow numeric values with `<=`, `>=`, `=`, or `!=`; ordinal criteria allow integer values with `<=`, `>=`, `=`, or `!=`; boolean criteria allow only `=` or `!=` with `true` or `false`. Invalid operator/type combinations must raise a validation error."
+    markdown: "Validate constraint operator and value compatibility."
   },
   {
     name: "call.validation.input-config.validate-model.check-report-definitions"
     title: "Check Report Definitions"
     labels: ["call", "flow", "implementation", "validation"]
-    markdown: "Check that report definitions use supported formats, valid focus selectors, and strictly validated report arguments. In v1 every report argument must use `key=value`, unknown arguments are validation errors, argument names must be allowed globally or for the selected format, format-specific arguments must match the report format, invalid values must be rejected, and duplicate keys are invalid unless explicitly defined otherwise."
+    markdown: "Validate report definitions, focus selectors, and report arguments."
   },
   {
     name: "call.reports.generate"
     title: "Generate Reports Call"
     labels: ["call", "flow", "implementation"]
-    markdown: "Top-level CLI call flow for generating ranking reports from an input decision model. The command reuses the shared validation path and fails fast if the model is invalid."
+    markdown: "Top-level report-generation call chain. See the normative specification for failure handling and output semantics."
   },
   {
     name: "call.reports.generate.parse-args"
@@ -160,61 +123,61 @@ notes: [
     name: "call.reports.generate.select-reports"
     title: "Select Requested Reports"
     labels: ["call", "flow", "implementation"]
-    markdown: "Resolve which report definitions should run, applying any CLI filtering by report name or output target."
+    markdown: "Resolve which report definitions should run after CLI filtering."
   },
   {
     name: "call.reports.generate.shared-validation"
     title: "Reuse Shared Validation Flow"
     labels: ["call", "flow", "implementation"]
-    markdown: "Reuse the same CUE loading and model validation path as the dedicated validate command before any scoring runs. If validation fails, report generation stops immediately and no ranking report is produced."
+    markdown: "Reuse the shared validation stage before scoring."
   },
   {
     name: "call.reports.generate.build-ahp-inputs"
     title: "Build AHP Inputs"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Collect the validated full pairwise comparison set for each scenario into the normalized input structures needed for AHP computation of scenario-local criterion weights."
+    markdown: "Prepare validated pairwise comparisons for AHP weight computation."
   },
   {
     name: "call.reports.generate.compute-ahp-weights"
     title: "Compute Criteria Weights with AHP"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Transform pairwise criterion comparisons within each scenario into normalized scenario-local criterion weights using Analytic Hierarchy Process."
+    markdown: "Compute scenario-local criterion weights from validated pairwise comparisons."
   },
   {
     name: "call.reports.generate.select-ranking-strategy"
     title: "Select Ranking Strategy"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Select the ranking pipeline after computing scenario-local criterion weights with AHP. In v1, the design is built around an AHP + TOPSIS pipeline; v2 may add alternatives such as ELECTRE or TOPSIS followed by sensitivity analysis."
+    markdown: "Select the ranking branch after AHP weighting."
   },
   {
     name: "call.reports.generate.build-topsis-inputs"
     title: "Build TOPSIS Inputs"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Combine validated evaluations, criterion polarity, and AHP-derived scenario-local criterion weights into the decision matrices required by TOPSIS."
+    markdown: "Assemble TOPSIS decision matrices from validated evaluations, polarity, and AHP-derived weights."
   },
   {
     name: "call.reports.generate.rank-alternatives-topsis"
     title: "Rank Alternatives with TOPSIS"
     labels: ["call", "flow", "implementation", "method"]
-    markdown: "Use the validated evaluations and scenario-local criterion weights derived with AHP to rank alternatives with TOPSIS."
+    markdown: "Rank alternatives with TOPSIS using validated evaluations and scenario-local criterion weights."
   },
   {
     name: "call.reports.generate.future-rank-electre"
     title: "Future Option: Rank with ELECTRE"
     labels: ["call", "flow", "future", "method"]
-    markdown: "Potential v2 branch where the validated model is ranked with ELECTRE instead of TOPSIS."
+    markdown: "Potential future branch for ELECTRE-based ranking."
   },
   {
     name: "call.reports.generate.future-rank-topsis-sensitivity"
     title: "Future Option: TOPSIS with Sensitivity Analysis"
     labels: ["call", "flow", "future", "method"]
-    markdown: "Potential v2 branch where TOPSIS ranking is complemented by sensitivity analysis to assess robustness."
+    markdown: "Potential future branch that complements TOPSIS with sensitivity analysis."
   },
   {
     name: "call.reports.generate.render-output"
     title: "Render Requested Reports"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render the requested markdown, JSON, or CSV outputs only after validation succeeds and ranking results are computed. Invalid models do not reach report rendering."
+    markdown: "Render requested outputs after validation succeeds and ranking results exist."
   },
   {
     name: "call.reports.generate.render-output.render-markdown"
@@ -226,7 +189,7 @@ notes: [
     name: "call.reports.generate.render-output.render-json"
     title: "Render JSON Report"
     labels: ["call", "flow", "implementation"]
-    markdown: "Render machine-readable JSON ranking output for automation, downstream processing, and reproducibility only when validation succeeds. If JSON output is requested and validation fails, the command may emit structured diagnostics as an error payload or via stderr, but that output is not a successful ranking report."
+    markdown: "Render JSON ranking output after successful validation and scoring."
   },
   {
     name: "call.reports.generate.render-output.render-csv"

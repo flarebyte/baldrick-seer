@@ -609,9 +609,9 @@ modules: ["design"]
 
 reports: [
   {
-    title: "Design Overview"
+    title: "Normative Specification"
     filepath: "../design/overview.md"
-    description: "High-level overview of the baldrick-seer decision-model design."
+    description: "Authoritative v1 specification for the decision model, validation rules, and CLI execution behavior."
     sections: [
       {
         title: "Scope"
@@ -632,6 +632,87 @@ reports: [
             notes: [
               #notesByName["example.hosting-choice"].name,
               #notesByName["example.platform-selection"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Model and Validation"
+        description: "Authoritative definitions for the input model, value semantics, aggregation, constraints, and validation rules."
+        sections: [
+          {
+            title: "Model semantics"
+            notes: [
+              #notesByName["input.format"].name,
+              #notesByName["model.structure"].name,
+              #notesByName["model.documentation"].name,
+              #notesByName["criteria.pairwise.clarity"].name,
+              #notesByName["criteria.value-types.v1"].name,
+              #notesByName["criteria.scale-guidance.ordinal"].name,
+              #notesByName["criteria.value-normalization.v1"].name,
+              #notesByName["scoring.number-normalization.v1"].name,
+              #notesByName["scoring.ordinal-normalization.v1"].name,
+              #notesByName["scoring.boolean-normalization.v1"].name,
+              #notesByName["report.arguments.validation.v1"].name,
+              #notesByName["scenario.aggregation.policy"].name,
+              #notesByName["scenario.constraint-semantics.v1"].name,
+              #notesByName["scenario.constraints"].name,
+              #notesByName["scenario.isolation"].name,
+            ]
+          },
+          {
+            title: "Validation rules"
+            notes: [
+              #notesByName["model.validation"].name,
+              #notesByName["model.incomplete.data"].name,
+              #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name,
+              #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
+              #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
+              #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
+            ]
+          },
+        ]
+      },
+      {
+        title: "Execution Behavior"
+        description: "Authoritative CLI behavior for validation-only runs and report generation."
+        sections: [
+          {
+            title: "Validate command"
+            notes: [
+              #notesByName["call.validation.input-config"].name,
+              #notesByName["call.validation.input-config.parse-args"].name,
+              #notesByName["call.validation.input-config.load-cue-config"].name,
+              #notesByName["call.validation.input-config.validate-model"].name,
+            ]
+          },
+          {
+            title: "Report generation command"
+            notes: [
+              #notesByName["call.reports.generate"].name,
+              #notesByName["call.reports.generate.parse-args"].name,
+              #notesByName["call.reports.generate.select-reports"].name,
+              #notesByName["call.reports.generate.shared-validation"].name,
+              #notesByName["call.reports.generate.build-ahp-inputs"].name,
+              #notesByName["call.reports.generate.compute-ahp-weights"].name,
+              #notesByName["call.reports.generate.select-ranking-strategy"].name,
+              #notesByName["call.reports.generate.build-topsis-inputs"].name,
+              #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
+              #notesByName["call.reports.generate.render-output"].name,
+              #notesByName["call.reports.generate.render-output.render-markdown"].name,
+              #notesByName["call.reports.generate.render-output.render-json"].name,
+              #notesByName["call.reports.generate.render-output.render-csv"].name,
+            ]
+          },
+          {
+            title: "Method scope"
+            notes: [
+              #notesByName["mcda.general"].name,
+              #notesByName["mcda.ahp"].name,
+              #notesByName["mcda.topsis"].name,
+              #notesByName["system.extensibility.methods"].name,
+              #notesByName["call.reports.generate.future-rank-electre"].name,
+              #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name,
             ]
           },
         ]
@@ -733,26 +814,22 @@ reports: [
   {
     title: "Glossary"
     filepath: "../design/glossary.md"
-    description: "Definitions of the main design terms, methods, and modeling concepts used by baldrick-seer."
+    description: "Concise term definitions used by the normative specification and examples."
     sections: [
       {
         title: "Decision methods"
-        description: "Core MCDA methods and analysis terms referenced by the design."
+        description: "Short definitions of the named decision methods and analysis terms."
         sections: [
           {
             title: "Methods"
             notes: [
-              #notesByName["mcda.general"].name,
               #notesByName["analysis.robustness.method"].name,
               #notesByName["analysis.sensitivity"].name,
+              #notesByName["mcda.general"].name,
               #notesByName["mcda.ahp"].name,
               #notesByName["mcda.electre"].name,
               #notesByName["mcda.promethee"].name,
               #notesByName["mcda.topsis"].name,
-              #notesByName["criteria.value-normalization.v1"].name,
-              #notesByName["scoring.number-normalization.v1"].name,
-              #notesByName["scoring.ordinal-normalization.v1"].name,
-              #notesByName["scoring.boolean-normalization.v1"].name,
               #notesByName["mcda.vikor"].name,
             ]
           },
@@ -760,24 +837,15 @@ reports: [
       },
       {
         title: "Modeling terms"
-        description: "Important concepts used to describe the input model and its validation rules."
+        description: "Short definitions of recurring model terms. Normative rules are defined in the specification."
         sections: [
           {
             title: "Model concepts"
             notes: [
-              #notesByName["criteria.pairwise.clarity"].name,
               #notesByName["criteria.value-types.v1"].name,
-              #notesByName["criteria.scale-guidance.ordinal"].name,
-              #notesByName["criteria.value-normalization.v1"].name,
               #notesByName["input.format"].name,
-              #notesByName["model.documentation"].name,
-              #notesByName["model.incomplete.data"].name,
-              #notesByName["model.structure"].name,
-              #notesByName["model.validation"].name,
               #notesByName["report.arguments.validation.v1"].name,
               #notesByName["scenario.aggregation.policy"].name,
-              #notesByName["scenario.constraint-semantics.v1"].name,
-              #notesByName["scenario.constraints"].name,
               #notesByName["scenario.isolation"].name,
             ]
           },
@@ -788,34 +856,8 @@ reports: [
   {
     title: "Implementation Considerations"
     filepath: "../design/implementation.md"
-    description: "Implementation guidance and method references for the CLI and model."
+    description: "Engineering guidance, conventions, and implementation choices for the CLI."
     sections: [
-      {
-        title: "Modeling guidance"
-        description: "Recommendations about the decision-model shape and validation."
-        sections: [
-          {
-            title: "Model structure"
-            notes: [
-              #notesByName["criteria.pairwise.clarity"].name,
-              #notesByName["criteria.semantic.consistency"].name,
-              #notesByName["criteria.value-types.v1"].name,
-              #notesByName["criteria.scale-guidance.ordinal"].name,
-              #notesByName["criteria.value-normalization.v1"].name,
-              #notesByName["input.format"].name,
-              #notesByName["model.documentation"].name,
-              #notesByName["model.incomplete.data"].name,
-              #notesByName["model.structure"].name,
-              #notesByName["model.validation"].name,
-              #notesByName["scenario.aggregation.policy"].name,
-              #notesByName["scenario.constraint-semantics.v1"].name,
-              #notesByName["scenario.constraints"].name,
-              #notesByName["scenario.isolation"].name,
-              #notesByName["system.extensibility.methods"].name,
-            ]
-          },
-        ]
-      },
       {
         title: "Engineering conventions"
         description: "Implementation rules intended to keep the codebase readable, testable, and deterministic."
@@ -858,84 +900,11 @@ reports: [
           {
             title: "Runtime and tooling"
             notes: [
-              #notesByName["stack.cli.go"].name,
+              #notesByName["system.extensibility.methods"].name,
               #notesByName["stack.cli.cobra"].name,
+              #notesByName["stack.cli.go"].name,
               #notesByName["stack.config.cue"].name,
-              #notesByName["report.arguments.validation.v1"].name,
               #notesByName["testing.e2e.bun-typescript"].name,
-            ]
-          },
-        ]
-      },
-      {
-        title: "Validation call flow"
-        description: "Early CLI execution path for reading and validating an input config file."
-        sections: [
-          {
-            title: "Input config validation"
-            notes: [
-              #notesByName["call.validation.input-config"].name,
-              #notesByName["call.validation.input-config.parse-args"].name,
-              #notesByName["call.validation.input-config.load-cue-config"].name,
-              #notesByName["call.validation.input-config.validate-model"].name,
-              #notesByName["call.validation.input-config.validate-model.check-structure"].name,
-              #notesByName["call.validation.input-config.validate-model.check-references"].name,
-              #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name,
-              #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
-              #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
-              #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
-              #notesByName["report.arguments.validation.v1"].name,
-            ]
-          },
-        ]
-      },
-      {
-        title: "Report generation flow"
-        description: "CLI execution path for generating reports after the shared validation stage."
-        sections: [
-          {
-            title: "Generate reports"
-            notes: [
-              #notesByName["call.reports.generate"].name,
-              #notesByName["call.reports.generate.parse-args"].name,
-              #notesByName["call.reports.generate.select-reports"].name,
-              #notesByName["call.reports.generate.shared-validation"].name,
-              #notesByName["call.validation.input-config.load-cue-config"].name,
-              #notesByName["call.validation.input-config.validate-model"].name,
-              #notesByName["call.reports.generate.build-ahp-inputs"].name,
-              #notesByName["call.reports.generate.compute-ahp-weights"].name,
-              #notesByName["call.reports.generate.select-ranking-strategy"].name,
-              #notesByName["call.reports.generate.build-topsis-inputs"].name,
-              #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
-              #notesByName["call.reports.generate.future-rank-electre"].name,
-              #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name,
-              #notesByName["call.reports.generate.render-output"].name,
-              #notesByName["call.reports.generate.render-output.render-markdown"].name,
-              #notesByName["call.reports.generate.render-output.render-json"].name,
-              #notesByName["call.reports.generate.render-output.render-csv"].name,
-            ]
-          },
-        ]
-      },
-      {
-        title: "Referenced methods"
-        description: "Algorithms and analysis techniques explicitly named in the design."
-        sections: [
-          {
-            title: "Algorithms"
-            notes: [
-              #notesByName["analysis.robustness.method"].name,
-              #notesByName["analysis.sensitivity"].name,
-              #notesByName["mcda.general"].name,
-              #notesByName["mcda.ahp"].name,
-              #notesByName["mcda.electre"].name,
-              #notesByName["mcda.promethee"].name,
-              #notesByName["mcda.topsis"].name,
-              #notesByName["criteria.value-normalization.v1"].name,
-              #notesByName["scoring.number-normalization.v1"].name,
-              #notesByName["scoring.ordinal-normalization.v1"].name,
-              #notesByName["scoring.boolean-normalization.v1"].name,
-              #notesByName["mcda.vikor"].name,
             ]
           },
         ]
@@ -945,11 +914,11 @@ reports: [
   {
     title: "Execution Flows"
     filepath: "../design/flows.md"
-    description: "Call-oriented flows for CLI validation and report generation."
+    description: "Call-oriented CLI graphs. Normative semantics are defined in the specification."
     sections: [
       {
         title: "Validation flows"
-        description: "Graph view for validating an input config file."
+        description: "Graph view for validating an input config file. Refer to the normative specification for validation rules."
         sections: [
           {
             title: "Input config validation graph"
@@ -962,31 +931,11 @@ reports: [
               "cycle-policy=disallow",
             ]
           },
-          {
-            title: "Input config validation notes"
-            notes: [
-              #notesByName["call.validation.input-config"].name,
-              #notesByName["call.validation.input-config.parse-args"].name,
-              #notesByName["call.validation.input-config.load-cue-config"].name,
-              #notesByName["call.validation.input-config.validate-model"].name,
-              #notesByName["call.validation.input-config.validate-model.check-structure"].name,
-              #notesByName["call.validation.input-config.validate-model.check-references"].name,
-              #notesByName["call.validation.input-config.validate-model.check-pairwise-comparisons"].name,
-              #notesByName["call.validation.input-config.validate-model.check-evaluation-coverage"].name,
-              #notesByName["call.validation.input-config.validate-model.check-constraints"].name,
-              #notesByName["call.validation.input-config.validate-model.check-report-definitions"].name,
-              #notesByName["input.format"].name,
-              #notesByName["model.validation"].name,
-              #notesByName["model.incomplete.data"].name,
-              #notesByName["criteria.pairwise.clarity"].name,
-              #notesByName["scenario.constraints"].name,
-            ]
-          },
         ]
       },
       {
         title: "Report generation flows"
-        description: "Graph view for generating reports from a validated input config."
+        description: "Graph view for generating reports from a validated input config. Refer to the normative specification for scoring and failure behavior."
         sections: [
           {
             title: "Report generation graph"
@@ -997,30 +946,6 @@ reports: [
               "graph-start-node=call.reports.generate",
               "graph-renderer=markdown-text",
               "cycle-policy=disallow",
-            ]
-          },
-          {
-            title: "Report generation notes"
-            notes: [
-              #notesByName["call.reports.generate"].name,
-              #notesByName["call.reports.generate.parse-args"].name,
-              #notesByName["call.reports.generate.select-reports"].name,
-              #notesByName["call.reports.generate.shared-validation"].name,
-              #notesByName["call.validation.input-config.load-cue-config"].name,
-              #notesByName["call.validation.input-config.validate-model"].name,
-              #notesByName["call.reports.generate.build-ahp-inputs"].name,
-              #notesByName["call.reports.generate.compute-ahp-weights"].name,
-              #notesByName["call.reports.generate.select-ranking-strategy"].name,
-              #notesByName["call.reports.generate.build-topsis-inputs"].name,
-              #notesByName["call.reports.generate.rank-alternatives-topsis"].name,
-              #notesByName["call.reports.generate.future-rank-electre"].name,
-              #notesByName["call.reports.generate.future-rank-topsis-sensitivity"].name,
-              #notesByName["call.reports.generate.render-output"].name,
-              #notesByName["call.reports.generate.render-output.render-markdown"].name,
-              #notesByName["call.reports.generate.render-output.render-json"].name,
-              #notesByName["call.reports.generate.render-output.render-csv"].name,
-              #notesByName["mcda.ahp"].name,
-              #notesByName["mcda.topsis"].name,
             ]
           },
         ]
