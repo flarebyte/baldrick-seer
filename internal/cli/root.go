@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const configFlagName = "config"
+
 type validateRunner func(app.ValidateRequest) (app.ValidateResponse, error)
 type reportGenerateRunner func(app.ReportGenerateRequest) (app.ReportGenerateResponse, error)
 
@@ -34,11 +36,13 @@ func newRootCmd(deps dependencies) *cobra.Command {
 }
 
 func newValidateCmd(run validateRunner) *cobra.Command {
-	return &cobra.Command{
+	var configPath string
+
+	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "Validate the input model",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			response, err := run(app.ValidateRequest{})
+			response, err := run(app.ValidateRequest{ConfigPath: configPath})
 			if err != nil {
 				return err
 			}
@@ -47,6 +51,11 @@ func newValidateCmd(run validateRunner) *cobra.Command {
 			return err
 		},
 	}
+
+	cmd.Flags().StringVar(&configPath, configFlagName, "", "Path to the config file")
+	_ = cmd.MarkFlagRequired(configFlagName)
+
+	return cmd
 }
 
 func newReportCmd(run reportGenerateRunner) *cobra.Command {
@@ -55,11 +64,13 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 		Short: "Manage report commands",
 	}
 
-	reportCmd.AddCommand(&cobra.Command{
+	var configPath string
+
+	generateCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate a report",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			response, err := run(app.ReportGenerateRequest{})
+			response, err := run(app.ReportGenerateRequest{ConfigPath: configPath})
 			if err != nil {
 				return err
 			}
@@ -67,7 +78,12 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 			_, err = cmd.OutOrStdout().Write([]byte(response.Stdout))
 			return err
 		},
-	})
+	}
+
+	generateCmd.Flags().StringVar(&configPath, configFlagName, "", "Path to the config file")
+	_ = generateCmd.MarkFlagRequired(configFlagName)
+
+	reportCmd.AddCommand(generateCmd)
 
 	return reportCmd
 }

@@ -1,11 +1,16 @@
 package app
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func TestRunValidate(t *testing.T) {
 	t.Parallel()
 
-	got, err := RunValidate(ValidateRequest{})
+	got, err := RunValidate(ValidateRequest{
+		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+	})
 	if err != nil {
 		t.Fatalf("RunValidate() error = %v", err)
 	}
@@ -18,7 +23,9 @@ func TestRunValidate(t *testing.T) {
 func TestRunReportGenerate(t *testing.T) {
 	t.Parallel()
 
-	got, err := RunReportGenerate(ReportGenerateRequest{})
+	got, err := RunReportGenerate(ReportGenerateRequest{
+		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+	})
 	if err != nil {
 		t.Fatalf("RunReportGenerate() error = %v", err)
 	}

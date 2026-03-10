@@ -115,8 +115,8 @@ make format
 ## Stub commands
 
 ```sh
-seer validate
-seer report generate
+seer validate --config testdata/config/minimal.cue
+seer report generate --config testdata/config/minimal.cue
 ```
 
 ## Why this shape

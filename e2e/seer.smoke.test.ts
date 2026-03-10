@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
 const binary = '.e2e-bin/seer';
+const config = 'testdata/config/minimal.cue';
 
 describe('seer CLI smoke test', () => {
   test('runs validate', async () => {
-    const proc = Bun.spawn([binary, 'validate'], {
+    const proc = Bun.spawn([binary, 'validate', '--config', config], {
       stdout: 'pipe',
       stderr: 'pipe',
     });
@@ -19,7 +20,7 @@ describe('seer CLI smoke test', () => {
   });
 
   test('runs report generate', async () => {
-    const proc = Bun.spawn([binary, 'report', 'generate'], {
+    const proc = Bun.spawn([binary, 'report', 'generate', '--config', config], {
       stdout: 'pipe',
       stderr: 'pipe',
     });
