@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -12,39 +13,97 @@ func testConfigPath() string {
 	return filepath.Join("..", "..", "testdata", "config", "minimal.cue")
 }
 
-func TestValidateCommand(t *testing.T) {
-	t.Parallel()
+func readGolden(t *testing.T, name string) string {
+	t.Helper()
 
-	cmd := NewRootCmd()
-	stdout := new(bytes.Buffer)
-	cmd.SetOut(stdout)
-	cmd.SetErr(new(bytes.Buffer))
-	cmd.SetArgs([]string{"validate", "--config", testConfigPath()})
-
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("Execute() error = %v", err)
+	path := filepath.Join("..", "..", "testdata", "golden", name)
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile(%q) error = %v", path, err)
 	}
 
-	if got, want := stdout.String(), "status: ok\ncommand: validate\nmessage: validate stub ok\n"; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
-	}
+	return string(content)
 }
 
-func TestReportGenerateCommand(t *testing.T) {
+func TestCommandOutputGoldens(t *testing.T) {
 	t.Parallel()
 
-	cmd := NewRootCmd()
-	stdout := new(bytes.Buffer)
-	cmd.SetOut(stdout)
-	cmd.SetErr(new(bytes.Buffer))
-	cmd.SetArgs([]string{"report", "generate", "--config", testConfigPath()})
-
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("Execute() error = %v", err)
+	tests := []struct {
+		name         string
+		args         []string
+		wantExitCode int
+		stdoutGolden string
+		stderrGolden string
+	}{
+		{
+			name:         "validate success",
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 0,
+			stdoutGolden: "validate_success.stdout.golden",
+		},
+		{
+			name:         "report generate success",
+			args:         []string{"report", "generate", "--config", testConfigPath()},
+			wantExitCode: 0,
+			stdoutGolden: "report_generate_success.stdout.golden",
+		},
+		{
+			name:         "validate missing config",
+			args:         []string{"validate"},
+			wantExitCode: 1,
+			stderrGolden: "missing_config.stderr.golden",
+		},
+		{
+			name:         "report generate missing config",
+			args:         []string{"report", "generate"},
+			wantExitCode: 1,
+			stderrGolden: "missing_config.stderr.golden",
+		},
+		{
+			name:         "validate missing file",
+			args:         []string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "missing.cue")},
+			wantExitCode: 1,
+			stderrGolden: "missing_file.stderr.golden",
+		},
+		{
+			name:         "report generate directory path",
+			args:         []string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config")},
+			wantExitCode: 1,
+			stderrGolden: "directory_path.stderr.golden",
+		},
 	}
 
-	if got, want := stdout.String(), "status: ok\ncommand: report generate\nmessage: report generate stub ok\n"; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			stdout := new(bytes.Buffer)
+			stderr := new(bytes.Buffer)
+
+			exitCode := Execute(tt.args, stdout, stderr)
+			if exitCode != tt.wantExitCode {
+				t.Fatalf("exitCode = %d, want %d", exitCode, tt.wantExitCode)
+			}
+
+			wantStdout := ""
+			if tt.stdoutGolden != "" {
+				wantStdout = readGolden(t, tt.stdoutGolden)
+			}
+
+			if got, want := stdout.String(), wantStdout; got != want {
+				t.Fatalf("stdout = %q, want %q", got, want)
+			}
+
+			wantStderr := ""
+			if tt.stderrGolden != "" {
+				wantStderr = readGolden(t, tt.stderrGolden)
+			}
+
+			if got, want := stderr.String(), wantStderr; got != want {
+				t.Fatalf("stderr = %q, want %q", got, want)
+			}
+		})
 	}
 }
 
@@ -80,7 +139,7 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 		t.Fatal("runValidate was not called")
 	}
 
-	if got, want := stdout.String(), "status: ok\ncommand: validate\nmessage: validate stub ok\n"; got != want {
+	if got, want := stdout.String(), readGolden(t, "validate_success.stdout.golden"); got != want {
 		t.Fatalf("stdout = %q, want %q", got, want)
 	}
 }
@@ -117,87 +176,33 @@ func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 		t.Fatal("runReportGenerate was not called")
 	}
 
-	if got, want := stdout.String(), "status: ok\ncommand: report generate\nmessage: report generate stub ok\n"; got != want {
+	if got, want := stdout.String(), readGolden(t, "report_generate_success.stdout.golden"); got != want {
 		t.Fatalf("stdout = %q, want %q", got, want)
 	}
 }
 
-func TestValidateCommandRequiresConfig(t *testing.T) {
+func TestExecuteIsDeterministic(t *testing.T) {
 	t.Parallel()
 
-	stdout := new(bytes.Buffer)
-	stderr := new(bytes.Buffer)
+	args := []string{"validate", "--config", testConfigPath()}
 
-	exitCode := Execute([]string{"validate"}, stdout, stderr)
-	if exitCode != 1 {
-		t.Fatalf("exitCode = %d, want 1", exitCode)
+	stdout1 := new(bytes.Buffer)
+	stderr1 := new(bytes.Buffer)
+	exitCode1 := Execute(args, stdout1, stderr1)
+
+	stdout2 := new(bytes.Buffer)
+	stderr2 := new(bytes.Buffer)
+	exitCode2 := Execute(args, stdout2, stderr2)
+
+	if exitCode1 != exitCode2 {
+		t.Fatalf("exitCode1 = %d, exitCode2 = %d", exitCode1, exitCode2)
 	}
 
-	if got, want := stdout.String(), ""; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
+	if stdout1.String() != stdout2.String() {
+		t.Fatalf("stdout1 = %q, stdout2 = %q", stdout1.String(), stdout2.String())
 	}
 
-	if got, want := stderr.String(), "status: error\nmessage: config flag is required\n"; got != want {
-		t.Fatalf("stderr = %q, want %q", got, want)
-	}
-}
-
-func TestValidateCommandRejectsInvalidConfig(t *testing.T) {
-	t.Parallel()
-
-	stdout := new(bytes.Buffer)
-	stderr := new(bytes.Buffer)
-
-	exitCode := Execute([]string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "missing.cue")}, stdout, stderr)
-	if exitCode != 1 {
-		t.Fatalf("exitCode = %d, want 1", exitCode)
-	}
-
-	if got, want := stdout.String(), ""; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
-	}
-
-	if got, want := stderr.String(), "status: error\nmessage: config path does not exist\n"; got != want {
-		t.Fatalf("stderr = %q, want %q", got, want)
-	}
-}
-
-func TestReportGenerateCommandRequiresConfig(t *testing.T) {
-	t.Parallel()
-
-	stdout := new(bytes.Buffer)
-	stderr := new(bytes.Buffer)
-
-	exitCode := Execute([]string{"report", "generate"}, stdout, stderr)
-	if exitCode != 1 {
-		t.Fatalf("exitCode = %d, want 1", exitCode)
-	}
-
-	if got, want := stdout.String(), ""; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
-	}
-
-	if got, want := stderr.String(), "status: error\nmessage: config flag is required\n"; got != want {
-		t.Fatalf("stderr = %q, want %q", got, want)
-	}
-}
-
-func TestReportGenerateCommandRejectsInvalidConfig(t *testing.T) {
-	t.Parallel()
-
-	stdout := new(bytes.Buffer)
-	stderr := new(bytes.Buffer)
-
-	exitCode := Execute([]string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config")}, stdout, stderr)
-	if exitCode != 1 {
-		t.Fatalf("exitCode = %d, want 1", exitCode)
-	}
-
-	if got, want := stdout.String(), ""; got != want {
-		t.Fatalf("stdout = %q, want %q", got, want)
-	}
-
-	if got, want := stderr.String(), "status: error\nmessage: config path is a directory\n"; got != want {
-		t.Fatalf("stderr = %q, want %q", got, want)
+	if stderr1.String() != stderr2.String() {
+		t.Fatalf("stderr1 = %q, stderr2 = %q", stderr1.String(), stderr2.String())
 	}
 }
