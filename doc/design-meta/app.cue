@@ -347,6 +347,12 @@ modules: ["design"]
     labels: ["design", "example", "output", "json", "validation"]
     filepath: "examples/validation-failure.json"
   }
+  "example.outputs.illustrative": {
+    name: "example.outputs.illustrative"
+    title: "Illustrative Output Examples"
+    labels: ["design", "example", "output"]
+    markdown: "The example outputs in this section are illustrative only. They demonstrate output structure, field layout, and report formats for markdown, JSON, and CSV; the shown scores and rankings are not normative fixtures and should not be read as exact or reproducible algorithmic results from the example models."
+  }
   "example.platform-selection": {
     name: "example.platform-selection"
     title: "Platform Selection Example"
@@ -697,10 +703,16 @@ reports: [
       },
       {
         title: "Example outputs"
-        description: "Illustrative outputs for the hosting-choice example across the main v1 report formats."
+        description: "Illustrative output shapes for the hosting-choice example across the main v1 report formats."
         sections: [
           {
-            title: "Successful reports"
+            title: "Illustrative note"
+            notes: [
+              #notesByName["example.outputs.illustrative"].name,
+            ]
+          },
+          {
+            title: "Illustrative reports"
             notes: [
               #notesByName["example.output-hosting-choice.markdown"].name,
               #notesByName["example.output-hosting-choice.json"].name,
@@ -1167,6 +1179,7 @@ notes: [
   #notesByName["example.output-hosting-choice.csv"],
   #notesByName["example.output-hosting-choice.json"],
   #notesByName["example.output-hosting-choice.markdown"],
+  #notesByName["example.outputs.illustrative"],
   #notesByName["example.output-validation-failure.json"],
   #notesByName["example.output-validation-failure.markdown"],
   #notesByName["example.input-platform-selection.ts"],
@@ -1639,6 +1652,21 @@ relationships: [
     from: #notesByName["example.hosting-choice"].name
     to: #notesByName["vendor.service-provider-comparison"].name
     label: "addresses_usecase"
+  },
+  {
+    from: #notesByName["example.outputs.illustrative"].name
+    to: #notesByName["example.output-hosting-choice.markdown"].name
+    label: "qualifies"
+  },
+  {
+    from: #notesByName["example.outputs.illustrative"].name
+    to: #notesByName["example.output-hosting-choice.json"].name
+    label: "qualifies"
+  },
+  {
+    from: #notesByName["example.outputs.illustrative"].name
+    to: #notesByName["example.output-hosting-choice.csv"].name
+    label: "qualifies"
   },
   {
     from: #notesByName["example.platform-selection"].name

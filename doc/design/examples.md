@@ -4,9 +4,15 @@ Scenario-based MCDA examples translated from the TypeScript design fixtures.
 
 ## Example outputs
 
-Illustrative outputs for the hosting-choice example across the main v1 report formats.
+Illustrative output shapes for the hosting-choice example across the main v1 report formats.
 
-### Successful reports
+### Illustrative note
+
+#### Illustrative Output Examples
+
+The example outputs in this section are illustrative only. They demonstrate output structure, field layout, and report formats for markdown, JSON, and CSV; the shown scores and rankings are not normative fixtures and should not be read as exact or reproducible algorithmic results from the example models.
+
+### Illustrative reports
 
 #### Hosting Choice CSV Output
 
@@ -57,15 +63,17 @@ Illustrative outputs for the hosting-choice example across the main v1 report fo
 ```markdown
 # Hosting Choice Summary
 
+Illustrative example only. The scores and rankings below are shown to demonstrate report structure and narrative layout, not as exact normative results.
+
 ## Result
 
-`Provider B` is the recommended overall choice with an aggregated score of `0.555`.
+`Provider B` appears as the overall choice in this illustrative example, with an example aggregated score of `0.555`.
 
 ## Why
 
 - `Provider A` is stronger on cost in the lean-startup scenario.
 - `Provider B` is materially stronger on speed and compliance.
-- With equal scenario aggregation, `Provider B` wins on combined score.
+- With equal scenario aggregation in this example layout, `Provider B` leads on combined score.
 
 ## Scenario ranking
 

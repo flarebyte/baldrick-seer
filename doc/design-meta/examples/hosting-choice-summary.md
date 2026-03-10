@@ -1,14 +1,16 @@
 # Hosting Choice Summary
 
+Illustrative example only. The scores and rankings below are shown to demonstrate report structure and narrative layout, not as exact normative results.
+
 ## Result
 
-`Provider B` is the recommended overall choice with an aggregated score of `0.555`.
+`Provider B` appears as the overall choice in this illustrative example, with an example aggregated score of `0.555`.
 
 ## Why
 
 - `Provider A` is stronger on cost in the lean-startup scenario.
 - `Provider B` is materially stronger on speed and compliance.
-- With equal scenario aggregation, `Provider B` wins on combined score.
+- With equal scenario aggregation in this example layout, `Provider B` leads on combined score.
 
 ## Scenario ranking
 
