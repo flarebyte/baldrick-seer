@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
@@ -132,6 +133,161 @@ func TestDefaultReportRenderer(t *testing.T) {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
 			}
 		})
+	}
+}
+
+func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		report ReportConfig
+	}{
+		{
+			name: "markdown",
+			report: ReportConfig{
+				Name:      "summary-markdown",
+				Title:     "Summary Markdown",
+				Format:    "markdown",
+				Arguments: []string{"include-scores=true"},
+			},
+		},
+		{
+			name: "json",
+			report: ReportConfig{
+				Name:      "summary-json",
+				Title:     "Summary JSON",
+				Format:    "json",
+				Arguments: []string{"include-weights=true", "pretty=true"},
+			},
+		},
+		{
+			name: "csv",
+			report: ReportConfig{
+				Name:      "summary-csv",
+				Title:     "Summary CSV",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			},
+		},
+	}
+
+	renderer := DefaultReportRenderer{}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			input := RenderReportsInput{
+				Command: domain.CommandRequest{
+					CommandName: domain.CommandNameReportGenerate,
+					ConfigPath:  fixtureConfigPath(),
+				},
+				ValidatedModel:  domain.ValidatedModelSummary{ConfigPath: fixtureConfigPath()},
+				ScenarioResults: reportScenarioResults(),
+				FinalRanking:    domain.AggregatedRankingResult{},
+				ReportDefinitions: []domain.ReportDefinition{
+					{Name: tt.report.Name, Title: tt.report.Title, Format: tt.report.Format},
+				},
+				ScenarioWeights: reportScenarioWeights(),
+				Config:          reportLoadedConfig(tt.report),
+			}
+
+			first, err := renderer.RenderReports(context.Background(), input)
+			if err != nil {
+				t.Fatalf("first RenderReports() error = %v", err)
+			}
+
+			second, err := renderer.RenderReports(context.Background(), input)
+			if err != nil {
+				t.Fatalf("second RenderReports() error = %v", err)
+			}
+
+			if !reflect.DeepEqual(first, second) {
+				t.Fatalf("first = %#v, second = %#v", first, second)
+			}
+		})
+	}
+}
+
+func TestDefaultReportRendererCanonicalizesShuffledInput(t *testing.T) {
+	t.Parallel()
+
+	report := ReportConfig{
+		Name:      "summary-json",
+		Title:     "Summary JSON",
+		Format:    "json",
+		Arguments: []string{"include-weights=true", "pretty=true"},
+	}
+	config := reportLoadedConfig(report)
+	definitions := []domain.ReportDefinition{{Name: report.Name, Title: report.Title, Format: report.Format}}
+
+	canonicalInput := RenderReportsInput{
+		Command: domain.CommandRequest{
+			CommandName: domain.CommandNameReportGenerate,
+			ConfigPath:  fixtureConfigPath(),
+		},
+		ValidatedModel:    domain.ValidatedModelSummary{ConfigPath: fixtureConfigPath()},
+		ScenarioResults:   reportScenarioResults(),
+		FinalRanking:      domain.AggregatedRankingResult{},
+		ReportDefinitions: definitions,
+		ScenarioWeights:   reportScenarioWeights(),
+		Config:            config,
+	}
+	shuffledInput := RenderReportsInput{
+		Command:        canonicalInput.Command,
+		ValidatedModel: canonicalInput.ValidatedModel,
+		FinalRanking:   canonicalInput.FinalRanking,
+		ReportDefinitions: []domain.ReportDefinition{
+			definitions[0],
+		},
+		ScenarioResults: []domain.ScenarioRankingResult{
+			{
+				ScenarioName: "baseline",
+				RankedAlternatives: []domain.RankedAlternative{
+					{Name: "beta", Excluded: true},
+					{Name: "alpha", Rank: 1, Score: 0.9},
+				},
+			},
+			{
+				ScenarioName: "growth",
+				RankedAlternatives: []domain.RankedAlternative{
+					{Name: "beta", Rank: 2, Score: 0.4},
+					{Name: "alpha", Rank: 1, Score: 0.8},
+				},
+			},
+		},
+		ScenarioWeights: []ScenarioCriterionWeights{
+			{
+				ScenarioName: "baseline",
+				CriterionWeights: []CriterionWeight{
+					{CriterionName: "cost", Weight: 1},
+				},
+			},
+			{
+				ScenarioName: "growth",
+				CriterionWeights: []CriterionWeight{
+					{CriterionName: "quality", Weight: 0.4},
+					{CriterionName: "cost", Weight: 0.6},
+				},
+			},
+		},
+		Config: config,
+	}
+
+	renderer := DefaultReportRenderer{}
+	canonical, err := renderer.RenderReports(context.Background(), canonicalInput)
+	if err != nil {
+		t.Fatalf("canonical RenderReports() error = %v", err)
+	}
+
+	shuffled, err := renderer.RenderReports(context.Background(), shuffledInput)
+	if err != nil {
+		t.Fatalf("shuffled RenderReports() error = %v", err)
+	}
+
+	if canonical.RenderedOutput != shuffled.RenderedOutput {
+		t.Fatalf("canonical output = %q, shuffled output = %q", canonical.RenderedOutput, shuffled.RenderedOutput)
 	}
 }
 

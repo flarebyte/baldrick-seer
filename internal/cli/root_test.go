@@ -340,3 +340,54 @@ func TestExecuteUsesCentralizedFailureEmission(t *testing.T) {
 		})
 	}
 }
+
+func TestExecuteRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		args         []string
+		wantExitCode int
+	}{
+		{
+			name:         "validate success",
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 0,
+		},
+		{
+			name:         "report generate success",
+			args:         []string{"report", "generate", "--config", testConfigPath()},
+			wantExitCode: 0,
+		},
+		{
+			name:         "validate validation failure",
+			args:         []string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue")},
+			wantExitCode: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			stdout1 := new(bytes.Buffer)
+			stderr1 := new(bytes.Buffer)
+			exitCode1 := Execute(tt.args, stdout1, stderr1)
+
+			stdout2 := new(bytes.Buffer)
+			stderr2 := new(bytes.Buffer)
+			exitCode2 := Execute(tt.args, stdout2, stderr2)
+
+			if exitCode1 != tt.wantExitCode || exitCode2 != tt.wantExitCode {
+				t.Fatalf("exit codes = (%d, %d), want (%d, %d)", exitCode1, exitCode2, tt.wantExitCode, tt.wantExitCode)
+			}
+			if stdout1.String() != stdout2.String() {
+				t.Fatalf("stdout1 = %q, stdout2 = %q", stdout1.String(), stdout2.String())
+			}
+			if stderr1.String() != stderr2.String() {
+				t.Fatalf("stderr1 = %q, stderr2 = %q", stderr1.String(), stderr2.String())
+			}
+		})
+	}
+}

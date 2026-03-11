@@ -676,6 +676,71 @@ func TestRunReportGenerateProducesRealRenderedReport(t *testing.T) {
 	}
 }
 
+func TestRunValidateRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  fixtureConfigPath(),
+	}
+
+	first, err := NewDefaultRunner().RunValidate(context.Background(), command)
+	if err != nil {
+		t.Fatalf("first RunValidate() error = %v", err)
+	}
+
+	second, err := NewDefaultRunner().RunValidate(context.Background(), command)
+	if err != nil {
+		t.Fatalf("second RunValidate() error = %v", err)
+	}
+
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("first = %#v, second = %#v", first, second)
+	}
+}
+
+func TestRunReportGenerateRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "valid_report.cue"),
+	}
+
+	first, err := NewDefaultRunner().RunReportGenerate(context.Background(), command)
+	if err != nil {
+		t.Fatalf("first RunReportGenerate() error = %v", err)
+	}
+
+	second, err := NewDefaultRunner().RunReportGenerate(context.Background(), command)
+	if err != nil {
+		t.Fatalf("second RunReportGenerate() error = %v", err)
+	}
+
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("first = %#v, second = %#v", first, second)
+	}
+}
+
+func TestRunValidateValidationFailureDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
+	}
+
+	_, firstErr := NewDefaultRunner().RunValidate(context.Background(), command)
+	_, secondErr := NewDefaultRunner().RunValidate(context.Background(), command)
+
+	first := domain.PresentError(firstErr)
+	second := domain.PresentError(secondErr)
+
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("first = %#v, second = %#v", first, second)
+	}
+}
+
 func TestRunReportGenerateStopsOnAggregationFailure(t *testing.T) {
 	t.Parallel()
 
