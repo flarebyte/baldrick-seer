@@ -71,6 +71,12 @@ func TestCommandOutputGoldens(t *testing.T) {
 			wantExitCode: 1,
 			stderrGolden: "directory_path.stderr.golden",
 		},
+		{
+			name:         "validate non concrete cue",
+			args:         []string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "non_concrete.cue")},
+			wantExitCode: 1,
+			stderrGolden: "invalid_cue.stderr.golden",
+		},
 	}
 
 	for _, tt := range tests {

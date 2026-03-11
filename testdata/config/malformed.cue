@@ -1,5 +1,4 @@
 package seer
 
 config: {
-	name: "minimal"
-}
+	name: "broken"

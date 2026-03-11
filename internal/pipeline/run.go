@@ -92,7 +92,7 @@ func (r Runner) loadAndValidate(command domain.CommandRequest) (ValidateModelOut
 
 	validation, err := r.ModelValidator.ValidateModel(ValidateModelInput{
 		Command: command,
-		Config:  config,
+		Config:  config.Config,
 	})
 	if err != nil {
 		return ValidateModelOutput{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)

@@ -96,21 +96,25 @@ func TestStageIOContractsCanBeConstructed(t *testing.T) {
 
 	command := domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+		ConfigPath:  fixtureConfigPath(),
 	}
 	loadOutput := LoadConfigOutput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+		Config: LoadedConfig{
+			Path:           fixtureConfigPath(),
+			Evaluated:      "config: {\n\tname: \"minimal\"\n}\n",
+			TopLevelFields: []string{"config"},
+		},
 	}
 	validateInput := ValidateModelInput{
 		Command: command,
-		Config:  loadOutput,
+		Config:  loadOutput.Config,
 	}
 	validateOutput := ValidateModelOutput{
 		Diagnostics: []domain.Diagnostic{
-			domain.NewDiagnostic(domain.DiagnosticSeverityWarning, "stub.warning", loadOutput.ConfigPath, domain.DiagnosticLocation{}, "warning"),
+			domain.NewDiagnostic(domain.DiagnosticSeverityWarning, "stub.warning", loadOutput.Config.Path, domain.DiagnosticLocation{}, "warning"),
 		},
 		ValidatedModel: domain.ValidatedModelSummary{
-			ConfigPath:       loadOutput.ConfigPath,
+			ConfigPath:       loadOutput.Config.Path,
 			CriterionCount:   3,
 			AlternativeCount: 2,
 			ScenarioCount:    1,
@@ -154,8 +158,12 @@ func TestStageIOContractsCanBeConstructed(t *testing.T) {
 		t.Fatalf("CommandName = %q, want %q", validateInput.Command.CommandName, domain.CommandNameReportGenerate)
 	}
 
-	if got, want := validateOutput.ValidatedModel.ConfigPath, loadOutput.ConfigPath; got != want {
+	if got, want := validateOutput.ValidatedModel.ConfigPath, loadOutput.Config.Path; got != want {
 		t.Fatalf("ValidatedModel.ConfigPath = %q, want %q", got, want)
+	}
+
+	if got, want := validateInput.Config.TopLevelFields[0], "config"; got != want {
+		t.Fatalf("TopLevelFields[0] = %q, want %q", got, want)
 	}
 
 	if got, want := weightOutput.CriterionWeights[0].CriterionName, "cost"; got != want {
@@ -241,6 +249,56 @@ func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 	}
 }
 
+func TestInvalidCueFailsAtLoadStage(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		command domain.CommandRequest
+		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+		wantErr error
+	}{
+		{
+			name: "validate invalid cue",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "non_concrete.cue"),
+			},
+			run:     Runner.RunValidate,
+			wantErr: ErrConfigNotConcrete,
+		},
+		{
+			name: "report generate invalid cue",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "malformed.cue"),
+			},
+			run:     Runner.RunReportGenerate,
+			wantErr: ErrConfigLoadInvalid,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			order := []string{}
+			runner := newFakeRunner(&order)
+			runner.ConfigLoader = DefaultConfigLoader{}
+
+			_, err := tt.run(runner, tt.command)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("error = %v, want %v", err, tt.wantErr)
+			}
+
+			if len(order) != 0 {
+				t.Fatalf("order = %#v, want no downstream stage calls", order)
+			}
+		})
+	}
+}
+
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 
@@ -254,8 +312,8 @@ func TestDefaultConfigLoader(t *testing.T) {
 	}
 
 	want := filepath.Clean(fixtureConfigPath())
-	if got.ConfigPath != want {
-		t.Fatalf("ConfigPath = %q, want %q", got.ConfigPath, want)
+	if got.Config.Path != want {
+		t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
 	}
 }
 

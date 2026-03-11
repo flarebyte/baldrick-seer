@@ -17,7 +17,11 @@ func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 	if f.err != nil {
 		return LoadConfigOutput{}, f.err
 	}
-	return LoadConfigOutput{ConfigPath: input.ConfigPath}, nil
+	return LoadConfigOutput{
+		Config: LoadedConfig{
+			Path: input.ConfigPath,
+		},
+	}, nil
 }
 
 type fakeModelValidator struct {
@@ -32,7 +36,7 @@ func (f *fakeModelValidator) ValidateModel(input ValidateModelInput) (ValidateMo
 	}
 	return ValidateModelOutput{
 		ValidatedModel: domain.ValidatedModelSummary{
-			ConfigPath: input.Config.ConfigPath,
+			ConfigPath: input.Config.Path,
 		},
 	}, nil
 }

@@ -30,13 +30,19 @@ type LoadConfigInput struct {
 	ConfigPath string
 }
 
+type LoadedConfig struct {
+	Path           string
+	Evaluated      string
+	TopLevelFields []string
+}
+
 type LoadConfigOutput struct {
-	ConfigPath string
+	Config LoadedConfig
 }
 
 type ValidateModelInput struct {
 	Command domain.CommandRequest
-	Config  LoadConfigOutput
+	Config  LoadedConfig
 }
 
 type ValidateModelOutput struct {
