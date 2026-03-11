@@ -11,4 +11,6 @@ var (
 	ErrValidationFailed       = errors.New("validation failed")
 	ErrWeightingFailed        = errors.New("criteria weights could not be computed")
 	ErrRankingFailed          = errors.New("scenario ranking could not be computed")
+	ErrAggregationFailed      = errors.New("final ranking could not be computed")
+	ErrRenderingFailed        = errors.New("reports could not be rendered")
 )

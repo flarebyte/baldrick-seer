@@ -723,6 +723,90 @@ func TestReportDefinitionValidationFlowBehavior(t *testing.T) {
 	}
 }
 
+func TestRunReportGenerateProducesRealRenderedReport(t *testing.T) {
+	t.Parallel()
+
+	got, err := NewDefaultRunner().RunReportGenerate(domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if err != nil {
+		t.Fatalf("RunReportGenerate() error = %v", err)
+	}
+
+	if got, want := got.RenderedOutput, readPipelineGolden(t, "report_generate_success.stdout.golden"); got != want {
+		t.Fatalf("RenderedOutput = %q, want %q", got, want)
+	}
+}
+
+func TestRunReportGenerateStopsOnAggregationFailure(t *testing.T) {
+	t.Parallel()
+
+	wantErr := errors.New("aggregate failed")
+	order := []string{}
+	runner := Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: &order},
+		ModelValidator:     &fakeModelValidator{recorder: &order},
+		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
+		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order, err: wantErr},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order},
+	}
+
+	_, err := runner.RunReportGenerate(domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("error = %v, want %v", err, wantErr)
+	}
+
+	failure := domain.AsCommandFailure(err)
+	if failure == nil {
+		t.Fatal("AsCommandFailure(err) = nil, want value")
+	}
+	if failure.Category != domain.FailureCategoryExecution {
+		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
+	}
+	if got, want := order, []string{"load", "validate", "weight", "rank", "aggregate"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("order = %#v, want %#v", got, want)
+	}
+}
+
+func TestRunReportGenerateStopsOnRenderingFailure(t *testing.T) {
+	t.Parallel()
+
+	wantErr := errors.New("render failed")
+	order := []string{}
+	runner := Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: &order},
+		ModelValidator:     &fakeModelValidator{recorder: &order},
+		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
+		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order, err: wantErr},
+	}
+
+	_, err := runner.RunReportGenerate(domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("error = %v, want %v", err, wantErr)
+	}
+
+	failure := domain.AsCommandFailure(err)
+	if failure == nil {
+		t.Fatal("AsCommandFailure(err) = nil, want value")
+	}
+	if failure.Category != domain.FailureCategoryRendering {
+		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryRendering)
+	}
+	if got, want := order, []string{"load", "validate", "weight", "rank", "aggregate", "render"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("order = %#v, want %#v", got, want)
+	}
+}
+
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 

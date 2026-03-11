@@ -103,19 +103,7 @@ type DefaultScenarioRanker struct{}
 
 type DefaultScenarioAggregator struct{}
 
-func (DefaultScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {
-	return AggregateScenariosOutput{
-		FinalRanking: domain.CanonicalAggregatedRankingResult(domain.AggregatedRankingResult{}),
-	}, nil
-}
-
 type DefaultReportRenderer struct{}
-
-func (DefaultReportRenderer) RenderReports(input RenderReportsInput) (RenderReportsOutput, error) {
-	return RenderReportsOutput{
-		ReportDefinitions: domain.CanonicalReportDefinitions(input.ReportDefinitions),
-	}, nil
-}
 
 func cueTopLevelFields(value cue.Value) ([]string, error) {
 	iterator, err := value.Fields(

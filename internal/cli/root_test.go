@@ -177,7 +177,10 @@ func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 				t.Fatalf("ConfigPath = %q, want %q", req.ConfigPath, want)
 			}
 
-			return domain.CommandResult{CommandName: domain.CommandNameReportGenerate}, nil
+			return domain.CommandResult{
+				CommandName:    domain.CommandNameReportGenerate,
+				RenderedOutput: readGolden(t, "report_generate_success.stdout.golden"),
+			}, nil
 		},
 	})
 

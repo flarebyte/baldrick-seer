@@ -29,6 +29,7 @@ type CommandResult struct {
 	ScenarioResults   []ScenarioRankingResult
 	FinalRanking      *AggregatedRankingResult
 	ReportDefinitions []ReportDefinition
+	RenderedOutput    string
 }
 
 type Diagnostic struct {

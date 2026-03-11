@@ -109,6 +109,7 @@ func (f *fakeReportRenderer) RenderReports(RenderReportsInput) (RenderReportsOut
 			{Name: "zeta", Title: "Zeta", Format: "json"},
 			{Name: "alpha", Title: "Alpha", Format: "markdown"},
 		},
+		RenderedOutput: "rendered output\n",
 	}, nil
 }
 

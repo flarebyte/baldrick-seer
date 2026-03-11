@@ -28,7 +28,7 @@ func (r Runner) RunValidate(command domain.CommandRequest) (domain.CommandResult
 		return domain.CommandResult{}, err
 	}
 
-	return buildCommandResult(command.CommandName, validation, nil, nil, validation.ReportDefinitions), nil
+	return buildCommandResult(command.CommandName, validation, nil, nil, validation.ReportDefinitions, ""), nil
 }
 
 func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.CommandResult, error) {
@@ -59,6 +59,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 	aggregated, err := r.ScenarioAggregator.AggregateScenarios(AggregateScenariosInput{
 		Command:         command,
 		ScenarioResults: scenarios.ScenarioResults,
+		Config:          config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "aggregation.failed", command.ConfigPath, "command failed", err)
@@ -70,6 +71,8 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ScenarioResults:   scenarios.ScenarioResults,
 		FinalRanking:      aggregated.FinalRanking,
 		ReportDefinitions: validation.ReportDefinitions,
+		ScenarioWeights:   weights.ScenarioWeights,
+		Config:            config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryRendering, "rendering.failed", command.ConfigPath, "command failed", err)
@@ -81,6 +84,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		scenarios.ScenarioResults,
 		&aggregated.FinalRanking,
 		rendered.ReportDefinitions,
+		rendered.RenderedOutput,
 	), nil
 }
 
@@ -109,6 +113,7 @@ func buildCommandResult(
 	scenarioResults []domain.ScenarioRankingResult,
 	finalRanking *domain.AggregatedRankingResult,
 	reportDefinitions []domain.ReportDefinition,
+	renderedOutput string,
 ) domain.CommandResult {
 	return domain.CanonicalCommandResult(domain.CommandResult{
 		CommandName:       commandName,
@@ -117,5 +122,6 @@ func buildCommandResult(
 		ScenarioResults:   scenarioResults,
 		FinalRanking:      finalRanking,
 		ReportDefinitions: reportDefinitions,
+		RenderedOutput:    renderedOutput,
 	})
 }

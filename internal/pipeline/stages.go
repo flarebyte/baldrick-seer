@@ -122,6 +122,7 @@ type CriterionValue struct {
 }
 
 type AggregationConfig struct {
+	Method          string             `json:"method"`
 	ScenarioWeights map[string]float64 `json:"scenarioWeights"`
 }
 
@@ -174,6 +175,7 @@ type RankScenariosOutput struct {
 type AggregateScenariosInput struct {
 	Command         domain.CommandRequest
 	ScenarioResults []domain.ScenarioRankingResult
+	Config          LoadedConfig
 }
 
 type AggregateScenariosOutput struct {
@@ -186,8 +188,11 @@ type RenderReportsInput struct {
 	ScenarioResults   []domain.ScenarioRankingResult
 	FinalRanking      domain.AggregatedRankingResult
 	ReportDefinitions []domain.ReportDefinition
+	ScenarioWeights   []ScenarioCriterionWeights
+	Config            LoadedConfig
 }
 
 type RenderReportsOutput struct {
 	ReportDefinitions []domain.ReportDefinition
+	RenderedOutput    string
 }
