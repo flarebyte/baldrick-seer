@@ -101,12 +101,6 @@ type DefaultCriteriaWeighter struct{}
 
 type DefaultScenarioRanker struct{}
 
-func (DefaultScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {
-	return RankScenariosOutput{
-		ScenarioResults: domain.CanonicalScenarioResults(nil),
-	}, nil
-}
-
 type DefaultScenarioAggregator struct{}
 
 func (DefaultScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {

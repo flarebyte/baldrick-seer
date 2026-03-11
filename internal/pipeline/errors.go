@@ -10,4 +10,5 @@ var (
 	ErrConfigNotConcrete      = errors.New("config must evaluate to a concrete value")
 	ErrValidationFailed       = errors.New("validation failed")
 	ErrWeightingFailed        = errors.New("criteria weights could not be computed")
+	ErrRankingFailed          = errors.New("scenario ranking could not be computed")
 )

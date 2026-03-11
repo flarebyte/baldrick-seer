@@ -10,9 +10,9 @@ config: {
 		format: "markdown"
 	}]
 	criteriaCatalog: [
-		{name: "cost", valueType: "number"},
-		{name: "speed", valueType: "number"},
-		{name: "reliability", valueType: "number"},
+		{name: "cost", polarity: "cost", valueType: "number"},
+		{name: "speed", polarity: "benefit", valueType: "number"},
+		{name: "reliability", polarity: "benefit", valueType: "number"},
 	]
 	alternatives: [{
 		name: "option_a"

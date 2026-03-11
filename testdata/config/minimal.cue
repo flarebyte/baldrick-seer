@@ -11,6 +11,7 @@ config: {
 	}]
 	criteriaCatalog: [{
 		name:      "cost"
+		polarity:  "cost"
 		valueType: "number"
 	}]
 	alternatives: [{

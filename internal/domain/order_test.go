@@ -40,6 +40,8 @@ func TestCanonicalRankedAlternatives(t *testing.T) {
 		{Name: "alpha", Rank: 1, Score: 0.7},
 		{Name: "aardvark", Rank: 1, Score: 0.9},
 		{Name: "beta", Rank: 1, Score: 0.6},
+		{Name: "zeta", Excluded: true},
+		{Name: "gamma", Excluded: true},
 	}
 
 	got := CanonicalRankedAlternatives(input)
@@ -48,6 +50,8 @@ func TestCanonicalRankedAlternatives(t *testing.T) {
 		{Name: "alpha", Rank: 1, Score: 0.7},
 		{Name: "beta", Rank: 1, Score: 0.6},
 		{Name: "beta", Rank: 2, Score: 0.8},
+		{Name: "gamma", Excluded: true},
+		{Name: "zeta", Excluded: true},
 	}
 
 	if !reflect.DeepEqual(got, want) {

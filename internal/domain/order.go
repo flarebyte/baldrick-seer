@@ -72,8 +72,9 @@ func CanonicalReportDefinitions(input []ReportDefinition) []ReportDefinition {
 	return output
 }
 
-// CanonicalRankedAlternatives returns ranking rows ordered by rank ascending,
-// then name ascending, then score ascending as a final stable tie-breaker.
+// CanonicalRankedAlternatives returns ranked rows before excluded rows.
+// Ranked rows are ordered by rank ascending, then name ascending, then score
+// ascending as a final stable tie-breaker. Excluded rows are ordered by name.
 func CanonicalRankedAlternatives(input []RankedAlternative) []RankedAlternative {
 	if len(input) == 0 {
 		return nil
@@ -84,6 +85,12 @@ func CanonicalRankedAlternatives(input []RankedAlternative) []RankedAlternative 
 		left := output[i]
 		right := output[j]
 
+		if left.Excluded != right.Excluded {
+			return !left.Excluded
+		}
+		if left.Excluded {
+			return left.Name < right.Name
+		}
 		if left.Rank != right.Rank {
 			return left.Rank < right.Rank
 		}

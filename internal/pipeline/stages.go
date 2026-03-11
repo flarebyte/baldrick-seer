@@ -68,6 +68,7 @@ type ReportFocus struct {
 
 type CriterionConfig struct {
 	Name          string `json:"name"`
+	Polarity      string `json:"polarity"`
 	ValueType     string `json:"valueType"`
 	ScaleGuidance []any  `json:"scaleGuidance"`
 }
@@ -163,6 +164,7 @@ type RankScenariosInput struct {
 	Command         domain.CommandRequest
 	ValidatedModel  domain.ValidatedModelSummary
 	ScenarioWeights []ScenarioCriterionWeights
+	Config          LoadedConfig
 }
 
 type RankScenariosOutput struct {

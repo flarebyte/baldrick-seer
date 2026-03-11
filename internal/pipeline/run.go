@@ -50,6 +50,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		Command:         command,
 		ValidatedModel:  validation.ValidatedModel,
 		ScenarioWeights: weights.ScenarioWeights,
+		Config:          config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "ranking.failed", command.ConfigPath, "command failed", err)

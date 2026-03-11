@@ -28,7 +28,7 @@ func validLoadedConfig() LoadedConfig {
 				{Name: "summary", Title: "Summary", Format: "markdown"},
 			},
 			CriteriaCatalog: []CriterionConfig{
-				{Name: "cost", ValueType: "number"},
+				{Name: "cost", Polarity: "cost", ValueType: "number"},
 			},
 			Alternatives: []AlternativeConfig{
 				{Name: "option_a"},
@@ -64,7 +64,11 @@ func validLoadedConfigWithAHPPairs(activeCriteria []string, comparisons []Pairwi
 	config.Config.CriteriaCatalog = nil
 	config.Config.Evaluations[0].Evaluations[0].Values = map[string]CriterionValue{}
 	for _, criterionName := range activeCriteria {
-		config.Config.CriteriaCatalog = append(config.Config.CriteriaCatalog, CriterionConfig{Name: criterionName, ValueType: "number"})
+		config.Config.CriteriaCatalog = append(config.Config.CriteriaCatalog, CriterionConfig{
+			Name:      criterionName,
+			Polarity:  defaultPolarityForCriterionName(criterionName),
+			ValueType: "number",
+		})
 		config.Config.Evaluations[0].Evaluations[0].Values[criterionName] = CriterionValue{Kind: "number", Value: 1}
 	}
 
@@ -166,6 +170,13 @@ func validLoadedConfigWithReports(reports []ReportConfig) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.Reports = append([]ReportConfig(nil), reports...)
 	return config
+}
+
+func defaultPolarityForCriterionName(criterionName string) string {
+	if criterionName == "cost" {
+		return "cost"
+	}
+	return "benefit"
 }
 
 func validateConfig(t *testing.T, config LoadedConfig) []domain.Diagnostic {
