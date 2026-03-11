@@ -2,7 +2,7 @@ package seer
 
 config: {
 	problem: {
-		name: "minimal"
+		name: "invalid-evaluation"
 	}
 	reports: [{
 		name:   "summary"
@@ -28,8 +28,8 @@ config: {
 			alternativeName: "option_a"
 			values: {
 				cost: {
-					kind:  "number"
-					value: 1
+					kind:  "boolean"
+					value: true
 				}
 			}
 		}]

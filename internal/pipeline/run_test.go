@@ -350,11 +350,17 @@ func TestValidationFailureStopsPipeline(t *testing.T) {
 						Config: &ExecutionConfig{
 							Problem:         &ProblemConfig{Name: "minimal"},
 							Reports:         []ReportConfig{{Name: "summary"}},
-							CriteriaCatalog: []CriterionConfig{{Name: "cost"}},
+							CriteriaCatalog: []CriterionConfig{{Name: "cost", ValueType: "number"}},
 							Alternatives:    []AlternativeConfig{{Name: "option_a"}},
 							Scenarios:       []ScenarioConfig{{Name: "baseline", ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "missing"}}}},
-							Evaluations:     []EvaluationConfig{{ScenarioName: "baseline", Evaluations: []AlternativeEvaluationConfig{{AlternativeName: "option_a"}}}},
-							Aggregation:     &AggregationConfig{},
+							Evaluations: []EvaluationConfig{{
+								ScenarioName: "baseline",
+								Evaluations: []AlternativeEvaluationConfig{{
+									AlternativeName: "option_a",
+									Values:          map[string]CriterionValue{"cost": {Kind: "number", Value: 1}},
+								}},
+							}},
+							Aggregation: &AggregationConfig{},
 						},
 					},
 				},
@@ -461,6 +467,78 @@ func TestPairwiseValidationFlowBehavior(t *testing.T) {
 				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "pairwise_valid.cue"),
 			},
 			run: Runner.RunReportGenerate,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := tt.run(NewDefaultRunner(), tt.command)
+			if tt.wantErr == nil {
+				if err != nil {
+					t.Fatalf("run() error = %v", err)
+				}
+				if got.ValidatedModel == nil {
+					t.Fatal("ValidatedModel = nil, want value")
+				}
+				return
+			}
+
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("error = %v, want %v", err, tt.wantErr)
+			}
+
+			failure := domain.AsCommandFailure(err)
+			if failure == nil {
+				t.Fatal("AsCommandFailure(err) = nil, want value")
+			}
+
+			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
+				t.Fatalf("message = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+func TestEvaluationValidationFlowBehavior(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		command     domain.CommandRequest
+		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+		wantErr     error
+		wantMessage string
+	}{
+		{
+			name: "validate stops on evaluation validation failure",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_evaluation.cue"),
+			},
+			run:         Runner.RunValidate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "evaluation value kind mismatch for criterion cost: want number, got boolean",
+		},
+		{
+			name: "report generate stops on evaluation validation failure",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_evaluation.cue"),
+			},
+			run:         Runner.RunReportGenerate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "evaluation value kind mismatch for criterion cost: want number, got boolean",
+		},
+		{
+			name: "valid evaluation input proceeds",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+			},
+			run: Runner.RunValidate,
 		},
 	}
 

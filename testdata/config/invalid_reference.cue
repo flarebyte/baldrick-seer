@@ -10,7 +10,8 @@ config: {
 		format: "markdown"
 	}]
 	criteriaCatalog: [{
-		name: "cost"
+		name:      "cost"
+		valueType: "number"
 	}]
 	alternatives: [{
 		name: "option_a"

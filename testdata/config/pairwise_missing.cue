@@ -10,9 +10,9 @@ config: {
 		format: "markdown"
 	}]
 	criteriaCatalog: [
-		{name: "cost"},
-		{name: "speed"},
-		{name: "reliability"},
+		{name: "cost", valueType: "number"},
+		{name: "speed", valueType: "number"},
+		{name: "reliability", valueType: "number"},
 	]
 	alternatives: [{
 		name: "option_a"
@@ -46,6 +46,14 @@ config: {
 				cost: {
 					kind:  "number"
 					value: 1
+				}
+				reliability: {
+					kind:  "number"
+					value: 2
+				}
+				speed: {
+					kind:  "number"
+					value: 3
 				}
 			}
 		}]

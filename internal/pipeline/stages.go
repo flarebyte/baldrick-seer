@@ -66,7 +66,9 @@ type ReportFocus struct {
 }
 
 type CriterionConfig struct {
-	Name string `json:"name"`
+	Name          string `json:"name"`
+	ValueType     string `json:"valueType"`
+	ScaleGuidance []any  `json:"scaleGuidance"`
 }
 
 type AlternativeConfig struct {
@@ -104,7 +106,13 @@ type EvaluationConfig struct {
 }
 
 type AlternativeEvaluationConfig struct {
-	AlternativeName string `json:"alternativeName"`
+	AlternativeName string                    `json:"alternativeName"`
+	Values          map[string]CriterionValue `json:"values"`
+}
+
+type CriterionValue struct {
+	Kind  string `json:"kind"`
+	Value any    `json:"value"`
 }
 
 type AggregationConfig struct {
