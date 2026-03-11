@@ -105,50 +105,14 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 				if err != nil {
 					t.Fatalf("LoadConfig() error = %v", err)
 				}
-
-				if got.Config.Path != filepath.Clean(tt.configPath) {
-					t.Fatalf("Path = %q, want %q", got.Config.Path, filepath.Clean(tt.configPath))
-				}
-
-				if !reflect.DeepEqual(got.Config.TopLevelFields, tt.wantFields) {
-					t.Fatalf("TopLevelFields = %#v, want %#v", got.Config.TopLevelFields, tt.wantFields)
-				}
-
-				if !reflect.DeepEqual(got.Config.ConfigFields, tt.wantConfigFields) {
-					t.Fatalf("ConfigFields = %#v, want %#v", got.Config.ConfigFields, tt.wantConfigFields)
-				}
-
-				if got.Config.Evaluated == "" {
-					t.Fatal("Evaluated = empty, want non-empty value")
-				}
-
-				if got.Config.Config == nil {
-					t.Fatal("Config = nil, want decoded config")
-				}
-
+				assertLoadedConfigSuccess(t, got, tt.configPath, tt.wantFields, tt.wantConfigFields)
 				return
 			}
 
 			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("error = %v, want %v", err, tt.wantErr)
 			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if failure.Category != tt.wantCategory {
-				t.Fatalf("Category = %q, want %q", failure.Category, tt.wantCategory)
-			}
-
-			if failure.Diagnostics[0].Code != tt.wantCode {
-				t.Fatalf("Code = %q, want %q", failure.Diagnostics[0].Code, tt.wantCode)
-			}
-
-			if failure.Diagnostics[0].Message != tt.wantMessage {
-				t.Fatalf("Message = %q, want %q", failure.Diagnostics[0].Message, tt.wantMessage)
-			}
+			assertLoaderFailure(t, err, tt.wantErr, tt.wantCategory, tt.wantCode, tt.wantMessage)
 		})
 	}
 }
@@ -159,19 +123,9 @@ func TestDefaultConfigLoaderDirectoryDeterminism(t *testing.T) {
 	loader := DefaultConfigLoader{}
 	path := filepath.Join("..", "..", "testdata", "config_split")
 
-	first, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: path})
-	if err != nil {
-		t.Fatalf("first LoadConfig() error = %v", err)
-	}
-
-	second, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: path})
-	if err != nil {
-		t.Fatalf("second LoadConfig() error = %v", err)
-	}
-
-	if !reflect.DeepEqual(first, second) {
-		t.Fatalf("first = %#v, second = %#v", first, second)
-	}
+	assertRepeatedDeepEqual(t, 1, func() (LoadConfigOutput, error) {
+		return loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: path})
+	})
 }
 
 func TestDefaultConfigLoaderFileAndDirectoryEquivalence(t *testing.T) {
@@ -179,19 +133,8 @@ func TestDefaultConfigLoaderFileAndDirectoryEquivalence(t *testing.T) {
 
 	loader := DefaultConfigLoader{}
 
-	fromFile, err := loader.LoadConfig(context.Background(), LoadConfigInput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
-	})
-	if err != nil {
-		t.Fatalf("LoadConfig(file) error = %v", err)
-	}
-
-	fromDirectory, err := loader.LoadConfig(context.Background(), LoadConfigInput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config_split"),
-	})
-	if err != nil {
-		t.Fatalf("LoadConfig(directory) error = %v", err)
-	}
+	fromFile := mustLoadConfig(t, loader, filepath.Join("..", "..", "testdata", "config", "minimal.cue"))
+	fromDirectory := mustLoadConfig(t, loader, filepath.Join("..", "..", "testdata", "config_split"))
 
 	if !reflect.DeepEqual(fromFile.Config.TopLevelFields, fromDirectory.Config.TopLevelFields) {
 		t.Fatalf("TopLevelFields(file) = %#v, TopLevelFields(directory) = %#v", fromFile.Config.TopLevelFields, fromDirectory.Config.TopLevelFields)

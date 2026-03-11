@@ -97,27 +97,18 @@ func TestDefaultCriteriaWeighter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := weighter.WeightCriteria(context.Background(), WeightCriteriaInput{
-				Command: domain.CommandRequest{
-					CommandName: domain.CommandNameReportGenerate,
-					ConfigPath:  tt.config.Path,
-				},
-				ValidatedModel: domain.ValidatedModelSummary{ConfigPath: tt.config.Path},
-				Config:         tt.config,
+			assertStageRunResult(t, func() (WeightCriteriaOutput, error) {
+				return weighter.WeightCriteria(context.Background(), WeightCriteriaInput{
+					Command: domain.CommandRequest{
+						CommandName: domain.CommandNameReportGenerate,
+						ConfigPath:  tt.config.Path,
+					},
+					ValidatedModel: domain.ValidatedModelSummary{ConfigPath: tt.config.Path},
+					Config:         tt.config,
+				})
+			}, tt.wantErr, func(got WeightCriteriaOutput) {
+				assertScenarioWeights(t, got.ScenarioWeights, tt.wantWeights, 1e-9)
 			})
-
-			if tt.wantErr != nil {
-				if !errors.Is(err, tt.wantErr) {
-					t.Fatalf("error = %v, want %v", err, tt.wantErr)
-				}
-				return
-			}
-
-			if err != nil {
-				t.Fatalf("WeightCriteria() error = %v", err)
-			}
-
-			assertScenarioWeights(t, got.ScenarioWeights, tt.wantWeights, 1e-9)
 		})
 	}
 }
@@ -157,19 +148,9 @@ func TestDefaultCriteriaWeighterIsDeterministic(t *testing.T) {
 		Config:         config,
 	}
 
-	first, err := DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), input)
-	if err != nil {
-		t.Fatalf("first WeightCriteria() error = %v", err)
-	}
-
-	second, err := DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), input)
-	if err != nil {
-		t.Fatalf("second WeightCriteria() error = %v", err)
-	}
-
-	if !reflect.DeepEqual(first, second) {
-		t.Fatalf("first = %#v, second = %#v", first, second)
-	}
+	assertRepeatedDeepEqual(t, 1, func() (WeightCriteriaOutput, error) {
+		return DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), input)
+	})
 }
 
 func TestRunReportGenerateUsesRealScenarioWeights(t *testing.T) {
@@ -212,35 +193,7 @@ func TestRunReportGenerateStopsOnRealWeightingFailure(t *testing.T) {
 	runner := Runner{
 		ConfigLoader: &fakeConfigLoader{
 			recorder: &order,
-			output: LoadConfigOutput{
-				Config: LoadedConfig{
-					Path: fixtureConfigPath(),
-					Config: &ExecutionConfig{
-						Problem:         &ProblemConfig{Name: "minimal"},
-						Reports:         []ReportConfig{{Name: "summary", Title: "Summary", Format: "markdown"}},
-						CriteriaCatalog: []CriterionConfig{{Name: "cost", ValueType: "number"}, {Name: "speed", ValueType: "number"}},
-						Alternatives:    []AlternativeConfig{{Name: "option_a"}},
-						Scenarios: []ScenarioConfig{{
-							Name: "baseline",
-							ActiveCriteria: []ScenarioCriterionRef{
-								{CriterionName: "cost"},
-								{CriterionName: "speed"},
-							},
-						}},
-						Evaluations: []EvaluationConfig{{
-							ScenarioName: "baseline",
-							Evaluations: []AlternativeEvaluationConfig{{
-								AlternativeName: "option_a",
-								Values: map[string]CriterionValue{
-									"cost":  {Kind: "number", Value: 1},
-									"speed": {Kind: "number", Value: 2},
-								},
-							}},
-						}},
-						Aggregation: &AggregationConfig{},
-					},
-				},
-			},
+			output:   invalidWeightingLoadOutput(),
 		},
 		ModelValidator:     &fakeModelValidator{recorder: &order},
 		CriteriaWeighter:   DefaultCriteriaWeighter{},
@@ -257,18 +210,31 @@ func TestRunReportGenerateStopsOnRealWeightingFailure(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, ErrWeightingFailed)
 	}
 
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
-
-	if failure.Category != domain.FailureCategoryExecution {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
-	}
+	_ = assertFailureCategory(t, err, ErrWeightingFailed, domain.FailureCategoryExecution, "")
 
 	if got, want := order, []string{"load", "validate"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("order = %#v, want %#v", got, want)
 	}
+}
+
+func invalidWeightingLoadOutput() LoadConfigOutput {
+	config := validLoadedConfig()
+	config.Config.CriteriaCatalog = []CriterionConfig{
+		{Name: "cost", ValueType: "number"},
+		{Name: "speed", ValueType: "number"},
+	}
+	config.Config.Scenarios = []ScenarioConfig{
+		scenarioWithActiveCriteria("baseline", []string{"cost", "speed"}),
+	}
+	config.Config.Evaluations = scenarioEvaluationBlock(
+		"baseline",
+		alternativeEvaluation("option_a", map[string]CriterionValue{
+			"cost":  {Kind: "number", Value: 1},
+			"speed": {Kind: "number", Value: 2},
+		}),
+	)
+
+	return LoadConfigOutput{Config: config}
 }
 
 type capturingScenarioRanker struct {

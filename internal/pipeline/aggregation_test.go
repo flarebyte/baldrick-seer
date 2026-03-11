@@ -2,8 +2,6 @@ package pipeline
 
 import (
 	"context"
-	"errors"
-	"reflect"
 	"testing"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
@@ -146,22 +144,15 @@ func TestDefaultScenarioAggregator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := aggregator.AggregateScenarios(context.Background(), AggregateScenariosInput{
-				Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
-				ScenarioResults: tt.scenarios,
-				Config:          tt.config,
+			assertStageRunResult(t, func() (AggregateScenariosOutput, error) {
+				return aggregator.AggregateScenarios(context.Background(), AggregateScenariosInput{
+					Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
+					ScenarioResults: tt.scenarios,
+					Config:          tt.config,
+				})
+			}, tt.wantErr, func(got AggregateScenariosOutput) {
+				assertAggregatedRanking(t, got.FinalRanking, tt.want, 1e-9)
 			})
-			if tt.wantErr != nil {
-				if !errors.Is(err, tt.wantErr) {
-					t.Fatalf("error = %v, want %v", err, tt.wantErr)
-				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("AggregateScenarios() error = %v", err)
-			}
-
-			assertAggregatedRanking(t, got.FinalRanking, tt.want, 1e-9)
 		})
 	}
 }
@@ -193,19 +184,9 @@ func TestDefaultScenarioAggregatorIsDeterministic(t *testing.T) {
 		},
 	}
 
-	first, err := DefaultScenarioAggregator{}.AggregateScenarios(context.Background(), input)
-	if err != nil {
-		t.Fatalf("first AggregateScenarios() error = %v", err)
-	}
-
-	second, err := DefaultScenarioAggregator{}.AggregateScenarios(context.Background(), input)
-	if err != nil {
-		t.Fatalf("second AggregateScenarios() error = %v", err)
-	}
-
-	if !reflect.DeepEqual(first, second) {
-		t.Fatalf("first = %#v, second = %#v", first, second)
-	}
+	assertRepeatedDeepEqual(t, 1, func() (AggregateScenariosOutput, error) {
+		return DefaultScenarioAggregator{}.AggregateScenarios(context.Background(), input)
+	})
 }
 
 func aggregationConfig(method string, scenarioWeights map[string]float64) LoadedConfig {

@@ -35,16 +35,13 @@ func TestDefaultModelValidatorEvaluationValueValidation(t *testing.T) {
 			config: validLoadedConfigWithScenarioEvaluations(
 				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
 				[]string{"cost"},
-				[]EvaluationConfig{
-					{
+				append(
+					scenarioEvaluationBlock("baseline", alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 1}})),
+					EvaluationConfig{
 						ScenarioName: "baseline",
-						Evaluations:  []AlternativeEvaluationConfig{{AlternativeName: "option_a", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}}},
+						Evaluations:  []AlternativeEvaluationConfig{alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 1}})},
 					},
-					{
-						ScenarioName: "baseline",
-						Evaluations:  []AlternativeEvaluationConfig{{AlternativeName: "option_a", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}}},
-					},
-				},
+				),
 			),
 			wantCodes:   []string{"validation.duplicate_evaluation_scenario"},
 			wantMessage: "duplicate evaluation block for scenario: baseline",
@@ -64,15 +61,11 @@ func TestDefaultModelValidatorEvaluationValueValidation(t *testing.T) {
 			config: validLoadedConfigWithScenarioEvaluations(
 				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
 				[]string{"cost"},
-				[]EvaluationConfig{
-					{
-						ScenarioName: "baseline",
-						Evaluations: []AlternativeEvaluationConfig{
-							{AlternativeName: "option_a", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}},
-							{AlternativeName: "option_a", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 2}}},
-						},
-					},
-				},
+				scenarioEvaluationBlock(
+					"baseline",
+					alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}),
+					alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 2}}),
+				),
 			),
 			wantCodes:   []string{"validation.duplicate_evaluation_alternative"},
 			wantMessage: "duplicate alternative evaluation in scenario baseline: option_a",
@@ -95,14 +88,7 @@ func TestDefaultModelValidatorEvaluationValueValidation(t *testing.T) {
 					{Name: "speed", ValueType: "number"},
 				},
 				[]string{"cost", "speed"},
-				[]EvaluationConfig{
-					{
-						ScenarioName: "baseline",
-						Evaluations: []AlternativeEvaluationConfig{
-							{AlternativeName: "option_a", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}},
-						},
-					},
-				},
+				scenarioEvaluationBlock("baseline", alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 1}})),
 			),
 			wantCodes:   []string{"validation.missing_evaluation_value"},
 			wantMessage: "missing value for active criterion in scenario baseline: speed",
@@ -112,20 +98,13 @@ func TestDefaultModelValidatorEvaluationValueValidation(t *testing.T) {
 			config: validLoadedConfigWithScenarioEvaluations(
 				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
 				[]string{"cost"},
-				[]EvaluationConfig{
-					{
-						ScenarioName: "baseline",
-						Evaluations: []AlternativeEvaluationConfig{
-							{
-								AlternativeName: "option_a",
-								Values: map[string]CriterionValue{
-									"cost":    {Kind: "number", Value: 1},
-									"missing": {Kind: "number", Value: 2},
-								},
-							},
-						},
-					},
-				},
+				scenarioEvaluationBlock(
+					"baseline",
+					alternativeEvaluation("option_a", map[string]CriterionValue{
+						"cost":    {Kind: "number", Value: 1},
+						"missing": {Kind: "number", Value: 2},
+					}),
+				),
 			),
 			wantCodes:   []string{"validation.unknown_evaluation_criterion"},
 			wantMessage: "unknown criterion name in evaluation values: missing",
