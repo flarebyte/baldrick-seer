@@ -76,11 +76,22 @@ type AlternativeConfig struct {
 type ScenarioConfig struct {
 	Name           string                 `json:"name"`
 	ActiveCriteria []ScenarioCriterionRef `json:"activeCriteria"`
+	Preferences    *ScenarioPreferences   `json:"preferences"`
 	Constraints    []ConstraintConfig     `json:"constraints"`
 }
 
 type ScenarioCriterionRef struct {
 	CriterionName string `json:"criterionName"`
+}
+
+type ScenarioPreferences struct {
+	Method      string               `json:"method"`
+	Comparisons []PairwiseComparison `json:"comparisons"`
+}
+
+type PairwiseComparison struct {
+	MoreImportantCriterionName string `json:"moreImportantCriterionName"`
+	LessImportantCriterionName string `json:"lessImportantCriterionName"`
 }
 
 type ConstraintConfig struct {

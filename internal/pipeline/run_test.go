@@ -424,6 +424,78 @@ func TestRealValidationFailureFromFixture(t *testing.T) {
 	}
 }
 
+func TestPairwiseValidationFlowBehavior(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		command     domain.CommandRequest
+		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+		wantErr     error
+		wantMessage string
+	}{
+		{
+			name: "validate stops on pairwise validation failure",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "pairwise_missing.cue"),
+			},
+			run:         Runner.RunValidate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "missing pairwise comparison for pair: reliability/speed",
+		},
+		{
+			name: "report generate stops on pairwise validation failure",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "pairwise_missing.cue"),
+			},
+			run:         Runner.RunReportGenerate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "missing pairwise comparison for pair: reliability/speed",
+		},
+		{
+			name: "valid pairwise config proceeds",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "pairwise_valid.cue"),
+			},
+			run: Runner.RunReportGenerate,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := tt.run(NewDefaultRunner(), tt.command)
+			if tt.wantErr == nil {
+				if err != nil {
+					t.Fatalf("run() error = %v", err)
+				}
+				if got.ValidatedModel == nil {
+					t.Fatal("ValidatedModel = nil, want value")
+				}
+				return
+			}
+
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("error = %v, want %v", err, tt.wantErr)
+			}
+
+			failure := domain.AsCommandFailure(err)
+			if failure == nil {
+				t.Fatal("AsCommandFailure(err) = nil, want value")
+			}
+
+			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
+				t.Fatalf("message = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 
