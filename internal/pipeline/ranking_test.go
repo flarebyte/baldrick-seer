@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"errors"
-	"math"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -454,37 +453,4 @@ func rankingConfig(
 		Evaluations:  append([]AlternativeEvaluationConfig(nil), evaluations...),
 	}}
 	return config
-}
-
-func assertScenarioResults(t *testing.T, got []domain.ScenarioRankingResult, want []domain.ScenarioRankingResult, tolerance float64) {
-	t.Helper()
-
-	if len(got) != len(want) {
-		t.Fatalf("len(got) = %d, want %d", len(got), len(want))
-	}
-
-	for scenarioIndex := range want {
-		if got[scenarioIndex].ScenarioName != want[scenarioIndex].ScenarioName {
-			t.Fatalf("ScenarioName[%d] = %q, want %q", scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName)
-		}
-		if len(got[scenarioIndex].RankedAlternatives) != len(want[scenarioIndex].RankedAlternatives) {
-			t.Fatalf("len(RankedAlternatives[%d]) = %d, want %d", scenarioIndex, len(got[scenarioIndex].RankedAlternatives), len(want[scenarioIndex].RankedAlternatives))
-		}
-		for alternativeIndex := range want[scenarioIndex].RankedAlternatives {
-			gotAlternative := got[scenarioIndex].RankedAlternatives[alternativeIndex]
-			wantAlternative := want[scenarioIndex].RankedAlternatives[alternativeIndex]
-			if gotAlternative.Name != wantAlternative.Name {
-				t.Fatalf("Name[%d][%d] = %q, want %q", scenarioIndex, alternativeIndex, gotAlternative.Name, wantAlternative.Name)
-			}
-			if gotAlternative.Rank != wantAlternative.Rank {
-				t.Fatalf("Rank[%d][%d] = %d, want %d", scenarioIndex, alternativeIndex, gotAlternative.Rank, wantAlternative.Rank)
-			}
-			if gotAlternative.Excluded != wantAlternative.Excluded {
-				t.Fatalf("Excluded[%d][%d] = %t, want %t", scenarioIndex, alternativeIndex, gotAlternative.Excluded, wantAlternative.Excluded)
-			}
-			if math.Abs(gotAlternative.Score-wantAlternative.Score) > tolerance {
-				t.Fatalf("Score[%d][%d] = %0.12f, want %0.12f", scenarioIndex, alternativeIndex, gotAlternative.Score, wantAlternative.Score)
-			}
-		}
-	}
 }

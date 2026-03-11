@@ -2,7 +2,6 @@ package pipeline
 
 import (
 	"errors"
-	"math"
 	"reflect"
 	"testing"
 
@@ -215,29 +214,4 @@ func aggregationConfig(method string, scenarioWeights map[string]float64) Loaded
 		ScenarioWeights: scenarioWeights,
 	}
 	return config
-}
-
-func assertAggregatedRanking(t *testing.T, got domain.AggregatedRankingResult, want domain.AggregatedRankingResult, tolerance float64) {
-	t.Helper()
-
-	gotRows := domain.CanonicalRankedAlternatives(got.RankedAlternatives)
-	wantRows := domain.CanonicalRankedAlternatives(want.RankedAlternatives)
-	if len(gotRows) != len(wantRows) {
-		t.Fatalf("len(RankedAlternatives) = %d, want %d", len(gotRows), len(wantRows))
-	}
-
-	for index := range gotRows {
-		if gotRows[index].Name != wantRows[index].Name {
-			t.Fatalf("RankedAlternatives[%d].Name = %q, want %q", index, gotRows[index].Name, wantRows[index].Name)
-		}
-		if gotRows[index].Rank != wantRows[index].Rank {
-			t.Fatalf("RankedAlternatives[%d].Rank = %d, want %d", index, gotRows[index].Rank, wantRows[index].Rank)
-		}
-		if gotRows[index].Excluded != wantRows[index].Excluded {
-			t.Fatalf("RankedAlternatives[%d].Excluded = %t, want %t", index, gotRows[index].Excluded, wantRows[index].Excluded)
-		}
-		if math.Abs(gotRows[index].Score-wantRows[index].Score) > tolerance {
-			t.Fatalf("RankedAlternatives[%d].Score = %.10f, want %.10f", index, gotRows[index].Score, wantRows[index].Score)
-		}
-	}
 }

@@ -97,22 +97,7 @@ func renderMarkdownReport(
 		builder.WriteString("\n")
 		rows := limitRankedAlternatives(scenarioResult.RankedAlternatives, topAlternatives)
 		for _, alternative := range rows {
-			if alternative.Excluded {
-				builder.WriteString("- ")
-				builder.WriteString(alternative.Name)
-				builder.WriteString(": excluded\n")
-				continue
-			}
-			builder.WriteString("- ")
-			builder.WriteString(strconv.Itoa(alternative.Rank))
-			builder.WriteString(". ")
-			builder.WriteString(alternative.Name)
-			if includeScores {
-				builder.WriteString(" (")
-				builder.WriteString(formatScore(alternative.Score))
-				builder.WriteString(")")
-			}
-			builder.WriteString("\n")
+			writeMarkdownAlternative(&builder, alternative, includeScores)
 		}
 	}
 
@@ -123,16 +108,7 @@ func renderMarkdownReport(
 	}
 
 	for _, alternative := range limitRankedAlternatives(finalRanking.RankedAlternatives, topAlternatives) {
-		builder.WriteString("- ")
-		builder.WriteString(strconv.Itoa(alternative.Rank))
-		builder.WriteString(". ")
-		builder.WriteString(alternative.Name)
-		if includeScores {
-			builder.WriteString(" (")
-			builder.WriteString(formatScore(alternative.Score))
-			builder.WriteString(")")
-		}
-		builder.WriteString("\n")
+		writeMarkdownAlternative(&builder, alternative, includeScores)
 	}
 
 	return builder.String()
@@ -424,4 +400,23 @@ func problemName(config *ExecutionConfig) string {
 		return ""
 	}
 	return config.Problem.Name
+}
+
+func writeMarkdownAlternative(builder *strings.Builder, alternative domain.RankedAlternative, includeScores bool) {
+	builder.WriteString("- ")
+	if alternative.Excluded {
+		builder.WriteString(alternative.Name)
+		builder.WriteString(": excluded\n")
+		return
+	}
+
+	builder.WriteString(strconv.Itoa(alternative.Rank))
+	builder.WriteString(". ")
+	builder.WriteString(alternative.Name)
+	if includeScores {
+		builder.WriteString(" (")
+		builder.WriteString(formatScore(alternative.Score))
+		builder.WriteString(")")
+	}
+	builder.WriteString("\n")
 }

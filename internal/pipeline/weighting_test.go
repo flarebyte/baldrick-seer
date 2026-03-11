@@ -124,14 +124,7 @@ func TestDefaultCriteriaWeighter(t *testing.T) {
 func TestDefaultCriteriaWeighterNormalizesWeights(t *testing.T) {
 	t.Parallel()
 
-	config := validLoadedConfigWithAHPPairs(
-		[]string{"cost", "speed", "reliability"},
-		[]PairwiseComparison{
-			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "speed", Strength: 3},
-			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "reliability", Strength: 5},
-			{MoreImportantCriterionName: "speed", LessImportantCriterionName: "reliability", Strength: 2},
-		},
-	)
+	config := validThreeCriteriaAHPConfig()
 
 	got, err := DefaultCriteriaWeighter{}.WeightCriteria(WeightCriteriaInput{
 		Command:        domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: config.Path},
@@ -155,14 +148,7 @@ func TestDefaultCriteriaWeighterNormalizesWeights(t *testing.T) {
 func TestDefaultCriteriaWeighterIsDeterministic(t *testing.T) {
 	t.Parallel()
 
-	config := validLoadedConfigWithAHPPairs(
-		[]string{"cost", "speed", "reliability"},
-		[]PairwiseComparison{
-			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "speed", Strength: 3},
-			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "reliability", Strength: 5},
-			{MoreImportantCriterionName: "speed", LessImportantCriterionName: "reliability", Strength: 2},
-		},
-	)
+	config := validThreeCriteriaAHPConfig()
 
 	input := WeightCriteriaInput{
 		Command:        domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: config.Path},
@@ -295,29 +281,13 @@ func (c *capturingScenarioRanker) RankScenarios(input RankScenariosInput) (RankS
 	return RankScenariosOutput{}, nil
 }
 
-func assertScenarioWeights(t *testing.T, got []ScenarioCriterionWeights, want []ScenarioCriterionWeights, tolerance float64) {
-	t.Helper()
-
-	if len(got) != len(want) {
-		t.Fatalf("len(got) = %d, want %d", len(got), len(want))
-	}
-
-	for scenarioIndex := range want {
-		if got[scenarioIndex].ScenarioName != want[scenarioIndex].ScenarioName {
-			t.Fatalf("ScenarioName[%d] = %q, want %q", scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName)
-		}
-		if len(got[scenarioIndex].CriterionWeights) != len(want[scenarioIndex].CriterionWeights) {
-			t.Fatalf("len(CriterionWeights[%d]) = %d, want %d", scenarioIndex, len(got[scenarioIndex].CriterionWeights), len(want[scenarioIndex].CriterionWeights))
-		}
-		for weightIndex := range want[scenarioIndex].CriterionWeights {
-			gotWeight := got[scenarioIndex].CriterionWeights[weightIndex]
-			wantWeight := want[scenarioIndex].CriterionWeights[weightIndex]
-			if gotWeight.CriterionName != wantWeight.CriterionName {
-				t.Fatalf("CriterionName[%d][%d] = %q, want %q", scenarioIndex, weightIndex, gotWeight.CriterionName, wantWeight.CriterionName)
-			}
-			if math.Abs(gotWeight.Weight-wantWeight.Weight) > tolerance {
-				t.Fatalf("Weight[%d][%d] = %0.12f, want %0.12f", scenarioIndex, weightIndex, gotWeight.Weight, wantWeight.Weight)
-			}
-		}
-	}
+func validThreeCriteriaAHPConfig() LoadedConfig {
+	return validLoadedConfigWithAHPPairs(
+		[]string{"cost", "speed", "reliability"},
+		[]PairwiseComparison{
+			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "speed", Strength: 3},
+			{MoreImportantCriterionName: "cost", LessImportantCriterionName: "reliability", Strength: 5},
+			{MoreImportantCriterionName: "speed", LessImportantCriterionName: "reliability", Strength: 2},
+		},
+	)
 }

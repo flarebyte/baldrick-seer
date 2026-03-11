@@ -25,9 +25,7 @@ func TestRunValidateStageOrdering(t *testing.T) {
 
 	got := order
 	want := []string{"load", "validate"}
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("order = %#v, want %#v", got, want)
-	}
+	assertStageOrder(t, got, want)
 }
 
 func TestRunReportGenerateStageOrdering(t *testing.T) {
@@ -46,9 +44,7 @@ func TestRunReportGenerateStageOrdering(t *testing.T) {
 
 	got := order
 	want := []string{"load", "validate", "weight", "rank", "aggregate", "render"}
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("order = %#v, want %#v", got, want)
-	}
+	assertStageOrder(t, got, want)
 }
 
 func TestRunReportGenerateFailsFast(t *testing.T) {
@@ -77,18 +73,12 @@ func TestRunReportGenerateFailsFast(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, wantErr)
 	}
 
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
-
+	failure := assertCommandFailure(t, err, wantErr, "")
 	if failure.Category != domain.FailureCategoryExecution {
 		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
 	}
 
-	if got, want := order, []string{"load", "validate", "weight"}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("order = %#v, want %#v", got, want)
-	}
+	assertStageOrder(t, order, []string{"load", "validate", "weight"})
 }
 
 func TestStageIOContractsCanBeConstructed(t *testing.T) {
@@ -380,9 +370,7 @@ func TestValidationFailureStopsPipeline(t *testing.T) {
 				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
 			}
 
-			if got, want := order, []string{"load", "validate"}; !reflect.DeepEqual(got, want) {
-				t.Fatalf("order = %#v, want %#v", got, want)
-			}
+			assertStageOrder(t, order, []string{"load", "validate"})
 		})
 	}
 }
@@ -390,18 +378,16 @@ func TestValidationFailureStopsPipeline(t *testing.T) {
 func TestRealValidationFailureFromFixture(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name    string
-		command domain.CommandRequest
-		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-	}{
+	runFlowBehaviorTests(t, []flowBehaviorCase{
 		{
 			name: "validate invalid reference fixture",
 			command: domain.CommandRequest{
 				CommandName: domain.CommandNameValidate,
 				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
 			},
-			run: Runner.RunValidate,
+			run:         Runner.RunValidate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "unknown scenario name in evaluations: missing",
 		},
 		{
 			name: "report generate invalid reference fixture",
@@ -409,42 +395,17 @@ func TestRealValidationFailureFromFixture(t *testing.T) {
 				CommandName: domain.CommandNameReportGenerate,
 				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
 			},
-			run: Runner.RunReportGenerate,
+			run:         Runner.RunReportGenerate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "unknown scenario name in evaluations: missing",
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			_, err := tt.run(NewDefaultRunner(), tt.command)
-			if !errors.Is(err, ErrValidationFailed) {
-				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
-			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if got, want := failure.Diagnostics[0].Message, "unknown scenario name in evaluations: missing"; got != want {
-				t.Fatalf("message = %q, want %q", got, want)
-			}
-		})
-	}
+	})
 }
 
 func TestPairwiseValidationFlowBehavior(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name        string
-		command     domain.CommandRequest
-		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-		wantErr     error
-		wantMessage string
-	}{
+	runFlowBehaviorTests(t, []flowBehaviorCase{
 		{
 			name: "validate stops on pairwise validation failure",
 			command: domain.CommandRequest{
@@ -473,50 +434,13 @@ func TestPairwiseValidationFlowBehavior(t *testing.T) {
 			},
 			run: Runner.RunReportGenerate,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got, err := tt.run(NewDefaultRunner(), tt.command)
-			if tt.wantErr == nil {
-				if err != nil {
-					t.Fatalf("run() error = %v", err)
-				}
-				if got.ValidatedModel == nil {
-					t.Fatal("ValidatedModel = nil, want value")
-				}
-				return
-			}
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("error = %v, want %v", err, tt.wantErr)
-			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
-				t.Fatalf("message = %q, want %q", got, want)
-			}
-		})
-	}
+	})
 }
 
 func TestEvaluationValidationFlowBehavior(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name        string
-		command     domain.CommandRequest
-		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-		wantErr     error
-		wantMessage string
-	}{
+	runFlowBehaviorTests(t, []flowBehaviorCase{
 		{
 			name: "validate stops on evaluation validation failure",
 			command: domain.CommandRequest{
@@ -545,50 +469,13 @@ func TestEvaluationValidationFlowBehavior(t *testing.T) {
 			},
 			run: Runner.RunValidate,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got, err := tt.run(NewDefaultRunner(), tt.command)
-			if tt.wantErr == nil {
-				if err != nil {
-					t.Fatalf("run() error = %v", err)
-				}
-				if got.ValidatedModel == nil {
-					t.Fatal("ValidatedModel = nil, want value")
-				}
-				return
-			}
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("error = %v, want %v", err, tt.wantErr)
-			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
-				t.Fatalf("message = %q, want %q", got, want)
-			}
-		})
-	}
+	})
 }
 
 func TestConstraintValidationFlowBehavior(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name        string
-		command     domain.CommandRequest
-		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-		wantErr     error
-		wantMessage string
-	}{
+	runFlowBehaviorTests(t, []flowBehaviorCase{
 		{
 			name: "validate stops on constraint validation failure",
 			command: domain.CommandRequest{
@@ -617,50 +504,13 @@ func TestConstraintValidationFlowBehavior(t *testing.T) {
 			},
 			run: Runner.RunValidate,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got, err := tt.run(NewDefaultRunner(), tt.command)
-			if tt.wantErr == nil {
-				if err != nil {
-					t.Fatalf("run() error = %v", err)
-				}
-				if got.ValidatedModel == nil {
-					t.Fatal("ValidatedModel = nil, want value")
-				}
-				return
-			}
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("error = %v, want %v", err, tt.wantErr)
-			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
-				t.Fatalf("message = %q, want %q", got, want)
-			}
-		})
-	}
+	})
 }
 
 func TestReportDefinitionValidationFlowBehavior(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name        string
-		command     domain.CommandRequest
-		run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-		wantErr     error
-		wantMessage string
-	}{
+	runFlowBehaviorTests(t, []flowBehaviorCase{
 		{
 			name: "validate stops on report definition validation failure",
 			command: domain.CommandRequest{
@@ -689,38 +539,7 @@ func TestReportDefinitionValidationFlowBehavior(t *testing.T) {
 			},
 			run: Runner.RunValidate,
 		},
-	}
-
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got, err := tt.run(NewDefaultRunner(), tt.command)
-			if tt.wantErr == nil {
-				if err != nil {
-					t.Fatalf("run() error = %v", err)
-				}
-				if got.ValidatedModel == nil {
-					t.Fatal("ValidatedModel = nil, want value")
-				}
-				return
-			}
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("error = %v, want %v", err, tt.wantErr)
-			}
-
-			failure := domain.AsCommandFailure(err)
-			if failure == nil {
-				t.Fatal("AsCommandFailure(err) = nil, want value")
-			}
-
-			if got, want := failure.Diagnostics[0].Message, tt.wantMessage; got != want {
-				t.Fatalf("message = %q, want %q", got, want)
-			}
-		})
-	}
+	})
 }
 
 func TestRunReportGenerateProducesRealRenderedReport(t *testing.T) {
@@ -761,16 +580,11 @@ func TestRunReportGenerateStopsOnAggregationFailure(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, wantErr)
 	}
 
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
+	failure := assertCommandFailure(t, err, wantErr, "")
 	if failure.Category != domain.FailureCategoryExecution {
 		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
 	}
-	if got, want := order, []string{"load", "validate", "weight", "rank", "aggregate"}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("order = %#v, want %#v", got, want)
-	}
+	assertStageOrder(t, order, []string{"load", "validate", "weight", "rank", "aggregate"})
 }
 
 func TestRunReportGenerateStopsOnRenderingFailure(t *testing.T) {
@@ -795,16 +609,11 @@ func TestRunReportGenerateStopsOnRenderingFailure(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, wantErr)
 	}
 
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
+	failure := assertCommandFailure(t, err, wantErr, "")
 	if failure.Category != domain.FailureCategoryRendering {
 		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryRendering)
 	}
-	if got, want := order, []string{"load", "validate", "weight", "rank", "aggregate", "render"}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("order = %#v, want %#v", got, want)
-	}
+	assertStageOrder(t, order, []string{"load", "validate", "weight", "rank", "aggregate", "render"})
 }
 
 func TestDefaultConfigLoader(t *testing.T) {
