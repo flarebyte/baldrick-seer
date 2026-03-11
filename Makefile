@@ -7,6 +7,7 @@ GOLINT := golangci-lint
 BUN_ENV := TMPDIR=$(PWD)/tmp
 BIOME := $(BUN_ENV) $(BUN) run biome
 GOLINT_ENV := $(GO_ENV) GOLANGCI_LINT_CACHE=$(PWD)/.golangci-lint-cache
+COVER_PROFILE := tmp/test-unit.coverage.out
 
 build:
 	mkdir -p tmp
@@ -16,7 +17,9 @@ build:
 test: test-unit test-e2e
 
 test-unit:
-	$(GO_ENV) $(GO) test ./...
+	mkdir -p tmp
+	$(GO_ENV) $(GO) test -v -coverprofile=$(COVER_PROFILE) -covermode=count ./...
+	$(GO_ENV) $(GO) tool cover -func=$(COVER_PROFILE)
 
 test-e2e: build
 	mkdir -p tmp
@@ -67,7 +70,7 @@ help:
 	@printf "Targets:\n"
 	@printf "  build       Build the seer binary into .e2e-bin/.\n"
 	@printf "  test        Run unit and E2E tests.\n"
-	@printf "  test-unit   Run Go unit tests.\n"
+	@printf "  test-unit   Run verbose Go unit tests and print coverage.\n"
 	@printf "  test-e2e    Build the CLI and run Bun E2E smoke tests.\n"
 	@printf "  lint        Run Biome checks for E2E/tooling files and go vet.\n"
 	@printf "  format      Format Go files and Biome-managed files.\n"
