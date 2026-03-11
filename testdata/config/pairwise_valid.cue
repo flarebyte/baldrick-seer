@@ -26,18 +26,22 @@ config: {
 		]
 		preferences: {
 			method: "ahp_pairwise"
+			scale:  "saaty_1_9"
 			comparisons: [
 				{
 					moreImportantCriterionName: "cost"
 					lessImportantCriterionName: "speed"
+					strength:                   3
 				},
 				{
 					moreImportantCriterionName: "cost"
 					lessImportantCriterionName: "reliability"
+					strength:                   5
 				},
 				{
 					moreImportantCriterionName: "speed"
 					lessImportantCriterionName: "reliability"
+					strength:                   2
 				},
 			]
 		}

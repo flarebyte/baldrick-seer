@@ -124,9 +124,14 @@ func TestStageIOContractsCanBeConstructed(t *testing.T) {
 		},
 	}
 	weightOutput := WeightCriteriaOutput{
-		CriterionWeights: []CriterionWeight{
-			{CriterionName: "cost", Weight: 0.6},
-			{CriterionName: "speed", Weight: 0.4},
+		ScenarioWeights: []ScenarioCriterionWeights{
+			{
+				ScenarioName: "startup",
+				CriterionWeights: []CriterionWeight{
+					{CriterionName: "cost", Weight: 0.6},
+					{CriterionName: "speed", Weight: 0.4},
+				},
+			},
 		},
 	}
 	rankOutput := RankScenariosOutput{
@@ -166,7 +171,7 @@ func TestStageIOContractsCanBeConstructed(t *testing.T) {
 		t.Fatalf("TopLevelFields[0] = %q, want %q", got, want)
 	}
 
-	if got, want := weightOutput.CriterionWeights[0].CriterionName, "cost"; got != want {
+	if got, want := weightOutput.ScenarioWeights[0].CriterionWeights[0].CriterionName, "cost"; got != want {
 		t.Fatalf("CriterionName = %q, want %q", got, want)
 	}
 

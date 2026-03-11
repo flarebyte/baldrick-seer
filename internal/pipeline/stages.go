@@ -89,12 +89,14 @@ type ScenarioCriterionRef struct {
 
 type ScenarioPreferences struct {
 	Method      string               `json:"method"`
+	Scale       string               `json:"scale"`
 	Comparisons []PairwiseComparison `json:"comparisons"`
 }
 
 type PairwiseComparison struct {
-	MoreImportantCriterionName string `json:"moreImportantCriterionName"`
-	LessImportantCriterionName string `json:"lessImportantCriterionName"`
+	MoreImportantCriterionName string  `json:"moreImportantCriterionName"`
+	LessImportantCriterionName string  `json:"lessImportantCriterionName"`
+	Strength                   float64 `json:"strength"`
 }
 
 type ConstraintConfig struct {
@@ -142,19 +144,25 @@ type CriterionWeight struct {
 	Weight        float64
 }
 
+type ScenarioCriterionWeights struct {
+	ScenarioName     string
+	CriterionWeights []CriterionWeight
+}
+
 type WeightCriteriaInput struct {
 	Command        domain.CommandRequest
 	ValidatedModel domain.ValidatedModelSummary
+	Config         LoadedConfig
 }
 
 type WeightCriteriaOutput struct {
-	CriterionWeights []CriterionWeight
+	ScenarioWeights []ScenarioCriterionWeights
 }
 
 type RankScenariosInput struct {
-	Command          domain.CommandRequest
-	ValidatedModel   domain.ValidatedModelSummary
-	CriterionWeights []CriterionWeight
+	Command         domain.CommandRequest
+	ValidatedModel  domain.ValidatedModelSummary
+	ScenarioWeights []ScenarioCriterionWeights
 }
 
 type RankScenariosOutput struct {

@@ -99,10 +99,6 @@ func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 
 type DefaultCriteriaWeighter struct{}
 
-func (DefaultCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
-	return WeightCriteriaOutput{}, nil
-}
-
 type DefaultScenarioRanker struct{}
 
 func (DefaultScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {

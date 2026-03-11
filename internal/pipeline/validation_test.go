@@ -73,6 +73,7 @@ func validLoadedConfigWithAHPPairs(activeCriteria []string, comparisons []Pairwi
 			Name: "baseline",
 			Preferences: &ScenarioPreferences{
 				Method:      "ahp_pairwise",
+				Scale:       "saaty_1_9",
 				Comparisons: comparisons,
 			},
 		},
