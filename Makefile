@@ -1,4 +1,4 @@
-.PHONY: build test test-unit test-e2e lint format doc-design dup complexity release sec help
+.PHONY: build test test-unit test-race test-e2e lint format doc-design dup complexity release sec help
 
 GO := go
 BUN := bun
@@ -20,6 +20,10 @@ test-unit:
 	mkdir -p tmp
 	$(GO_ENV) $(GO) test -v -coverprofile=$(COVER_PROFILE) -covermode=count ./...
 	$(GO_ENV) $(GO) tool cover -func=$(COVER_PROFILE)
+
+test-race:
+	mkdir -p tmp
+	$(GO_ENV) $(GO) test -race ./...
 
 test-e2e: build
 	mkdir -p tmp
@@ -71,6 +75,7 @@ help:
 	@printf "  build       Build the seer binary into .e2e-bin/.\n"
 	@printf "  test        Run unit and E2E tests.\n"
 	@printf "  test-unit   Run verbose Go unit tests and print coverage.\n"
+	@printf "  test-race   Run Go tests with the race detector.\n"
 	@printf "  test-e2e    Build the CLI and run Bun E2E smoke tests.\n"
 	@printf "  lint        Run Biome checks for E2E/tooling files and go vet.\n"
 	@printf "  format      Format Go files and Biome-managed files.\n"
