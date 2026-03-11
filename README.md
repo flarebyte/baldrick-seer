@@ -94,30 +94,70 @@ See:
 
 ## Status
 
-This repository currently captures the design and examples for the tool. The current skeleton includes:
-- Go CLI
-- Cobra for command and argument parsing
-- placeholder `seer validate`
-- placeholder `seer report generate`
-- Bun + TypeScript for end-to-end tests
+The repository now includes the full v1 CLI pipeline with:
+- Go CLI implementation
+- Cobra command wiring
+- CUE loading and validation
+- AHP weighting
+- TOPSIS scenario ranking
+- cross-scenario aggregation
+- markdown, JSON, and CSV rendering
+- Bun + TypeScript end-to-end tests
 
-## Local commands
+## Local development
 
 ```sh
 make build
 make test
 make test-unit
+make coverage
+make test-race
 make test-e2e
 make lint
 make format
 ```
 
-## Stub commands
+`make test-unit` runs verbose Go tests, writes a coverage profile to `tmp/test-unit.coverage.out`, and prints a package/function coverage summary.
+
+`make coverage` additionally writes an HTML report to `tmp/test-unit.coverage.html`.
+
+The build target embeds deterministic build metadata inputs through linker flags:
 
 ```sh
-seer validate --config testdata/config/minimal.cue
-seer report generate --config testdata/config/minimal.cue
+make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-03-11T00:00:00Z
 ```
+
+## CLI usage
+
+```sh
+./.e2e-bin/seer validate --config testdata/config/minimal.cue
+./.e2e-bin/seer report generate --config testdata/config/minimal.cue
+./.e2e-bin/seer validate --config testdata/config_split
+```
+
+`--config` accepts either a single `.cue` file or a directory containing a CUE package.
+
+## Release preparation
+
+Keep release preparation local and explicit:
+- run `make format`
+- run `make lint`
+- run `make test-unit`
+- run `make test-race`
+- run `make test-e2e`
+- build with explicit metadata using `make build VERSION=... COMMIT=... BUILD_DATE=...`
+
+This repository intentionally does not include CI workflows, goreleaser, containers, or publishing automation at this stage.
+
+## Design references
+
+See:
+- [Overview](./doc/design/overview.md)
+- [Examples](./doc/design/examples.md)
+- [Glossary](./doc/design/glossary.md)
+- [Implementation Notes](./doc/design/implementation.md)
+- [Execution Flows](./doc/design/flows.md)
+- [Use Cases](./doc/design/use-cases.md)
 
 ## Why this shape
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/flarebyte/baldrick-seer/internal/app"
+	"github.com/flarebyte/baldrick-seer/internal/buildinfo"
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 	"github.com/spf13/cobra"
 )
@@ -30,6 +31,7 @@ func newRootCmd(deps dependencies) *cobra.Command {
 		Use:           "seer",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Version:       buildinfo.String(),
 	}
 
 	rootCmd.AddCommand(newValidateCmd(deps.runValidate))

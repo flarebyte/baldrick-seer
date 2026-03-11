@@ -163,6 +163,16 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 	}
 }
 
+func TestRootCommandExposesBuildVersion(t *testing.T) {
+	t.Parallel()
+
+	cmd := newRootCmd(dependencies{})
+
+	if cmd.Version == "" {
+		t.Fatal("Version = empty, want build metadata string")
+	}
+}
+
 func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 	t.Parallel()
 
