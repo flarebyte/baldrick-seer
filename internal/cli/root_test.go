@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,6 +24,94 @@ func readGolden(t *testing.T, name string) string {
 	}
 
 	return string(content)
+}
+
+func executeAndCapture(args []string) (int, string, string) {
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	exitCode := Execute(args, stdout, stderr)
+	return exitCode, stdout.String(), stderr.String()
+}
+
+func assertExecuteRepeated(t *testing.T, args []string, iterations int) {
+	t.Helper()
+
+	wantExit, wantStdout, wantStderr := executeAndCapture(args)
+
+	for i := 0; i < iterations; i++ {
+		gotExit, gotStdout, gotStderr := executeAndCapture(args)
+		if gotExit != wantExit {
+			t.Fatalf("iteration %d exitCode = %d, want %d", i, gotExit, wantExit)
+		}
+		if gotStdout != wantStdout {
+			t.Fatalf("iteration %d stdout drifted", i)
+		}
+		if gotStderr != wantStderr {
+			t.Fatalf("iteration %d stderr drifted", i)
+		}
+	}
+}
+
+func assertPresentedCommandError(t *testing.T, err error, wantExitCode int, wantStdout string, wantStderr string) {
+	t.Helper()
+
+	if err == nil {
+		t.Fatal("Execute() error = nil, want error")
+	}
+
+	presentation := domain.PresentError(err)
+	if got, want := int(presentation.ExitCode), wantExitCode; got != want {
+		t.Fatalf("exitCode = %d, want %d", got, want)
+	}
+	if got, want := presentation.Stderr, wantStderr; got != want {
+		t.Fatalf("stderr = %q, want %q", got, want)
+	}
+}
+
+func assertRootCommandFailure(
+	t *testing.T,
+	deps dependencies,
+	args []string,
+	wantExitCode int,
+	wantStdout string,
+	wantStderr string,
+) {
+	t.Helper()
+
+	cmd := newRootCmd(deps)
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+	cmd.SetArgs(args)
+
+	err := cmd.Execute()
+	if got, want := stdout.String(), wantStdout; got != want {
+		t.Fatalf("stdout = %q, want %q", got, want)
+	}
+	assertPresentedCommandError(t, err, wantExitCode, wantStdout, wantStderr)
+}
+
+func validateFailureDeps(err error) dependencies {
+	return dependencies{
+		runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+			return domain.CommandResult{}, err
+		},
+		runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+			panic("runReportGenerate should not be called")
+		},
+	}
+}
+
+func reportGenerateFailureDeps(err error) dependencies {
+	return dependencies{
+		runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+			panic("runValidate should not be called")
+		},
+		runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+			return domain.CommandResult{}, err
+		},
+	}
 }
 
 func TestCommandOutputGoldens(t *testing.T) {
@@ -66,8 +155,8 @@ func TestCommandOutputGoldens(t *testing.T) {
 			stderrGolden: "missing_file.stderr.golden",
 		},
 		{
-			name:         "report generate directory path",
-			args:         []string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config")},
+			name:         "report generate empty directory",
+			args:         []string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config_empty")},
 			wantExitCode: 1,
 			stderrGolden: "directory_path.stderr.golden",
 		},
@@ -124,8 +213,11 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(req domain.CommandRequest) (domain.CommandResult, error) {
+		runValidate: func(ctx context.Context, req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if ctx == nil {
+				t.Fatal("context = nil, want value")
+			}
 			if req.CommandName != domain.CommandNameValidate {
 				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameValidate)
 			}
@@ -135,7 +227,7 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 
 			return domain.CommandResult{CommandName: domain.CommandNameValidate}, nil
 		},
-		runReportGenerate: func(domain.CommandRequest) (domain.CommandResult, error) {
+		runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runReportGenerate should not be called")
 			return domain.CommandResult{}, nil
 		},
@@ -159,17 +251,30 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 	}
 }
 
+func TestRootCommandExposesBuildVersion(t *testing.T) {
+	t.Parallel()
+
+	cmd := newRootCmd(dependencies{})
+
+	if cmd.Version == "" {
+		t.Fatal("Version = empty, want build metadata string")
+	}
+}
+
 func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 	t.Parallel()
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(domain.CommandRequest) (domain.CommandResult, error) {
+		runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runValidate should not be called")
 			return domain.CommandResult{}, nil
 		},
-		runReportGenerate: func(req domain.CommandRequest) (domain.CommandResult, error) {
+		runReportGenerate: func(ctx context.Context, req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if ctx == nil {
+				t.Fatal("context = nil, want value")
+			}
 			if req.CommandName != domain.CommandNameReportGenerate {
 				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameReportGenerate)
 			}
@@ -205,25 +310,104 @@ func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 func TestExecuteIsDeterministic(t *testing.T) {
 	t.Parallel()
 
-	args := []string{"validate", "--config", testConfigPath()}
+	assertExecuteRepeated(t, []string{"validate", "--config", testConfigPath()}, 1)
+}
 
-	stdout1 := new(bytes.Buffer)
-	stderr1 := new(bytes.Buffer)
-	exitCode1 := Execute(args, stdout1, stderr1)
+func TestExecuteUsesCentralizedFailureEmission(t *testing.T) {
+	t.Parallel()
 
-	stdout2 := new(bytes.Buffer)
-	stderr2 := new(bytes.Buffer)
-	exitCode2 := Execute(args, stdout2, stderr2)
-
-	if exitCode1 != exitCode2 {
-		t.Fatalf("exitCode1 = %d, exitCode2 = %d", exitCode1, exitCode2)
+	tests := []struct {
+		name         string
+		deps         dependencies
+		args         []string
+		wantExitCode int
+		wantStdout   string
+		wantStderr   string
+	}{
+		{
+			name: "validate validation failure",
+			deps: validateFailureDeps(domain.NewFailure(
+				domain.FailureCategoryValidation,
+				[]domain.Diagnostic{
+					domain.NewDiagnostic(domain.DiagnosticSeverityError, "validation.failed", "config", domain.DiagnosticLocation{}, "validation failed"),
+				},
+				nil,
+			)),
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: validation failed\n",
+		},
+		{
+			name: "report generate execution failure",
+			deps: reportGenerateFailureDeps(domain.NewFailure(
+				domain.FailureCategoryExecution,
+				[]domain.Diagnostic{
+					domain.NewDiagnostic(domain.DiagnosticSeverityError, "execution.failed", "config", domain.DiagnosticLocation{}, "command failed"),
+				},
+				nil,
+			)),
+			args:         []string{"report", "generate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: command failed\n",
+		},
+		{
+			name: "validate cancellation failure",
+			deps: validateFailureDeps(domain.NewFailureWithMessage(
+				domain.FailureCategoryExecution,
+				"command canceled",
+				nil,
+				nil,
+			)),
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: command canceled\n",
+		},
 	}
 
-	if stdout1.String() != stdout2.String() {
-		t.Fatalf("stdout1 = %q, stdout2 = %q", stdout1.String(), stdout2.String())
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assertRootCommandFailure(t, tt.deps, tt.args, tt.wantExitCode, tt.wantStdout, tt.wantStderr)
+		})
+	}
+}
+
+func TestExecuteRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		args         []string
+		wantExitCode int
+	}{
+		{
+			name:         "validate success",
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 0,
+		},
+		{
+			name:         "report generate success",
+			args:         []string{"report", "generate", "--config", testConfigPath()},
+			wantExitCode: 0,
+		},
+		{
+			name:         "validate validation failure",
+			args:         []string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue")},
+			wantExitCode: 1,
+		},
 	}
 
-	if stderr1.String() != stderr2.String() {
-		t.Fatalf("stderr1 = %q, stderr2 = %q", stderr1.String(), stderr2.String())
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			exitCode, _, _ := executeAndCapture(tt.args)
+			if exitCode != tt.wantExitCode {
+				t.Fatalf("exitCode = %d, want %d", exitCode, tt.wantExitCode)
+			}
+			assertExecuteRepeated(t, tt.args, 1)
+		})
 	}
 }

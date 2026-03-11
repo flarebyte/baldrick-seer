@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 import (
 	"bytes"
 	"encoding/csv"
@@ -10,7 +12,11 @@ import (
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
-func (DefaultReportRenderer) RenderReports(input RenderReportsInput) (RenderReportsOutput, error) {
+func (DefaultReportRenderer) RenderReports(ctx context.Context, input RenderReportsInput) (RenderReportsOutput, error) {
+	if err := checkContext(ctx, input.Command.ConfigPath); err != nil {
+		return RenderReportsOutput{}, err
+	}
+
 	if input.Config.Config == nil {
 		return RenderReportsOutput{}, NewRenderingFailure("rendering.config_missing", input.Command.ConfigPath, "reports could not be rendered", ErrRenderingFailed)
 	}

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -99,17 +100,7 @@ func validLoadedConfigWithScenarioEvaluations(
 ) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.CriteriaCatalog = append([]CriterionConfig(nil), criteria...)
-	config.Config.Scenarios = []ScenarioConfig{
-		{
-			Name: "baseline",
-		},
-	}
-	for _, criterionName := range activeCriteria {
-		config.Config.Scenarios[0].ActiveCriteria = append(
-			config.Config.Scenarios[0].ActiveCriteria,
-			ScenarioCriterionRef{CriterionName: criterionName},
-		)
-	}
+	config.Config.Scenarios = []ScenarioConfig{scenarioWithActiveCriteria("baseline", activeCriteria)}
 	config.Config.Evaluations = append([]EvaluationConfig(nil), evaluationBlocks...)
 	return config
 }
@@ -121,18 +112,9 @@ func validLoadedConfigWithConstraints(
 ) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.CriteriaCatalog = append([]CriterionConfig(nil), criteria...)
-	config.Config.Scenarios = []ScenarioConfig{
-		{
-			Name:        "baseline",
-			Constraints: append([]ConstraintConfig(nil), constraints...),
-		},
-	}
+	config.Config.Scenarios = []ScenarioConfig{scenarioWithConstraints("baseline", activeCriteria, constraints)}
 	config.Config.Evaluations[0].Evaluations[0].Values = map[string]CriterionValue{}
 	for _, criterionName := range activeCriteria {
-		config.Config.Scenarios[0].ActiveCriteria = append(
-			config.Config.Scenarios[0].ActiveCriteria,
-			ScenarioCriterionRef{CriterionName: criterionName},
-		)
 		config.Config.Evaluations[0].Evaluations[0].Values[criterionName] = CriterionValue{
 			Kind:  criterionValueTypeForName(criteria, criterionName),
 			Value: validCriterionValueForName(criteria, criterionName),
@@ -145,6 +127,34 @@ func validLoadedConfigWithReports(reports []ReportConfig) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.Reports = append([]ReportConfig(nil), reports...)
 	return config
+}
+
+func scenarioWithActiveCriteria(name string, activeCriteria []string) ScenarioConfig {
+	scenario := ScenarioConfig{Name: name}
+	for _, criterionName := range activeCriteria {
+		scenario.ActiveCriteria = append(scenario.ActiveCriteria, ScenarioCriterionRef{CriterionName: criterionName})
+	}
+	return scenario
+}
+
+func scenarioWithConstraints(name string, activeCriteria []string, constraints []ConstraintConfig) ScenarioConfig {
+	scenario := scenarioWithActiveCriteria(name, activeCriteria)
+	scenario.Constraints = append([]ConstraintConfig(nil), constraints...)
+	return scenario
+}
+
+func scenarioEvaluationBlock(scenarioName string, evaluations ...AlternativeEvaluationConfig) []EvaluationConfig {
+	return []EvaluationConfig{{
+		ScenarioName: scenarioName,
+		Evaluations:  append([]AlternativeEvaluationConfig(nil), evaluations...),
+	}}
+}
+
+func alternativeEvaluation(alternativeName string, values map[string]CriterionValue) AlternativeEvaluationConfig {
+	return AlternativeEvaluationConfig{
+		AlternativeName: alternativeName,
+		Values:          values,
+	}
 }
 
 func criterionValueTypeForName(criteria []CriterionConfig, criterionName string) string {
@@ -186,7 +196,7 @@ func validateConfig(t *testing.T, config LoadedConfig) []domain.Diagnostic {
 	t.Helper()
 
 	validator := DefaultModelValidator{}
-	_, err := validator.ValidateModel(ValidateModelInput{
+	_, err := validator.ValidateModel(context.Background(), ValidateModelInput{
 		Command: domain.CommandRequest{
 			CommandName: domain.CommandNameValidate,
 			ConfigPath:  config.Path,
@@ -225,7 +235,7 @@ func runValidatorFailureCases(t *testing.T, tests []validatorFailureCase) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := validator.ValidateModel(ValidateModelInput{
+			_, err := validator.ValidateModel(context.Background(), ValidateModelInput{
 				Command: domain.CommandRequest{
 					CommandName: domain.CommandNameValidate,
 					ConfigPath:  tt.config.Path,

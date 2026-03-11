@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 import "github.com/flarebyte/baldrick-seer/internal/domain"
 
 type DefaultModelValidator struct{}
@@ -9,7 +11,11 @@ type scenarioValidationInfo struct {
 	ActiveCriterionNames []string
 }
 
-func (DefaultModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+func (DefaultModelValidator) ValidateModel(ctx context.Context, input ValidateModelInput) (ValidateModelOutput, error) {
+	if err := checkContext(ctx, input.Command.ConfigPath); err != nil {
+		return ValidateModelOutput{}, err
+	}
+
 	diagnostics := validateLoadedConfig(input.Config)
 	if len(diagnostics) > 0 {
 		return ValidateModelOutput{}, NewValidationDiagnosticsFailure(diagnostics, ErrValidationFailed)

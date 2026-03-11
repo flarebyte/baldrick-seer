@@ -82,6 +82,10 @@ func TestFailureCarriesWrappedError(t *testing.T) {
 	if got, want := failure.Error(), "execution failed"; got != want {
 		t.Fatalf("Error() = %q, want %q", got, want)
 	}
+
+	if got, want := failure.Message, "execution failed"; got != want {
+		t.Fatalf("Message = %q, want %q", got, want)
+	}
 }
 
 func TestAsCommandFailureReturnsNilForUnknownError(t *testing.T) {
@@ -89,5 +93,61 @@ func TestAsCommandFailureReturnsNilForUnknownError(t *testing.T) {
 
 	if got := AsCommandFailure(errors.New("plain")); got != nil {
 		t.Fatalf("AsCommandFailure() = %#v, want nil", got)
+	}
+}
+
+func TestPresentError(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		err        error
+		wantExit   ExitCode
+		wantStderr string
+	}{
+		{
+			name: "validation failure uses diagnostic message",
+			err: NewFailure(
+				FailureCategoryValidation,
+				[]Diagnostic{
+					NewDiagnostic(DiagnosticSeverityError, "validation.failed", "config", DiagnosticLocation{}, "validation failed"),
+				},
+				errors.New("boom"),
+			),
+			wantExit:   ExitCodeValidation,
+			wantStderr: "status: error\nmessage: validation failed\n",
+		},
+		{
+			name: "explicit message is preserved",
+			err: NewFailureWithMessage(
+				FailureCategoryExecution,
+				"command canceled",
+				nil,
+				errors.New("boom"),
+			),
+			wantExit:   ExitCodeExecution,
+			wantStderr: "status: error\nmessage: command canceled\n",
+		},
+		{
+			name:       "plain error uses fallback message",
+			err:        errors.New("plain"),
+			wantExit:   ExitCodeInternal,
+			wantStderr: "status: error\nmessage: command failed\n",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := PresentError(tt.err)
+			if got.ExitCode != tt.wantExit {
+				t.Fatalf("ExitCode = %d, want %d", got.ExitCode, tt.wantExit)
+			}
+			if got.Stderr != tt.wantStderr {
+				t.Fatalf("Stderr = %q, want %q", got.Stderr, tt.wantStderr)
+			}
+		})
 	}
 }

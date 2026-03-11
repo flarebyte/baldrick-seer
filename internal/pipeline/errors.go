@@ -5,7 +5,8 @@ import "errors"
 var (
 	ErrConfigPathRequired     = errors.New("config flag is required")
 	ErrConfigPathDoesNotExist = errors.New("config path does not exist")
-	ErrConfigPathIsDirectory  = errors.New("config path is a directory")
+	ErrConfigFileExtension    = errors.New("config file must have .cue extension")
+	ErrConfigDirectoryEmpty   = errors.New("config directory does not contain any .cue files")
 	ErrConfigLoadInvalid      = errors.New("config could not be loaded")
 	ErrConfigNotConcrete      = errors.New("config must evaluate to a concrete value")
 	ErrValidationFailed       = errors.New("validation failed")
@@ -13,4 +14,5 @@ var (
 	ErrRankingFailed          = errors.New("scenario ranking could not be computed")
 	ErrAggregationFailed      = errors.New("final ranking could not be computed")
 	ErrRenderingFailed        = errors.New("reports could not be rendered")
+	ErrExecutionCanceled      = errors.New("command canceled")
 )

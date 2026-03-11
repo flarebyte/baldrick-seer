@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -9,13 +10,15 @@ import (
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
+type contextKey string
+
 func TestRunValidateStageOrdering(t *testing.T) {
 	t.Parallel()
 
 	order := []string{}
 	runner := newFakeRunner(&order)
 
-	_, err := runner.RunValidate(domain.CommandRequest{
+	_, err := runner.RunValidate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameValidate,
 		ConfigPath:  filepath.Join("testdata", "config", "minimal.cue"),
 	})
@@ -34,7 +37,7 @@ func TestRunReportGenerateStageOrdering(t *testing.T) {
 	order := []string{}
 	runner := newFakeRunner(&order)
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  filepath.Join("testdata", "config", "minimal.cue"),
 	})
@@ -65,7 +68,7 @@ func TestRunReportGenerateFailsFast(t *testing.T) {
 		ReportRenderer:     render,
 	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  filepath.Join("testdata", "config", "minimal.cue"),
 	})
@@ -73,11 +76,117 @@ func TestRunReportGenerateFailsFast(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, wantErr)
 	}
 
-	failure := assertCommandFailure(t, err, wantErr, "")
-	if failure.Category != domain.FailureCategoryExecution {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
+	_ = assertFailureCategory(t, err, wantErr, domain.FailureCategoryExecution, "")
+
+	assertStageOrder(t, order, []string{"load", "validate", "weight"})
+}
+
+func TestRunValidatePropagatesContext(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	contexts := []context.Context{}
+	runner := Runner{
+		ConfigLoader:   &fakeConfigLoader{recorder: &order, contexts: &contexts},
+		ModelValidator: &fakeModelValidator{recorder: &order, contexts: &contexts},
 	}
 
+	ctx := context.WithValue(context.Background(), contextKey("validate"), "validate")
+	_, err := runner.RunValidate(ctx, domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if err != nil {
+		t.Fatalf("RunValidate() error = %v", err)
+	}
+
+	assertStageOrder(t, order, []string{"load", "validate"})
+	if len(contexts) != 2 {
+		t.Fatalf("len(contexts) = %d, want 2", len(contexts))
+	}
+	for index, got := range contexts {
+		if got != ctx {
+			t.Fatalf("contexts[%d] did not match input context", index)
+		}
+	}
+}
+
+func TestRunReportGeneratePropagatesContext(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	contexts := []context.Context{}
+	runner := Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: &order, contexts: &contexts},
+		ModelValidator:     &fakeModelValidator{recorder: &order, contexts: &contexts},
+		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order, contexts: &contexts},
+		ScenarioRanker:     &fakeScenarioRanker{recorder: &order, contexts: &contexts},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order, contexts: &contexts},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order, contexts: &contexts},
+	}
+
+	ctx := context.WithValue(context.Background(), contextKey("report"), "report")
+	_, err := runner.RunReportGenerate(ctx, domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if err != nil {
+		t.Fatalf("RunReportGenerate() error = %v", err)
+	}
+
+	assertStageOrder(t, order, []string{"load", "validate", "weight", "rank", "aggregate", "render"})
+	if len(contexts) != 6 {
+		t.Fatalf("len(contexts) = %d, want 6", len(contexts))
+	}
+	for index, got := range contexts {
+		if got != ctx {
+			t.Fatalf("contexts[%d] did not match input context", index)
+		}
+	}
+}
+
+func TestRunValidateCancelsBeforeExecutionStarts(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	runner := newFakeRunner(&order)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := runner.RunValidate(ctx, domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+
+	_ = assertFailureCategory(t, err, ErrExecutionCanceled, domain.FailureCategoryExecution, "command canceled")
+	if len(order) != 0 {
+		t.Fatalf("order = %#v, want no stage calls", order)
+	}
+}
+
+func TestRunReportGenerateCancelsAtIntermediateStage(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	ctx, cancel := context.WithCancel(context.Background())
+	runner := Runner{
+		ConfigLoader:   &fakeConfigLoader{recorder: &order},
+		ModelValidator: &fakeModelValidator{recorder: &order},
+		CriteriaWeighter: &fakeCriteriaWeighter{
+			recorder: &order,
+			onCall:   cancel,
+		},
+		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order},
+	}
+
+	_, err := runner.RunReportGenerate(ctx, domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+
+	_ = assertFailureCategory(t, err, ErrExecutionCanceled, domain.FailureCategoryExecution, "command canceled")
 	assertStageOrder(t, order, []string{"load", "validate", "weight"})
 }
 
@@ -183,13 +292,13 @@ func TestRunReportGenerateIsDeterministic(t *testing.T) {
 	}
 
 	firstOrder := []string{}
-	first, err := newFakeRunner(&firstOrder).RunReportGenerate(command)
+	first, err := newFakeRunner(&firstOrder).RunReportGenerate(context.Background(), command)
 	if err != nil {
 		t.Fatalf("first RunReportGenerate() error = %v", err)
 	}
 
 	secondOrder := []string{}
-	second, err := newFakeRunner(&secondOrder).RunReportGenerate(command)
+	second, err := newFakeRunner(&secondOrder).RunReportGenerate(context.Background(), command)
 	if err != nil {
 		t.Fatalf("second RunReportGenerate() error = %v", err)
 	}
@@ -202,44 +311,11 @@ func TestRunReportGenerateIsDeterministic(t *testing.T) {
 func TestFixtureDrivenFlowsUseConfigPath(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		name    string
-		command domain.CommandRequest
-		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
-	}{
-		{
-			name: "validate",
-			command: domain.CommandRequest{
-				CommandName: domain.CommandNameValidate,
-				ConfigPath:  fixtureConfigPath(),
-			},
-			run: Runner.RunValidate,
-		},
-		{
-			name: "report generate",
-			command: domain.CommandRequest{
-				CommandName: domain.CommandNameReportGenerate,
-				ConfigPath:  fixtureConfigPath(),
-			},
-			run: Runner.RunReportGenerate,
-		},
-	}
-
-	for _, tt := range tests {
+	for _, tt := range fixtureFlowCases(fixtureConfigPath()) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			got, err := tt.run(NewDefaultRunner(), tt.command)
-			if err != nil {
-				t.Fatalf("run() error = %v", err)
-			}
-
-			assertValidatedModelPath(
-				t,
-				got,
-				filepath.Clean(fixtureConfigPath()),
-			)
+			assertRunnerUsesConfigPath(t, tt.run, tt.command)
 		})
 	}
 }
@@ -250,7 +326,7 @@ func TestInvalidCueFailsAtLoadStage(t *testing.T) {
 	tests := []struct {
 		name    string
 		command domain.CommandRequest
-		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+		run     func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error)
 		wantErr error
 	}{
 		{
@@ -277,19 +353,7 @@ func TestInvalidCueFailsAtLoadStage(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-
-			order := []string{}
-			runner := newFakeRunner(&order)
-			runner.ConfigLoader = DefaultConfigLoader{}
-
-			_, err := tt.run(runner, tt.command)
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf("error = %v, want %v", err, tt.wantErr)
-			}
-
-			if len(order) != 0 {
-				t.Fatalf("order = %#v, want no downstream stage calls", order)
-			}
+			assertLoadStageFailureStopsPipeline(t, tt.run, tt.command, tt.wantErr)
 		})
 	}
 }
@@ -297,82 +361,118 @@ func TestInvalidCueFailsAtLoadStage(t *testing.T) {
 func TestValidationFailureStopsPipeline(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
+	for _, tt := range fixtureFlowCases(fixtureConfigPath()) {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			assertValidationStageFailureStopsPipeline(t, tt.run, tt.command)
+		})
+	}
+}
+
+func invalidValidationLoadOutput() LoadConfigOutput {
+	config := validLoadedConfig()
+	config.Config.Reports = []ReportConfig{{Name: "summary"}}
+	config.Config.Scenarios = []ScenarioConfig{{
+		Name:           "baseline",
+		ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "missing"}},
+	}}
+	config.Config.Evaluations = scenarioEvaluationBlock(
+		"baseline",
+		alternativeEvaluation("option_a", map[string]CriterionValue{"cost": {Kind: "number", Value: 1}}),
+	)
+
+	return LoadConfigOutput{Config: config}
+}
+
+func fixtureFlowCases(configPath string) []struct {
+	name    string
+	command domain.CommandRequest
+	run     func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error)
+} {
+	return []struct {
 		name    string
 		command domain.CommandRequest
-		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+		run     func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error)
 	}{
 		{
-			name: "validate stops at validation",
+			name: "validate",
 			command: domain.CommandRequest{
 				CommandName: domain.CommandNameValidate,
-				ConfigPath:  fixtureConfigPath(),
+				ConfigPath:  configPath,
 			},
 			run: Runner.RunValidate,
 		},
 		{
-			name: "report generate stops at validation",
+			name: "report generate",
 			command: domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
-				ConfigPath:  fixtureConfigPath(),
+				ConfigPath:  configPath,
 			},
 			run: Runner.RunReportGenerate,
 		},
 	}
+}
 
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+func assertRunnerUsesConfigPath(
+	t *testing.T,
+	run func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error),
+	command domain.CommandRequest,
+) {
+	t.Helper()
 
-			order := []string{}
-			runner := newFakeRunner(&order)
-			runner.ConfigLoader = &fakeConfigLoader{
-				recorder: &order,
-				output: LoadConfigOutput{
-					Config: LoadedConfig{
-						Path:           fixtureConfigPath(),
-						TopLevelFields: []string{"config"},
-						ConfigFields: []string{
-							"aggregation",
-							"alternatives",
-							"criteriaCatalog",
-							"evaluations",
-							"problem",
-							"reports",
-							"scenarios",
-						},
-						Config: &ExecutionConfig{
-							Problem:         &ProblemConfig{Name: "minimal"},
-							Reports:         []ReportConfig{{Name: "summary"}},
-							CriteriaCatalog: []CriterionConfig{{Name: "cost", ValueType: "number"}},
-							Alternatives:    []AlternativeConfig{{Name: "option_a"}},
-							Scenarios:       []ScenarioConfig{{Name: "baseline", ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "missing"}}}},
-							Evaluations: []EvaluationConfig{{
-								ScenarioName: "baseline",
-								Evaluations: []AlternativeEvaluationConfig{{
-									AlternativeName: "option_a",
-									Values:          map[string]CriterionValue{"cost": {Kind: "number", Value: 1}},
-								}},
-							}},
-							Aggregation: &AggregationConfig{},
-						},
-					},
-				},
-			}
-			runner.ModelValidator = recordingModelValidator{
-				recorder: &order,
-				inner:    DefaultModelValidator{},
-			}
-
-			_, err := tt.run(runner, tt.command)
-			if !errors.Is(err, ErrValidationFailed) {
-				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
-			}
-
-			assertStageOrder(t, order, []string{"load", "validate"})
-		})
+	got, err := run(NewDefaultRunner(), context.Background(), command)
+	if err != nil {
+		t.Fatalf("run() error = %v", err)
 	}
+
+	assertValidatedModelPath(t, got, filepath.Clean(fixtureConfigPath()))
+}
+
+func assertLoadStageFailureStopsPipeline(
+	t *testing.T,
+	run func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error),
+	command domain.CommandRequest,
+	wantErr error,
+) {
+	t.Helper()
+
+	order := []string{}
+	runner := newFakeRunner(&order)
+	runner.ConfigLoader = DefaultConfigLoader{}
+
+	_, err := run(runner, context.Background(), command)
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("error = %v, want %v", err, wantErr)
+	}
+	if len(order) != 0 {
+		t.Fatalf("order = %#v, want no downstream stage calls", order)
+	}
+}
+
+func assertValidationStageFailureStopsPipeline(
+	t *testing.T,
+	run func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error),
+	command domain.CommandRequest,
+) {
+	t.Helper()
+
+	order := []string{}
+	runner := newFakeRunner(&order)
+	runner.ConfigLoader = &fakeConfigLoader{
+		recorder: &order,
+		output:   invalidValidationLoadOutput(),
+	}
+	runner.ModelValidator = recordingModelValidator{
+		recorder: &order,
+		inner:    DefaultModelValidator{},
+	}
+
+	_, err := run(runner, context.Background(), command)
+	if !errors.Is(err, ErrValidationFailed) {
+		t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
+	}
+	assertStageOrder(t, order, []string{"load", "validate"})
 }
 
 func TestRealValidationFailureFromFixture(t *testing.T) {
@@ -545,7 +645,7 @@ func TestReportDefinitionValidationFlowBehavior(t *testing.T) {
 func TestRunReportGenerateProducesRealRenderedReport(t *testing.T) {
 	t.Parallel()
 
-	got, err := NewDefaultRunner().RunReportGenerate(domain.CommandRequest{
+	got, err := NewDefaultRunner().RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  fixtureConfigPath(),
 	})
@@ -558,79 +658,120 @@ func TestRunReportGenerateProducesRealRenderedReport(t *testing.T) {
 	}
 }
 
+func TestRunValidateRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  fixtureConfigPath(),
+	}
+
+	assertRepeatedDeepEqual(t, 1, func() (domain.CommandResult, error) {
+		return NewDefaultRunner().RunValidate(context.Background(), command)
+	})
+}
+
+func TestRunReportGenerateRepeatedRunDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "valid_report.cue"),
+	}
+
+	assertRepeatedDeepEqual(t, 1, func() (domain.CommandResult, error) {
+		return NewDefaultRunner().RunReportGenerate(context.Background(), command)
+	})
+}
+
+func TestRunValidateValidationFailureDeterminism(t *testing.T) {
+	t.Parallel()
+
+	command := domain.CommandRequest{
+		CommandName: domain.CommandNameValidate,
+		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
+	}
+
+	_, firstErr := NewDefaultRunner().RunValidate(context.Background(), command)
+	_, secondErr := NewDefaultRunner().RunValidate(context.Background(), command)
+
+	first := domain.PresentError(firstErr)
+	second := domain.PresentError(secondErr)
+
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("first = %#v, second = %#v", first, second)
+	}
+}
+
 func TestRunReportGenerateStopsOnAggregationFailure(t *testing.T) {
 	t.Parallel()
 
 	wantErr := errors.New("aggregate failed")
-	order := []string{}
-	runner := Runner{
-		ConfigLoader:       &fakeConfigLoader{recorder: &order},
-		ModelValidator:     &fakeModelValidator{recorder: &order},
-		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
-		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
-		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order, err: wantErr},
-		ReportRenderer:     &fakeReportRenderer{recorder: &order},
-	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  fixtureConfigPath(),
+	assertReportGenerateStageFailure(t, wantErr, domain.FailureCategoryExecution, []string{"load", "validate", "weight", "rank", "aggregate"}, func(order *[]string) Runner {
+		return Runner{
+			ConfigLoader:       &fakeConfigLoader{recorder: order},
+			ModelValidator:     &fakeModelValidator{recorder: order},
+			CriteriaWeighter:   &fakeCriteriaWeighter{recorder: order},
+			ScenarioRanker:     &fakeScenarioRanker{recorder: order},
+			ScenarioAggregator: &fakeScenarioAggregator{recorder: order, err: wantErr},
+			ReportRenderer:     &fakeReportRenderer{recorder: order},
+		}
 	})
-	if !errors.Is(err, wantErr) {
-		t.Fatalf("error = %v, want %v", err, wantErr)
-	}
-
-	failure := assertCommandFailure(t, err, wantErr, "")
-	if failure.Category != domain.FailureCategoryExecution {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
-	}
-	assertStageOrder(t, order, []string{"load", "validate", "weight", "rank", "aggregate"})
 }
 
 func TestRunReportGenerateStopsOnRenderingFailure(t *testing.T) {
 	t.Parallel()
 
 	wantErr := errors.New("render failed")
-	order := []string{}
-	runner := Runner{
-		ConfigLoader:       &fakeConfigLoader{recorder: &order},
-		ModelValidator:     &fakeModelValidator{recorder: &order},
-		CriteriaWeighter:   &fakeCriteriaWeighter{recorder: &order},
-		ScenarioRanker:     &fakeScenarioRanker{recorder: &order},
-		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
-		ReportRenderer:     &fakeReportRenderer{recorder: &order, err: wantErr},
-	}
-
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  fixtureConfigPath(),
+	assertReportGenerateStageFailure(t, wantErr, domain.FailureCategoryRendering, []string{"load", "validate", "weight", "rank", "aggregate", "render"}, func(order *[]string) Runner {
+		return Runner{
+			ConfigLoader:       &fakeConfigLoader{recorder: order},
+			ModelValidator:     &fakeModelValidator{recorder: order},
+			CriteriaWeighter:   &fakeCriteriaWeighter{recorder: order},
+			ScenarioRanker:     &fakeScenarioRanker{recorder: order},
+			ScenarioAggregator: &fakeScenarioAggregator{recorder: order},
+			ReportRenderer:     &fakeReportRenderer{recorder: order, err: wantErr},
+		}
 	})
-	if !errors.Is(err, wantErr) {
-		t.Fatalf("error = %v, want %v", err, wantErr)
-	}
-
-	failure := assertCommandFailure(t, err, wantErr, "")
-	if failure.Category != domain.FailureCategoryRendering {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryRendering)
-	}
-	assertStageOrder(t, order, []string{"load", "validate", "weight", "rank", "aggregate", "render"})
 }
 
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 
-	loader := DefaultConfigLoader{}
-
-	got, err := loader.LoadConfig(LoadConfigInput{
-		ConfigPath: fixtureConfigPath(),
-	})
-	if err != nil {
-		t.Fatalf("LoadConfig() error = %v", err)
+	tests := []struct {
+		name       string
+		configPath string
+	}{
+		{
+			name:       "single file",
+			configPath: fixtureConfigPath(),
+		},
+		{
+			name:       "directory package",
+			configPath: filepath.Join("..", "..", "testdata", "config_split"),
+		},
 	}
 
-	want := filepath.Clean(fixtureConfigPath())
-	if got.Config.Path != want {
-		t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
+	loader := DefaultConfigLoader{}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := loader.LoadConfig(context.Background(), LoadConfigInput{
+				ConfigPath: tt.configPath,
+			})
+			if err != nil {
+				t.Fatalf("LoadConfig() error = %v", err)
+			}
+
+			want := filepath.Clean(tt.configPath)
+			if got.Config.Path != want {
+				t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
+			}
+		})
 	}
 }
 
@@ -639,41 +780,19 @@ func TestDefaultConfigLoaderMissingFile(t *testing.T) {
 
 	loader := DefaultConfigLoader{}
 
-	_, err := loader.LoadConfig(LoadConfigInput{
+	_, err := loader.LoadConfig(context.Background(), LoadConfigInput{
 		ConfigPath: filepath.Join("..", "..", "testdata", "config", "missing.cue"),
 	})
-	if !errors.Is(err, ErrConfigPathDoesNotExist) {
-		t.Fatalf("error = %v, want %v", err, ErrConfigPathDoesNotExist)
-	}
-
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
-
-	if failure.Category != domain.FailureCategoryInput {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryInput)
-	}
+	assertLoaderFailure(t, err, ErrConfigPathDoesNotExist, domain.FailureCategoryInput, "config.not_found", "config path does not exist")
 }
 
-func TestDefaultConfigLoaderDirectoryPath(t *testing.T) {
+func TestDefaultConfigLoaderEmptyDirectoryPath(t *testing.T) {
 	t.Parallel()
 
 	loader := DefaultConfigLoader{}
 
-	_, err := loader.LoadConfig(LoadConfigInput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config"),
+	_, err := loader.LoadConfig(context.Background(), LoadConfigInput{
+		ConfigPath: filepath.Join("..", "..", "testdata", "config_empty"),
 	})
-	if !errors.Is(err, ErrConfigPathIsDirectory) {
-		t.Fatalf("error = %v, want %v", err, ErrConfigPathIsDirectory)
-	}
-
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
-
-	if failure.Category != domain.FailureCategoryInput {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryInput)
-	}
+	assertLoaderFailure(t, err, ErrConfigDirectoryEmpty, domain.FailureCategoryInput, "config.directory_empty", "config directory does not contain any .cue files")
 }

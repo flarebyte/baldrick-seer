@@ -1,12 +1,18 @@
 package pipeline
 
+import "context"
+
 import (
 	"sort"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
 
-func (DefaultScenarioAggregator) AggregateScenarios(input AggregateScenariosInput) (AggregateScenariosOutput, error) {
+func (DefaultScenarioAggregator) AggregateScenarios(ctx context.Context, input AggregateScenariosInput) (AggregateScenariosOutput, error) {
+	if err := checkContext(ctx, input.Command.ConfigPath); err != nil {
+		return AggregateScenariosOutput{}, err
+	}
+
 	if input.Config.Config == nil || input.Config.Config.Aggregation == nil {
 		return AggregateScenariosOutput{}, NewExecutionFailure("aggregation.config_missing", input.Command.ConfigPath, "final ranking could not be computed", ErrAggregationFailed)
 	}

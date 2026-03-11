@@ -13,8 +13,9 @@ func Execute(args []string, stdout io.Writer, stderr io.Writer) int {
 	cmd.SetArgs(args)
 
 	if err := cmd.Execute(); err != nil {
-		_, _ = io.WriteString(stderr, renderFailure(err))
-		return int(domain.ExitCodeForError(err))
+		presentation := domain.PresentError(err)
+		_, _ = io.WriteString(stderr, presentation.Stderr)
+		return int(presentation.ExitCode)
 	}
 
 	return int(domain.ExitCodeSuccess)
@@ -26,18 +27,4 @@ func renderValidateSuccess() string {
 
 func renderReportGenerateSuccess(result domain.CommandResult) string {
 	return result.RenderedOutput
-}
-
-func renderFailure(err error) string {
-	return "status: error\nmessage: " + failureMessage(err) + "\n"
-}
-
-func failureMessage(err error) string {
-	if failure := domain.AsCommandFailure(err); failure != nil {
-		if len(failure.Diagnostics) > 0 && failure.Diagnostics[0].Message != "" {
-			return failure.Diagnostics[0].Message
-		}
-	}
-
-	return "command failed"
 }

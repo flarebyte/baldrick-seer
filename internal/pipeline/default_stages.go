@@ -1,8 +1,10 @@
 package pipeline
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"cuelang.org/go/cue"
 	"cuelang.org/go/cue/cuecontext"
@@ -13,7 +15,11 @@ import (
 
 type DefaultConfigLoader struct{}
 
-func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
+func (DefaultConfigLoader) LoadConfig(ctx context.Context, input LoadConfigInput) (LoadConfigOutput, error) {
+	if err := checkContext(ctx, input.ConfigPath); err != nil {
+		return LoadConfigOutput{}, err
+	}
+
 	if input.ConfigPath == "" {
 		return LoadConfigOutput{}, NewInputFailure("config.required", "", "config flag is required", ErrConfigPathRequired)
 	}
@@ -29,12 +35,13 @@ func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 		return LoadConfigOutput{}, WrapStageFailure(domain.FailureCategoryInternal, "config.stat_failed", input.ConfigPath, "command failed", err)
 	}
 
-	if info.IsDir() {
-		return LoadConfigOutput{}, NewInputFailure("config.is_directory", input.ConfigPath, "config path is a directory", ErrConfigPathIsDirectory)
+	loadArgs, loadDir, err := cueLoadTarget(configPath, info)
+	if err != nil {
+		return LoadConfigOutput{}, err
 	}
 
-	instances := load.Instances([]string{filepath.Base(configPath)}, &load.Config{
-		Dir: filepath.Dir(configPath),
+	instances := load.Instances(loadArgs, &load.Config{
+		Dir: loadDir,
 	})
 	if len(instances) != 1 || instances[0] == nil {
 		return LoadConfigOutput{}, NewInputFailure("config.load_invalid", input.ConfigPath, "config could not be loaded", ErrConfigLoadInvalid)
@@ -74,6 +81,9 @@ func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 	var configFields []string
 	configValue := value.LookupPath(cue.ParsePath("config"))
 	if configValue.Exists() {
+		if err := checkContext(ctx, input.ConfigPath); err != nil {
+			return LoadConfigOutput{}, err
+		}
 		configFields, err = cueTopLevelFields(configValue)
 		if err != nil {
 			return LoadConfigOutput{}, NewInputFailure("config.decode_invalid", input.ConfigPath, "config could not be loaded", ErrConfigLoadInvalid)
@@ -105,6 +115,36 @@ type DefaultScenarioAggregator struct{}
 
 type DefaultReportRenderer struct{}
 
+func cueLoadTarget(configPath string, info os.FileInfo) ([]string, string, error) {
+	if !info.IsDir() {
+		if filepath.Ext(configPath) != ".cue" {
+			return nil, "", NewInputFailure("config.invalid_file_type", configPath, "config file must have .cue extension", ErrConfigFileExtension)
+		}
+
+		return []string{filepath.Base(configPath)}, filepath.Dir(configPath), nil
+	}
+
+	entries, err := os.ReadDir(configPath)
+	if err != nil {
+		return nil, "", WrapStageFailure(domain.FailureCategoryInternal, "config.read_dir_failed", configPath, "command failed", err)
+	}
+
+	var cueFiles []string
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".cue" {
+			continue
+		}
+		cueFiles = append(cueFiles, entry.Name())
+	}
+
+	sort.Strings(cueFiles)
+	if len(cueFiles) == 0 {
+		return nil, "", NewInputFailure("config.directory_empty", configPath, "config directory does not contain any .cue files", ErrConfigDirectoryEmpty)
+	}
+
+	return cueFiles, configPath, nil
+}
+
 func cueTopLevelFields(value cue.Value) ([]string, error) {
 	iterator, err := value.Fields(
 		cue.Definitions(false),
@@ -120,5 +160,6 @@ func cueTopLevelFields(value cue.Value) ([]string, error) {
 		fields = append(fields, iterator.Selector().Unquoted())
 	}
 
+	sort.Strings(fields)
 	return fields, nil
 }

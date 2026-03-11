@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -56,163 +57,92 @@ func TestDefaultScenarioRanker(t *testing.T) {
 		},
 		{
 			name: "ranking with ordinal criteria",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "priority", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"low", "high"}}},
-				[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "priority"}},
-				},
-				[]AlternativeEvaluationConfig{
-					{AlternativeName: "alpha", Values: map[string]CriterionValue{"priority": {Kind: "ordinal", Value: 3}}},
-					{AlternativeName: "beta", Values: map[string]CriterionValue{"priority": {Kind: "ordinal", Value: 1}}},
-				},
+			config: oneCriterionRankingConfig(
+				CriterionConfig{Name: "priority", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"low", "high"}},
+				map[string]CriterionValue{"priority": {Kind: "ordinal", Value: 3}},
+				map[string]CriterionValue{"priority": {Kind: "ordinal", Value: 1}},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName: "baseline",
-				CriterionWeights: []CriterionWeight{
-					{CriterionName: "priority", Weight: 1},
-				},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Rank: 1, Score: 1},
-					{Name: "beta", Rank: 2, Score: 0},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "priority", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: 1},
+				{Name: "beta", Rank: 2, Score: 0},
+			}),
 		},
 		{
 			name: "ranking with boolean criteria",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "approved", Polarity: "benefit", ValueType: "boolean"}},
-				[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "approved"}},
-				},
-				[]AlternativeEvaluationConfig{
-					{AlternativeName: "alpha", Values: map[string]CriterionValue{"approved": {Kind: "boolean", Value: true}}},
-					{AlternativeName: "beta", Values: map[string]CriterionValue{"approved": {Kind: "boolean", Value: false}}},
-				},
+			config: oneCriterionRankingConfig(
+				CriterionConfig{Name: "approved", Polarity: "benefit", ValueType: "boolean"},
+				map[string]CriterionValue{"approved": {Kind: "boolean", Value: true}},
+				map[string]CriterionValue{"approved": {Kind: "boolean", Value: false}},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName: "baseline",
-				CriterionWeights: []CriterionWeight{
-					{CriterionName: "approved", Weight: 1},
-				},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Rank: 1, Score: 1},
-					{Name: "beta", Rank: 2, Score: 0},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "approved", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: 1},
+				{Name: "beta", Rank: 2, Score: 0},
+			}),
 		},
 		{
 			name: "scenario with one eligible alternative",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "cost", Polarity: "cost", ValueType: "number"}},
-				[]AlternativeConfig{{Name: "alpha"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "cost"}},
-				},
-				[]AlternativeEvaluationConfig{
-					{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 3}}},
-				},
+			config: singleAlternativeRankingConfig(
+				CriterionConfig{Name: "cost", Polarity: "cost", ValueType: "number"},
+				"alpha",
+				map[string]CriterionValue{"cost": {Kind: "number", Value: 3}},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName:     "baseline",
-				CriterionWeights: []CriterionWeight{{CriterionName: "cost", Weight: 1}},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Rank: 1, Score: 0},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "cost", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: 0},
+			}),
 		},
 		{
 			name: "scenario where constraints exclude one alternative",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "cost", Polarity: "cost", ValueType: "number"}},
+			config: constrainedRankingConfig(
+				CriterionConfig{Name: "cost", Polarity: "cost", ValueType: "number"},
 				[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "cost"}},
-					Constraints:    []ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: 5}},
-				},
+				[]ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: 5}},
 				[]AlternativeEvaluationConfig{
 					{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 3}}},
 					{AlternativeName: "beta", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 8}}},
 				},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName:     "baseline",
-				CriterionWeights: []CriterionWeight{{CriterionName: "cost", Weight: 1}},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Rank: 1, Score: 0},
-					{Name: "beta", Excluded: true},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "cost", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: 0},
+				{Name: "beta", Excluded: true},
+			}),
 		},
 		{
 			name: "scenario where constraints exclude all alternatives",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "cost", Polarity: "cost", ValueType: "number"}},
+			config: constrainedRankingConfig(
+				CriterionConfig{Name: "cost", Polarity: "cost", ValueType: "number"},
 				[]AlternativeConfig{{Name: "beta"}, {Name: "alpha"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "cost"}},
-					Constraints:    []ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: 1}},
-				},
+				[]ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: 1}},
 				[]AlternativeEvaluationConfig{
 					{AlternativeName: "beta", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 8}}},
 					{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 3}}},
 				},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName:     "baseline",
-				CriterionWeights: []CriterionWeight{{CriterionName: "cost", Weight: 1}},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Excluded: true},
-					{Name: "beta", Excluded: true},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "cost", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Excluded: true},
+				{Name: "beta", Excluded: true},
+			}),
 		},
 		{
 			name: "stable tie break behavior when scores are equal",
-			config: rankingConfig(
-				[]CriterionConfig{{Name: "quality", Polarity: "benefit", ValueType: "number"}},
+			config: constrainedRankingConfig(
+				CriterionConfig{Name: "quality", Polarity: "benefit", ValueType: "number"},
 				[]AlternativeConfig{{Name: "beta"}, {Name: "alpha"}},
-				ScenarioConfig{
-					Name:           "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "quality"}},
-				},
+				nil,
 				[]AlternativeEvaluationConfig{
 					{AlternativeName: "beta", Values: map[string]CriterionValue{"quality": {Kind: "number", Value: 5}}},
 					{AlternativeName: "alpha", Values: map[string]CriterionValue{"quality": {Kind: "number", Value: 5}}},
 				},
 			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName:     "baseline",
-				CriterionWeights: []CriterionWeight{{CriterionName: "quality", Weight: 1}},
-			}},
-			wantResults: []domain.ScenarioRankingResult{{
-				ScenarioName: "baseline",
-				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "alpha", Rank: 1, Score: 0},
-					{Name: "beta", Rank: 2, Score: 0},
-				},
-			}},
+			weights: singleCriterionWeights("baseline", "quality", 1),
+			wantResults: singleScenarioResults("baseline", []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: 0},
+				{Name: "beta", Rank: 2, Score: 0},
+			}),
 		},
 		{
 			name: "internal inconsistency fails deterministically",
@@ -243,25 +173,16 @@ func TestDefaultScenarioRanker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := ranker.RankScenarios(RankScenariosInput{
-				Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
-				ValidatedModel:  domain.ValidatedModelSummary{ConfigPath: tt.config.Path},
-				ScenarioWeights: tt.weights,
-				Config:          tt.config,
+			assertStageRunResult(t, func() (RankScenariosOutput, error) {
+				return ranker.RankScenarios(context.Background(), RankScenariosInput{
+					Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
+					ValidatedModel:  domain.ValidatedModelSummary{ConfigPath: tt.config.Path},
+					ScenarioWeights: tt.weights,
+					Config:          tt.config,
+				})
+			}, tt.wantErr, func(got RankScenariosOutput) {
+				assertScenarioResults(t, got.ScenarioResults, tt.wantResults, 1e-9)
 			})
-
-			if tt.wantErr != nil {
-				if !errors.Is(err, tt.wantErr) {
-					t.Fatalf("error = %v, want %v", err, tt.wantErr)
-				}
-				return
-			}
-
-			if err != nil {
-				t.Fatalf("RankScenarios() error = %v", err)
-			}
-
-			assertScenarioResults(t, got.ScenarioResults, tt.wantResults, 1e-9)
 		})
 	}
 }
@@ -301,19 +222,9 @@ func TestDefaultScenarioRankerIsDeterministic(t *testing.T) {
 		Config: config,
 	}
 
-	first, err := DefaultScenarioRanker{}.RankScenarios(input)
-	if err != nil {
-		t.Fatalf("first RankScenarios() error = %v", err)
-	}
-
-	second, err := DefaultScenarioRanker{}.RankScenarios(input)
-	if err != nil {
-		t.Fatalf("second RankScenarios() error = %v", err)
-	}
-
-	if !reflect.DeepEqual(first, second) {
-		t.Fatalf("first = %#v, second = %#v", first, second)
-	}
+	assertRepeatedDeepEqual(t, 1, func() (RankScenariosOutput, error) {
+		return DefaultScenarioRanker{}.RankScenarios(context.Background(), input)
+	})
 }
 
 func TestRunReportGenerateUsesRealScenarioResults(t *testing.T) {
@@ -362,7 +273,7 @@ func TestRunReportGenerateUsesRealScenarioResults(t *testing.T) {
 				ReportRenderer:     DefaultReportRenderer{},
 			}
 
-			got, err := runner.RunReportGenerate(domain.CommandRequest{
+			got, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
 				ConfigPath:  tt.path,
 			})
@@ -396,7 +307,7 @@ func TestRunReportGenerateStopsOnRankingFailure(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  fixtureConfigPath(),
 	})
@@ -404,14 +315,7 @@ func TestRunReportGenerateStopsOnRankingFailure(t *testing.T) {
 		t.Fatalf("error = %v, want %v", err, ErrRankingFailed)
 	}
 
-	failure := domain.AsCommandFailure(err)
-	if failure == nil {
-		t.Fatal("AsCommandFailure(err) = nil, want value")
-	}
-
-	if failure.Category != domain.FailureCategoryExecution {
-		t.Fatalf("Category = %q, want %q", failure.Category, domain.FailureCategoryExecution)
-	}
+	_ = assertFailureCategory(t, err, ErrRankingFailed, domain.FailureCategoryExecution, "")
 
 	if got, want := order, []string{"load", "validate", "weight", "rank"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("order = %#v, want %#v", got, want)
@@ -423,9 +327,9 @@ type recordingScenarioRanker struct {
 	inner    ScenarioRanker
 }
 
-func (r recordingScenarioRanker) RankScenarios(input RankScenariosInput) (RankScenariosOutput, error) {
+func (r recordingScenarioRanker) RankScenarios(ctx context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
 	*r.recorder = append(*r.recorder, "rank")
-	return r.inner.RankScenarios(input)
+	return r.inner.RankScenarios(ctx, input)
 }
 
 type fixedScenarioWeighter struct {
@@ -433,7 +337,7 @@ type fixedScenarioWeighter struct {
 	scenarioWeights []ScenarioCriterionWeights
 }
 
-func (f *fixedScenarioWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
+func (f *fixedScenarioWeighter) WeightCriteria(_ context.Context, input WeightCriteriaInput) (WeightCriteriaOutput, error) {
 	*f.recorder = append(*f.recorder, "weight")
 	return WeightCriteriaOutput{ScenarioWeights: f.scenarioWeights}, nil
 }
@@ -453,4 +357,59 @@ func rankingConfig(
 		Evaluations:  append([]AlternativeEvaluationConfig(nil), evaluations...),
 	}}
 	return config
+}
+
+func oneCriterionRankingConfig(
+	criterion CriterionConfig,
+	alphaValues map[string]CriterionValue,
+	betaValues map[string]CriterionValue,
+) LoadedConfig {
+	return rankingConfig(
+		[]CriterionConfig{criterion},
+		[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
+		ScenarioConfig{
+			Name:           "baseline",
+			ActiveCriteria: []ScenarioCriterionRef{{CriterionName: criterion.Name}},
+		},
+		[]AlternativeEvaluationConfig{
+			{AlternativeName: "alpha", Values: alphaValues},
+			{AlternativeName: "beta", Values: betaValues},
+		},
+	)
+}
+
+func singleAlternativeRankingConfig(
+	criterion CriterionConfig,
+	alternativeName string,
+	values map[string]CriterionValue,
+) LoadedConfig {
+	return rankingConfig(
+		[]CriterionConfig{criterion},
+		[]AlternativeConfig{{Name: alternativeName}},
+		ScenarioConfig{
+			Name:           "baseline",
+			ActiveCriteria: []ScenarioCriterionRef{{CriterionName: criterion.Name}},
+		},
+		[]AlternativeEvaluationConfig{
+			{AlternativeName: alternativeName, Values: values},
+		},
+	)
+}
+
+func constrainedRankingConfig(
+	criterion CriterionConfig,
+	alternatives []AlternativeConfig,
+	constraints []ConstraintConfig,
+	evaluations []AlternativeEvaluationConfig,
+) LoadedConfig {
+	return rankingConfig(
+		[]CriterionConfig{criterion},
+		alternatives,
+		ScenarioConfig{
+			Name:           "baseline",
+			ActiveCriteria: []ScenarioCriterionRef{{CriterionName: criterion.Name}},
+			Constraints:    constraints,
+		},
+		evaluations,
+	)
 }

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -159,7 +160,7 @@ func TestDefaultModelValidatorValidConfig(t *testing.T) {
 	validator := DefaultModelValidator{}
 	config := validLoadedConfig()
 
-	got, err := validator.ValidateModel(ValidateModelInput{
+	got, err := validator.ValidateModel(context.Background(), ValidateModelInput{
 		Command: domain.CommandRequest{
 			CommandName: domain.CommandNameValidate,
 			ConfigPath:  config.Path,

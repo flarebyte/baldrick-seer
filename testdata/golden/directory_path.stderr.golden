@@ -1,2 +1,2 @@
 status: error
-message: config path is a directory
+message: config directory does not contain any .cue files

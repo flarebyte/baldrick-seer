@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"math"
 	"path/filepath"
@@ -14,10 +15,14 @@ type fakeConfigLoader struct {
 	recorder *[]string
 	err      error
 	output   LoadConfigOutput
+	contexts *[]context.Context
 }
 
-func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
+func (f *fakeConfigLoader) LoadConfig(ctx context.Context, input LoadConfigInput) (LoadConfigOutput, error) {
 	*f.recorder = append(*f.recorder, "load")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return LoadConfigOutput{}, f.err
 	}
@@ -34,10 +39,14 @@ func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 type fakeModelValidator struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+func (f *fakeModelValidator) ValidateModel(ctx context.Context, input ValidateModelInput) (ValidateModelOutput, error) {
 	*f.recorder = append(*f.recorder, "validate")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return ValidateModelOutput{}, f.err
 	}
@@ -53,18 +62,26 @@ type recordingModelValidator struct {
 	inner    ModelValidator
 }
 
-func (r recordingModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+func (r recordingModelValidator) ValidateModel(ctx context.Context, input ValidateModelInput) (ValidateModelOutput, error) {
 	*r.recorder = append(*r.recorder, "validate")
-	return r.inner.ValidateModel(input)
+	return r.inner.ValidateModel(ctx, input)
 }
 
 type fakeCriteriaWeighter struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
+	onCall   func()
 }
 
-func (f *fakeCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
+func (f *fakeCriteriaWeighter) WeightCriteria(ctx context.Context, input WeightCriteriaInput) (WeightCriteriaOutput, error) {
 	*f.recorder = append(*f.recorder, "weight")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
+	if f.onCall != nil {
+		f.onCall()
+	}
 	if f.err != nil {
 		return WeightCriteriaOutput{}, f.err
 	}
@@ -74,10 +91,14 @@ func (f *fakeCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriter
 type fakeScenarioRanker struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {
+func (f *fakeScenarioRanker) RankScenarios(ctx context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
 	*f.recorder = append(*f.recorder, "rank")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return RankScenariosOutput{}, f.err
 	}
@@ -87,10 +108,14 @@ func (f *fakeScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOut
 type fakeScenarioAggregator struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {
+func (f *fakeScenarioAggregator) AggregateScenarios(ctx context.Context, input AggregateScenariosInput) (AggregateScenariosOutput, error) {
 	*f.recorder = append(*f.recorder, "aggregate")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return AggregateScenariosOutput{}, f.err
 	}
@@ -100,10 +125,14 @@ func (f *fakeScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (Ag
 type fakeReportRenderer struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeReportRenderer) RenderReports(RenderReportsInput) (RenderReportsOutput, error) {
+func (f *fakeReportRenderer) RenderReports(ctx context.Context, input RenderReportsInput) (RenderReportsOutput, error) {
 	*f.recorder = append(*f.recorder, "render")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return RenderReportsOutput{}, f.err
 	}
@@ -146,7 +175,7 @@ func assertValidatedModelPath(t *testing.T, result domain.CommandResult, wantPat
 type flowBehaviorCase struct {
 	name        string
 	command     domain.CommandRequest
-	run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+	run         func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error)
 	wantErr     error
 	wantMessage string
 }
@@ -159,7 +188,7 @@ func runFlowBehaviorTests(t *testing.T, tests []flowBehaviorCase) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := tt.run(NewDefaultRunner(), tt.command)
+			got, err := tt.run(NewDefaultRunner(), context.Background(), tt.command)
 			if tt.wantErr == nil {
 				if err != nil {
 					t.Fatalf("run() error = %v", err)
@@ -196,6 +225,67 @@ func assertCommandFailure(t *testing.T, err error, wantErr error, wantMessage st
 	return failure
 }
 
+func assertFailureCategory(t *testing.T, err error, wantErr error, wantCategory domain.FailureCategory, wantMessage string) *domain.CommandFailure {
+	t.Helper()
+
+	failure := assertCommandFailure(t, err, wantErr, wantMessage)
+	if failure.Category != wantCategory {
+		t.Fatalf("Category = %q, want %q", failure.Category, wantCategory)
+	}
+
+	return failure
+}
+
+func assertLoaderFailure(t *testing.T, err error, wantErr error, wantCategory domain.FailureCategory, wantCode string, wantMessage string) {
+	t.Helper()
+
+	failure := assertFailureCategory(t, err, wantErr, wantCategory, wantMessage)
+	if got := failure.Diagnostics[0].Code; got != wantCode {
+		t.Fatalf("Code = %q, want %q", got, wantCode)
+	}
+}
+
+func assertLoadedConfigSuccess(
+	t *testing.T,
+	got LoadConfigOutput,
+	configPath string,
+	wantFields []string,
+	wantConfigFields []string,
+) {
+	t.Helper()
+
+	if got.Config.Path != filepath.Clean(configPath) {
+		t.Fatalf("Path = %q, want %q", got.Config.Path, filepath.Clean(configPath))
+	}
+
+	if !reflect.DeepEqual(got.Config.TopLevelFields, wantFields) {
+		t.Fatalf("TopLevelFields = %#v, want %#v", got.Config.TopLevelFields, wantFields)
+	}
+
+	if !reflect.DeepEqual(got.Config.ConfigFields, wantConfigFields) {
+		t.Fatalf("ConfigFields = %#v, want %#v", got.Config.ConfigFields, wantConfigFields)
+	}
+
+	if got.Config.Evaluated == "" {
+		t.Fatal("Evaluated = empty, want non-empty value")
+	}
+
+	if got.Config.Config == nil {
+		t.Fatal("Config = nil, want decoded config")
+	}
+}
+
+func mustLoadConfig(t *testing.T, loader DefaultConfigLoader, configPath string) LoadConfigOutput {
+	t.Helper()
+
+	got, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: configPath})
+	if err != nil {
+		t.Fatalf("LoadConfig(%q) error = %v", configPath, err)
+	}
+
+	return got
+}
+
 func assertStageOrder(t *testing.T, got []string, want []string) {
 	t.Helper()
 
@@ -212,12 +302,7 @@ func assertScenarioWeights(t *testing.T, got []ScenarioCriterionWeights, want []
 	}
 
 	for scenarioIndex := range want {
-		if got[scenarioIndex].ScenarioName != want[scenarioIndex].ScenarioName {
-			t.Fatalf("ScenarioName[%d] = %q, want %q", scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName)
-		}
-		if len(got[scenarioIndex].CriterionWeights) != len(want[scenarioIndex].CriterionWeights) {
-			t.Fatalf("len(CriterionWeights[%d]) = %d, want %d", scenarioIndex, len(got[scenarioIndex].CriterionWeights), len(want[scenarioIndex].CriterionWeights))
-		}
+		assertScenarioEntry(t, scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName, len(got[scenarioIndex].CriterionWeights), len(want[scenarioIndex].CriterionWeights), "CriterionWeights")
 		for weightIndex := range want[scenarioIndex].CriterionWeights {
 			gotWeight := got[scenarioIndex].CriterionWeights[weightIndex]
 			wantWeight := want[scenarioIndex].CriterionWeights[weightIndex]
@@ -231,6 +316,55 @@ func assertScenarioWeights(t *testing.T, got []ScenarioCriterionWeights, want []
 	}
 }
 
+func singleCriterionWeights(scenarioName string, criterionName string, weight float64) []ScenarioCriterionWeights {
+	return []ScenarioCriterionWeights{{
+		ScenarioName:     scenarioName,
+		CriterionWeights: []CriterionWeight{{CriterionName: criterionName, Weight: weight}},
+	}}
+}
+
+func assertRepeatedDeepEqual[T any](t *testing.T, iterations int, run func() (T, error)) {
+	t.Helper()
+
+	first, err := run()
+	if err != nil {
+		t.Fatalf("first run error = %v", err)
+	}
+
+	for i := 0; i < iterations; i++ {
+		got, err := run()
+		if err != nil {
+			t.Fatalf("iteration %d error = %v", i, err)
+		}
+		if !reflect.DeepEqual(first, got) {
+			t.Fatalf("iteration %d = %#v, want %#v", i, got, first)
+		}
+	}
+}
+
+func assertStageRunResult[T any](
+	t *testing.T,
+	run func() (T, error),
+	wantErr error,
+	assertSuccess func(T),
+) {
+	t.Helper()
+
+	got, err := run()
+	if wantErr != nil {
+		if !errors.Is(err, wantErr) {
+			t.Fatalf("error = %v, want %v", err, wantErr)
+		}
+		return
+	}
+
+	if err != nil {
+		t.Fatalf("run() error = %v", err)
+	}
+
+	assertSuccess(got)
+}
+
 func assertScenarioResults(t *testing.T, got []domain.ScenarioRankingResult, want []domain.ScenarioRankingResult, tolerance float64) {
 	t.Helper()
 
@@ -239,12 +373,7 @@ func assertScenarioResults(t *testing.T, got []domain.ScenarioRankingResult, wan
 	}
 
 	for scenarioIndex := range want {
-		if got[scenarioIndex].ScenarioName != want[scenarioIndex].ScenarioName {
-			t.Fatalf("ScenarioName[%d] = %q, want %q", scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName)
-		}
-		if len(got[scenarioIndex].RankedAlternatives) != len(want[scenarioIndex].RankedAlternatives) {
-			t.Fatalf("len(RankedAlternatives[%d]) = %d, want %d", scenarioIndex, len(got[scenarioIndex].RankedAlternatives), len(want[scenarioIndex].RankedAlternatives))
-		}
+		assertScenarioEntry(t, scenarioIndex, got[scenarioIndex].ScenarioName, want[scenarioIndex].ScenarioName, len(got[scenarioIndex].RankedAlternatives), len(want[scenarioIndex].RankedAlternatives), "RankedAlternatives")
 		for alternativeIndex := range want[scenarioIndex].RankedAlternatives {
 			gotAlternative := got[scenarioIndex].RankedAlternatives[alternativeIndex]
 			wantAlternative := want[scenarioIndex].RankedAlternatives[alternativeIndex]
@@ -262,6 +391,48 @@ func assertScenarioResults(t *testing.T, got []domain.ScenarioRankingResult, wan
 			}
 		}
 	}
+}
+
+func singleScenarioResults(scenarioName string, alternatives []domain.RankedAlternative) []domain.ScenarioRankingResult {
+	return []domain.ScenarioRankingResult{{
+		ScenarioName:       scenarioName,
+		RankedAlternatives: alternatives,
+	}}
+}
+
+func assertScenarioEntry(t *testing.T, index int, gotName string, wantName string, gotLen int, wantLen int, entryLabel string) {
+	t.Helper()
+
+	if gotName != wantName {
+		t.Fatalf("ScenarioName[%d] = %q, want %q", index, gotName, wantName)
+	}
+	if gotLen != wantLen {
+		t.Fatalf("len(%s[%d]) = %d, want %d", entryLabel, index, gotLen, wantLen)
+	}
+}
+
+func assertReportGenerateStageFailure(
+	t *testing.T,
+	stageErr error,
+	wantCategory domain.FailureCategory,
+	wantOrder []string,
+	configure func(*[]string) Runner,
+) {
+	t.Helper()
+
+	order := []string{}
+	runner := configure(&order)
+
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if !errors.Is(err, stageErr) {
+		t.Fatalf("error = %v, want %v", err, stageErr)
+	}
+
+	_ = assertFailureCategory(t, err, stageErr, wantCategory, "")
+	assertStageOrder(t, order, wantOrder)
 }
 
 func assertAggregatedRanking(t *testing.T, got domain.AggregatedRankingResult, want domain.AggregatedRankingResult, tolerance float64) {

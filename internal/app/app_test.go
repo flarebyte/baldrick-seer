@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 
@@ -28,7 +29,7 @@ func TestAppFlows(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		run             func(domain.CommandRequest) (domain.CommandResult, error)
+		run             func(context.Context, domain.CommandRequest) (domain.CommandResult, error)
 		wantCommandName domain.CommandName
 	}{
 		{
@@ -48,7 +49,7 @@ func TestAppFlows(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := tt.run(domain.CommandRequest{
+			got, err := tt.run(context.Background(), domain.CommandRequest{
 				CommandName: tt.wantCommandName,
 				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
 			})
