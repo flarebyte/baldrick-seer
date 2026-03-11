@@ -53,10 +53,11 @@ type ProblemConfig struct {
 }
 
 type ReportConfig struct {
-	Name   string       `json:"name"`
-	Title  string       `json:"title"`
-	Format string       `json:"format"`
-	Focus  *ReportFocus `json:"focus"`
+	Name      string       `json:"name"`
+	Title     string       `json:"title"`
+	Format    string       `json:"format"`
+	Arguments []string     `json:"arguments"`
+	Focus     *ReportFocus `json:"focus"`
 }
 
 type ReportFocus struct {

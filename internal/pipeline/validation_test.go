@@ -161,6 +161,12 @@ func validCriterionValueForName(criteria []CriterionConfig, criterionName string
 	return 1
 }
 
+func validLoadedConfigWithReports(reports []ReportConfig) LoadedConfig {
+	config := validLoadedConfig()
+	config.Config.Reports = append([]ReportConfig(nil), reports...)
+	return config
+}
+
 func validateConfig(t *testing.T, config LoadedConfig) []domain.Diagnostic {
 	t.Helper()
 
@@ -241,7 +247,10 @@ func TestDefaultModelValidatorFailures(t *testing.T) {
 		{
 			name: "duplicate report names",
 			mutate: func(config *LoadedConfig) {
-				config.Config.Reports = []ReportConfig{{Name: "summary"}, {Name: "summary"}}
+				config.Config.Reports = []ReportConfig{
+					{Name: "summary", Title: "Summary", Format: "markdown"},
+					{Name: "summary", Title: "Summary Duplicate", Format: "markdown"},
+				}
 			},
 			wantCodes:   []string{"validation.duplicate_report_name"},
 			wantMessage: "duplicate report name: summary",
@@ -977,6 +986,212 @@ func TestDefaultModelValidatorConstraintValidation(t *testing.T) {
 				"validation.unknown_constraint_criterion",
 			},
 			wantMessage: "constraint references criterion not active in scenario: speed",
+		},
+	}
+
+	validator := DefaultModelValidator{}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := validator.ValidateModel(ValidateModelInput{
+				Command: domain.CommandRequest{
+					CommandName: domain.CommandNameValidate,
+					ConfigPath:  tt.config.Path,
+				},
+				Config: tt.config,
+			})
+
+			if len(tt.wantCodes) == 0 {
+				if err != nil {
+					t.Fatalf("ValidateModel() error = %v", err)
+				}
+				return
+			}
+
+			if !errors.Is(err, ErrValidationFailed) {
+				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
+			}
+
+			failure := domain.AsCommandFailure(err)
+			if failure == nil {
+				t.Fatal("AsCommandFailure(err) = nil, want value")
+			}
+
+			var gotCodes []string
+			for _, diagnostic := range failure.Diagnostics {
+				gotCodes = append(gotCodes, diagnostic.Code)
+			}
+
+			if !reflect.DeepEqual(gotCodes, tt.wantCodes) {
+				t.Fatalf("codes = %#v, want %#v", gotCodes, tt.wantCodes)
+			}
+
+			if failure.Diagnostics[0].Message != tt.wantMessage {
+				t.Fatalf("message = %q, want %q", failure.Diagnostics[0].Message, tt.wantMessage)
+			}
+		})
+	}
+}
+
+func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		config      LoadedConfig
+		wantCodes   []string
+		wantMessage string
+	}{
+		{
+			name: "valid markdown report definition",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"include-scenarios=all", "top-alternatives=2", "include-scores=true"},
+			}}),
+		},
+		{
+			name: "valid json report definition",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"include-evidence=false", "pretty=true"},
+			}}),
+		},
+		{
+			name: "valid csv report definition",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			}}),
+		},
+		{
+			name: "unsupported format",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "html",
+			}}),
+			wantCodes:   []string{"validation.unsupported_report_format"},
+			wantMessage: "unsupported report format: html",
+		},
+		{
+			name: "unknown scenario in report focus",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "markdown",
+				Focus:  &ReportFocus{ScenarioNames: []string{"missing"}},
+			}}),
+			wantCodes:   []string{"validation.unknown_report_focus_scenario"},
+			wantMessage: "unknown scenario name in report focus: missing",
+		},
+		{
+			name: "unknown alternative in report focus",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "markdown",
+				Focus:  &ReportFocus{AlternativeNames: []string{"missing"}},
+			}}),
+			wantCodes:   []string{"validation.unknown_report_focus_alternative"},
+			wantMessage: "unknown alternative name in report focus: missing",
+		},
+		{
+			name: "unknown criterion in report focus",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "markdown",
+				Focus:  &ReportFocus{CriterionNames: []string{"missing"}},
+			}}),
+			wantCodes:   []string{"validation.unknown_report_focus_criterion"},
+			wantMessage: "unknown criterion name in report focus: missing",
+		},
+		{
+			name: "malformed argument without equals",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"include-scenarios"},
+			}}),
+			wantCodes:   []string{"validation.malformed_report_argument"},
+			wantMessage: "report argument must use key=value form: include-scenarios",
+		},
+		{
+			name: "unknown argument key",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"unknown=true"},
+			}}),
+			wantCodes:   []string{"validation.unknown_report_argument"},
+			wantMessage: "unknown report argument key: unknown",
+		},
+		{
+			name: "duplicate argument key",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"include-scenarios=all", "include-scenarios=focused"},
+			}}),
+			wantCodes:   []string{"validation.duplicate_report_argument"},
+			wantMessage: "duplicate report argument key: include-scenarios",
+		},
+		{
+			name: "format specific key used with wrong report format",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"header=true"},
+			}}),
+			wantCodes:   []string{"validation.incompatible_report_argument"},
+			wantMessage: "report argument key header is not allowed for format json",
+		},
+		{
+			name: "invalid argument value",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "csv",
+				Arguments: []string{"header=yes"},
+			}}),
+			wantCodes:   []string{"validation.invalid_report_argument_value"},
+			wantMessage: "invalid value for report argument header: yes",
+		},
+		{
+			name: "valid mixed examples using spec argument patterns",
+			config: validLoadedConfigWithReports([]ReportConfig{
+				{
+					Name:      "markdown-summary",
+					Title:     "Summary",
+					Format:    "markdown",
+					Arguments: []string{"include-scenarios=all", "top-alternatives=3", "explain=true"},
+				},
+				{
+					Name:      "json-summary",
+					Title:     "Summary JSON",
+					Format:    "json",
+					Arguments: []string{"include-evidence=true", "include-weights=true", "pretty=true"},
+				},
+				{
+					Name:      "csv-summary",
+					Title:     "Summary CSV",
+					Format:    "csv",
+					Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank", "header=true"},
+				},
+			}),
 		},
 	}
 
