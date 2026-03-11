@@ -24,8 +24,8 @@ func renderValidateSuccess() string {
 	return "status: ok\ncommand: validate\nmessage: validate stub ok\n"
 }
 
-func renderReportGenerateSuccess() string {
-	return "status: ok\ncommand: report generate\nmessage: report generate stub ok\n"
+func renderReportGenerateSuccess(result domain.CommandResult) string {
+	return result.RenderedOutput
 }
 
 func renderFailure(err error) string {

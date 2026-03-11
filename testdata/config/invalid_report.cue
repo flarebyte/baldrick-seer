@@ -2,16 +2,16 @@ package seer
 
 config: {
 	problem: {
-		name: "minimal"
+		name: "invalid-report"
 	}
 	reports: [{
-		name:   "summary"
-		title:  "Summary"
-		format: "markdown"
+		name:      "summary"
+		title:     "Summary"
+		format:    "json"
+		arguments: ["header=true"]
 	}]
 	criteriaCatalog: [{
 		name:      "cost"
-		polarity:  "cost"
 		valueType: "number"
 	}]
 	alternatives: [{

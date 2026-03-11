@@ -3,8 +3,10 @@
 GO := go
 BUN := bun
 GO_ENV := GOTOOLCHAIN=local GOCACHE=$(PWD)/.gocache GOMODCACHE=$(PWD)/.gomodcache
+GOLINT := golangci-lint
 BUN_ENV := TMPDIR=$(PWD)/tmp
 BIOME := $(BUN_ENV) $(BUN) run biome
+GOLINT_ENV := $(GO_ENV) GOLANGCI_LINT_CACHE=$(PWD)/.golangci-lint-cache
 
 build:
 	mkdir -p tmp
@@ -26,6 +28,7 @@ lint:
 	$(BUN_ENV) $(BUN) install
 	$(BIOME) check .
 	$(GO_ENV) $(GO) vet ./...
+	$(GOLINT_ENV) $(GOLINT) run
 
 format:
 	mkdir -p tmp

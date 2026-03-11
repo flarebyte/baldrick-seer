@@ -1,0 +1,70 @@
+{
+  "problemName": "Decision Demo",
+  "reportName": "summary-json",
+  "format": "json",
+  "aggregation": {
+    "method": "equal_average"
+  },
+  "scenarioResults": [
+    {
+      "scenarioName": "baseline",
+      "ranking": [
+        {
+          "alternativeName": "alpha",
+          "rank": 1,
+          "score": 0.9
+        },
+        {
+          "alternativeName": "beta",
+          "excluded": true
+        }
+      ]
+    },
+    {
+      "scenarioName": "growth",
+      "ranking": [
+        {
+          "alternativeName": "alpha",
+          "rank": 1,
+          "score": 0.8
+        },
+        {
+          "alternativeName": "beta",
+          "rank": 2,
+          "score": 0.4
+        }
+      ]
+    }
+  ],
+  "scenarioWeights": [
+    {
+      "scenarioName": "baseline",
+      "weights": [
+        {
+          "criterionName": "cost",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "scenarioName": "growth",
+      "weights": [
+        {
+          "criterionName": "cost",
+          "weight": 0.6
+        },
+        {
+          "criterionName": "quality",
+          "weight": 0.4
+        }
+      ]
+    }
+  ],
+  "finalRanking": [
+    {
+      "alternativeName": "alpha",
+      "rank": 1,
+      "score": 0.8500000000000001
+    }
+  ]
+}

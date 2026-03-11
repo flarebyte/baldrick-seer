@@ -2,7 +2,7 @@ package seer
 
 config: {
 	problem: {
-		name: "minimal"
+		name: "invalid-constraint"
 	}
 	reports: [{
 		name:   "summary"
@@ -10,9 +10,8 @@ config: {
 		format: "markdown"
 	}]
 	criteriaCatalog: [{
-		name:      "cost"
-		polarity:  "cost"
-		valueType: "number"
+		name:      "approved"
+		valueType: "boolean"
 	}]
 	alternatives: [{
 		name: "option_a"
@@ -20,7 +19,12 @@ config: {
 	scenarios: [{
 		name: "baseline"
 		activeCriteria: [{
-			criterionName: "cost"
+			criterionName: "approved"
+		}]
+		constraints: [{
+			criterionName: "approved"
+			operator:      "<="
+			value:         true
 		}]
 	}]
 	evaluations: [{
@@ -28,9 +32,9 @@ config: {
 		evaluations: [{
 			alternativeName: "option_a"
 			values: {
-				cost: {
-					kind:  "number"
-					value: 1
+				approved: {
+					kind:  "boolean"
+					value: true
 				}
 			}
 		}]

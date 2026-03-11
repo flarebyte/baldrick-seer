@@ -1,3 +1,11 @@
-status: ok
-command: report generate
-message: report generate stub ok
+# Summary
+
+Problem: minimal
+
+## Scenarios
+
+### baseline
+- 1. option_a (0.000000)
+
+## Final Ranking
+- 1. option_a (0.000000)

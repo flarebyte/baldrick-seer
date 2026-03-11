@@ -73,7 +73,7 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 		Use:   "generate",
 		Short: "Generate a report",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_, err := run(domain.CommandRequest{
+			result, err := run(domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
 				ConfigPath:  configPath,
 			})
@@ -81,7 +81,7 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 				return err
 			}
 
-			_, err = cmd.OutOrStdout().Write([]byte(renderReportGenerateSuccess()))
+			_, err = cmd.OutOrStdout().Write([]byte(renderReportGenerateSuccess(result)))
 			return err
 		},
 	}

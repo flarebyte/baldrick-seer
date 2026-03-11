@@ -34,6 +34,14 @@ func NewValidationFailure(code string, path string, message string, err error) e
 	)
 }
 
+func NewValidationDiagnosticsFailure(diagnostics []domain.Diagnostic, err error) error {
+	return domain.NewFailure(
+		domain.FailureCategoryValidation,
+		domain.CanonicalDiagnostics(diagnostics),
+		err,
+	)
+}
+
 func NewExecutionFailure(code string, path string, message string, err error) error {
 	return domain.NewFailure(
 		domain.FailureCategoryExecution,

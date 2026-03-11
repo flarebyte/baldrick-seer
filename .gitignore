@@ -86,3 +86,4 @@ tmp/
 *~
 
 coverage/
+.golangci-lint-cache/

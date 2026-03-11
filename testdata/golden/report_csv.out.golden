@@ -1,0 +1,6 @@
+scenario,alternative,score,rank
+baseline,alpha,0.900000,1
+baseline,beta,,
+growth,alpha,0.800000,1
+growth,beta,0.400000,2
+overall,alpha,0.850000,1

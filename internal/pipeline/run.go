@@ -23,16 +23,16 @@ func NewDefaultRunner() Runner {
 }
 
 func (r Runner) RunValidate(command domain.CommandRequest) (domain.CommandResult, error) {
-	validation, err := r.loadAndValidate(command)
+	_, validation, err := r.loadAndValidate(command)
 	if err != nil {
 		return domain.CommandResult{}, err
 	}
 
-	return buildCommandResult(command.CommandName, validation, nil, nil, validation.ReportDefinitions), nil
+	return buildCommandResult(command.CommandName, validation, nil, nil, validation.ReportDefinitions, ""), nil
 }
 
 func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.CommandResult, error) {
-	validation, err := r.loadAndValidate(command)
+	config, validation, err := r.loadAndValidate(command)
 	if err != nil {
 		return domain.CommandResult{}, err
 	}
@@ -40,15 +40,17 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 	weights, err := r.CriteriaWeighter.WeightCriteria(WeightCriteriaInput{
 		Command:        command,
 		ValidatedModel: validation.ValidatedModel,
+		Config:         config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "weighting.failed", command.ConfigPath, "command failed", err)
 	}
 
 	scenarios, err := r.ScenarioRanker.RankScenarios(RankScenariosInput{
-		Command:          command,
-		ValidatedModel:   validation.ValidatedModel,
-		CriterionWeights: weights.CriterionWeights,
+		Command:         command,
+		ValidatedModel:  validation.ValidatedModel,
+		ScenarioWeights: weights.ScenarioWeights,
+		Config:          config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "ranking.failed", command.ConfigPath, "command failed", err)
@@ -57,6 +59,7 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 	aggregated, err := r.ScenarioAggregator.AggregateScenarios(AggregateScenariosInput{
 		Command:         command,
 		ScenarioResults: scenarios.ScenarioResults,
+		Config:          config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "aggregation.failed", command.ConfigPath, "command failed", err)
@@ -68,6 +71,8 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		ScenarioResults:   scenarios.ScenarioResults,
 		FinalRanking:      aggregated.FinalRanking,
 		ReportDefinitions: validation.ReportDefinitions,
+		ScenarioWeights:   weights.ScenarioWeights,
+		Config:            config,
 	})
 	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryRendering, "rendering.failed", command.ConfigPath, "command failed", err)
@@ -79,26 +84,27 @@ func (r Runner) RunReportGenerate(command domain.CommandRequest) (domain.Command
 		scenarios.ScenarioResults,
 		&aggregated.FinalRanking,
 		rendered.ReportDefinitions,
+		rendered.RenderedOutput,
 	), nil
 }
 
-func (r Runner) loadAndValidate(command domain.CommandRequest) (ValidateModelOutput, error) {
+func (r Runner) loadAndValidate(command domain.CommandRequest) (LoadedConfig, ValidateModelOutput, error) {
 	config, err := r.ConfigLoader.LoadConfig(LoadConfigInput{
 		ConfigPath: command.ConfigPath,
 	})
 	if err != nil {
-		return ValidateModelOutput{}, WrapStageFailure(domain.FailureCategoryInput, "config.load_failed", command.ConfigPath, "command failed", err)
+		return LoadedConfig{}, ValidateModelOutput{}, WrapStageFailure(domain.FailureCategoryInput, "config.load_failed", command.ConfigPath, "command failed", err)
 	}
 
 	validation, err := r.ModelValidator.ValidateModel(ValidateModelInput{
 		Command: command,
-		Config:  config,
+		Config:  config.Config,
 	})
 	if err != nil {
-		return ValidateModelOutput{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)
+		return LoadedConfig{}, ValidateModelOutput{}, WrapStageFailure(domain.FailureCategoryValidation, "validation.failed", command.ConfigPath, "command failed", err)
 	}
 
-	return validation, nil
+	return config.Config, validation, nil
 }
 
 func buildCommandResult(
@@ -107,6 +113,7 @@ func buildCommandResult(
 	scenarioResults []domain.ScenarioRankingResult,
 	finalRanking *domain.AggregatedRankingResult,
 	reportDefinitions []domain.ReportDefinition,
+	renderedOutput string,
 ) domain.CommandResult {
 	return domain.CanonicalCommandResult(domain.CommandResult{
 		CommandName:       commandName,
@@ -115,5 +122,6 @@ func buildCommandResult(
 		ScenarioResults:   scenarioResults,
 		FinalRanking:      finalRanking,
 		ReportDefinitions: reportDefinitions,
+		RenderedOutput:    renderedOutput,
 	})
 }
