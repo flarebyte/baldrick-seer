@@ -109,6 +109,58 @@ func validLoadedConfigWithScenarioEvaluations(
 	return config
 }
 
+func validLoadedConfigWithConstraints(
+	criteria []CriterionConfig,
+	activeCriteria []string,
+	constraints []ConstraintConfig,
+) LoadedConfig {
+	config := validLoadedConfig()
+	config.Config.CriteriaCatalog = append([]CriterionConfig(nil), criteria...)
+	config.Config.Scenarios = []ScenarioConfig{
+		{
+			Name:        "baseline",
+			Constraints: append([]ConstraintConfig(nil), constraints...),
+		},
+	}
+	config.Config.Evaluations[0].Evaluations[0].Values = map[string]CriterionValue{}
+	for _, criterionName := range activeCriteria {
+		config.Config.Scenarios[0].ActiveCriteria = append(
+			config.Config.Scenarios[0].ActiveCriteria,
+			ScenarioCriterionRef{CriterionName: criterionName},
+		)
+		config.Config.Evaluations[0].Evaluations[0].Values[criterionName] = CriterionValue{Kind: criterionValueTypeForName(criteria, criterionName), Value: validCriterionValueForName(criteria, criterionName)}
+	}
+	return config
+}
+
+func criterionValueTypeForName(criteria []CriterionConfig, criterionName string) string {
+	for _, criterion := range criteria {
+		if criterion.Name == criterionName {
+			return criterion.ValueType
+		}
+	}
+	return "number"
+}
+
+func validCriterionValueForName(criteria []CriterionConfig, criterionName string) any {
+	for _, criterion := range criteria {
+		if criterion.Name != criterionName {
+			continue
+		}
+
+		switch criterion.ValueType {
+		case "ordinal":
+			return 1
+		case "boolean":
+			return true
+		default:
+			return 1
+		}
+	}
+
+	return 1
+}
+
 func validateConfig(t *testing.T, config LoadedConfig) []domain.Diagnostic {
 	t.Helper()
 
@@ -754,6 +806,177 @@ func TestDefaultModelValidatorEvaluationValueValidation(t *testing.T) {
 					},
 				},
 			),
+		},
+	}
+
+	validator := DefaultModelValidator{}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := validator.ValidateModel(ValidateModelInput{
+				Command: domain.CommandRequest{
+					CommandName: domain.CommandNameValidate,
+					ConfigPath:  tt.config.Path,
+				},
+				Config: tt.config,
+			})
+
+			if len(tt.wantCodes) == 0 {
+				if err != nil {
+					t.Fatalf("ValidateModel() error = %v", err)
+				}
+				return
+			}
+
+			if !errors.Is(err, ErrValidationFailed) {
+				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
+			}
+
+			failure := domain.AsCommandFailure(err)
+			if failure == nil {
+				t.Fatal("AsCommandFailure(err) = nil, want value")
+			}
+
+			var gotCodes []string
+			for _, diagnostic := range failure.Diagnostics {
+				gotCodes = append(gotCodes, diagnostic.Code)
+			}
+
+			if !reflect.DeepEqual(gotCodes, tt.wantCodes) {
+				t.Fatalf("codes = %#v, want %#v", gotCodes, tt.wantCodes)
+			}
+
+			if failure.Diagnostics[0].Message != tt.wantMessage {
+				t.Fatalf("message = %q, want %q", failure.Diagnostics[0].Message, tt.wantMessage)
+			}
+		})
+	}
+}
+
+func TestDefaultModelValidatorConstraintValidation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		config      LoadedConfig
+		wantCodes   []string
+		wantMessage string
+	}{
+		{
+			name: "valid numeric constraint",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
+				[]string{"cost"},
+				[]ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: 10}},
+			),
+		},
+		{
+			name: "valid ordinal constraint",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "priority", ValueType: "ordinal", ScaleGuidance: []any{"low", "medium", "high"}}},
+				[]string{"priority"},
+				[]ConstraintConfig{{CriterionName: "priority", Operator: ">=", Value: 2}},
+			),
+		},
+		{
+			name: "valid boolean constraint",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "approved", ValueType: "boolean"}},
+				[]string{"approved"},
+				[]ConstraintConfig{{CriterionName: "approved", Operator: "=", Value: true}},
+			),
+		},
+		{
+			name: "unknown criterion in constraint",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
+				[]string{"cost"},
+				[]ConstraintConfig{{CriterionName: "missing", Operator: "<=", Value: 10}},
+			),
+			wantCodes:   []string{"validation.unknown_constraint_criterion"},
+			wantMessage: "unknown criterion name in constraints: missing",
+		},
+		{
+			name: "inactive criterion in constraint",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{
+					{Name: "cost", ValueType: "number"},
+					{Name: "speed", ValueType: "number"},
+				},
+				[]string{"cost"},
+				[]ConstraintConfig{{CriterionName: "speed", Operator: "<=", Value: 10}},
+			),
+			wantCodes:   []string{"validation.inactive_constraint_criterion"},
+			wantMessage: "constraint references criterion not active in scenario: speed",
+		},
+		{
+			name: "invalid operator for boolean criterion",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "approved", ValueType: "boolean"}},
+				[]string{"approved"},
+				[]ConstraintConfig{{CriterionName: "approved", Operator: "<=", Value: true}},
+			),
+			wantCodes:   []string{"validation.invalid_constraint_operator"},
+			wantMessage: "invalid constraint operator for boolean criterion approved: <=",
+		},
+		{
+			name: "invalid numeric value for number criterion",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "cost", ValueType: "number"}},
+				[]string{"cost"},
+				[]ConstraintConfig{{CriterionName: "cost", Operator: "<=", Value: true}},
+			),
+			wantCodes:   []string{"validation.invalid_constraint_number_value"},
+			wantMessage: "constraint value must be numeric for criterion: cost",
+		},
+		{
+			name: "non integer value for ordinal criterion",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "priority", ValueType: "ordinal", ScaleGuidance: []any{"low", "medium", "high"}}},
+				[]string{"priority"},
+				[]ConstraintConfig{{CriterionName: "priority", Operator: ">=", Value: 1.5}},
+			),
+			wantCodes:   []string{"validation.invalid_constraint_ordinal_value"},
+			wantMessage: "constraint value must be an integer for criterion: priority",
+		},
+		{
+			name: "wrong value type for boolean criterion",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{{Name: "approved", ValueType: "boolean"}},
+				[]string{"approved"},
+				[]ConstraintConfig{{CriterionName: "approved", Operator: "!=", Value: 1}},
+			),
+			wantCodes:   []string{"validation.invalid_constraint_boolean_value"},
+			wantMessage: "constraint value must be true or false for criterion: approved",
+		},
+		{
+			name: "multiple invalid constraints with deterministic diagnostic order",
+			config: validLoadedConfigWithConstraints(
+				[]CriterionConfig{
+					{Name: "approved", ValueType: "boolean"},
+					{Name: "cost", ValueType: "number"},
+					{Name: "priority", ValueType: "ordinal", ScaleGuidance: []any{"low", "high"}},
+					{Name: "speed", ValueType: "number"},
+				},
+				[]string{"approved", "cost", "priority"},
+				[]ConstraintConfig{
+					{CriterionName: "approved", Operator: "<=", Value: 1},
+					{CriterionName: "speed", Operator: "<=", Value: 10},
+					{CriterionName: "priority", Operator: ">=", Value: 1.5},
+					{CriterionName: "missing", Operator: "=", Value: 1},
+				},
+			),
+			wantCodes: []string{
+				"validation.inactive_constraint_criterion",
+				"validation.invalid_constraint_boolean_value",
+				"validation.invalid_constraint_operator",
+				"validation.invalid_constraint_ordinal_value",
+				"validation.unknown_constraint_criterion",
+			},
+			wantMessage: "constraint references criterion not active in scenario: speed",
 		},
 	}
 

@@ -170,6 +170,39 @@ func validateLoadedConfig(config LoadedConfig) []domain.Diagnostic {
 					domain.DiagnosticLocation{},
 					fmt.Sprintf("unknown criterion name in constraints: %s", constraint.CriterionName),
 				))
+				continue
+			}
+
+			if !hasName(activeCriterionNames, constraint.CriterionName) {
+				diagnostics = append(diagnostics, domain.NewDiagnostic(
+					domain.DiagnosticSeverityError,
+					"validation.inactive_constraint_criterion",
+					fmt.Sprintf("config.scenarios[%d].constraints[%d].criterionName", scenarioIndex, constraintIndex),
+					domain.DiagnosticLocation{},
+					fmt.Sprintf("constraint references criterion not active in scenario: %s", constraint.CriterionName),
+				))
+				continue
+			}
+
+			criterion := criteriaByName[constraint.CriterionName]
+			if !isSupportedConstraintOperator(criterion.ValueType, constraint.Operator) {
+				diagnostics = append(diagnostics, domain.NewDiagnostic(
+					domain.DiagnosticSeverityError,
+					"validation.invalid_constraint_operator",
+					fmt.Sprintf("config.scenarios[%d].constraints[%d].operator", scenarioIndex, constraintIndex),
+					domain.DiagnosticLocation{},
+					fmt.Sprintf("invalid constraint operator for %s criterion %s: %s", criterion.ValueType, constraint.CriterionName, constraint.Operator),
+				))
+			}
+
+			if !isValidCriterionValue(criterion.ValueType, constraint.Value) {
+				diagnostics = append(diagnostics, domain.NewDiagnostic(
+					domain.DiagnosticSeverityError,
+					validationConstraintValueCode(criterion.ValueType),
+					fmt.Sprintf("config.scenarios[%d].constraints[%d].value", scenarioIndex, constraintIndex),
+					domain.DiagnosticLocation{},
+					validationConstraintValueMessage(criterion.ValueType, constraint.CriterionName),
+				))
 			}
 		}
 
@@ -503,6 +536,43 @@ func validationValueSemanticMessage(criterionName string, kind string) string {
 		return fmt.Sprintf("boolean criterion value must be true or false: %s", criterionName)
 	default:
 		return fmt.Sprintf("invalid criterion value: %s", criterionName)
+	}
+}
+
+func isSupportedConstraintOperator(valueType string, operator string) bool {
+	switch valueType {
+	case "number", "ordinal":
+		return operator == "<=" || operator == ">=" || operator == "=" || operator == "!="
+	case "boolean":
+		return operator == "=" || operator == "!="
+	default:
+		return false
+	}
+}
+
+func validationConstraintValueCode(valueType string) string {
+	switch valueType {
+	case "number":
+		return "validation.invalid_constraint_number_value"
+	case "ordinal":
+		return "validation.invalid_constraint_ordinal_value"
+	case "boolean":
+		return "validation.invalid_constraint_boolean_value"
+	default:
+		return "validation.invalid_constraint_value"
+	}
+}
+
+func validationConstraintValueMessage(valueType string, criterionName string) string {
+	switch valueType {
+	case "number":
+		return fmt.Sprintf("constraint value must be numeric for criterion: %s", criterionName)
+	case "ordinal":
+		return fmt.Sprintf("constraint value must be an integer for criterion: %s", criterionName)
+	case "boolean":
+		return fmt.Sprintf("constraint value must be true or false for criterion: %s", criterionName)
+	default:
+		return fmt.Sprintf("invalid constraint value for criterion: %s", criterionName)
 	}
 }
 

@@ -98,6 +98,8 @@ type PairwiseComparison struct {
 
 type ConstraintConfig struct {
 	CriterionName string `json:"criterionName"`
+	Operator      string `json:"operator"`
+	Value         any    `json:"value"`
 }
 
 type EvaluationConfig struct {
