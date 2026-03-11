@@ -13,20 +13,28 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name          string
-		configPath    string
-		wantErr       error
-		wantCategory  domain.FailureCategory
-		wantCode      string
-		wantMessage   string
-		wantFields    []string
-		wantEvaluated string
+		name             string
+		configPath       string
+		wantErr          error
+		wantCategory     domain.FailureCategory
+		wantCode         string
+		wantMessage      string
+		wantFields       []string
+		wantConfigFields []string
 	}{
 		{
-			name:          "valid minimal cue config",
-			configPath:    filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
-			wantFields:    []string{"config"},
-			wantEvaluated: "{\n\tconfig: {\n\t\tname: \"minimal\"\n\t}\n}",
+			name:       "valid minimal cue config",
+			configPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+			wantFields: []string{"config"},
+			wantConfigFields: []string{
+				"aggregation",
+				"alternatives",
+				"criteriaCatalog",
+				"evaluations",
+				"problem",
+				"reports",
+				"scenarios",
+			},
 		},
 		{
 			name:         "non concrete cue config",
@@ -83,8 +91,16 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 					t.Fatalf("TopLevelFields = %#v, want %#v", got.Config.TopLevelFields, tt.wantFields)
 				}
 
-				if got.Config.Evaluated != tt.wantEvaluated {
-					t.Fatalf("Evaluated = %q, want %q", got.Config.Evaluated, tt.wantEvaluated)
+				if !reflect.DeepEqual(got.Config.ConfigFields, tt.wantConfigFields) {
+					t.Fatalf("ConfigFields = %#v, want %#v", got.Config.ConfigFields, tt.wantConfigFields)
+				}
+
+				if got.Config.Evaluated == "" {
+					t.Fatal("Evaluated = empty, want non-empty value")
+				}
+
+				if got.Config.Config == nil {
+					t.Fatal("Config = nil, want decoded config")
 				}
 
 				return

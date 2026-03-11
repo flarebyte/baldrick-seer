@@ -77,6 +77,12 @@ func TestCommandOutputGoldens(t *testing.T) {
 			wantExitCode: 1,
 			stderrGolden: "invalid_cue.stderr.golden",
 		},
+		{
+			name:         "validate semantic validation failure",
+			args:         []string{"validate", "--config", filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue")},
+			wantExitCode: 1,
+			stderrGolden: "invalid_validation.stderr.golden",
+		},
 	}
 
 	for _, tt := range tests {

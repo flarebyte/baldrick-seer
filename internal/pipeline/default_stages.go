@@ -70,22 +70,30 @@ func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 		return LoadConfigOutput{}, WrapStageFailure(domain.FailureCategoryInternal, "config.fields_failed", input.ConfigPath, "command failed", err)
 	}
 
+	var executionConfig *ExecutionConfig
+	var configFields []string
+	configValue := value.LookupPath(cue.ParsePath("config"))
+	if configValue.Exists() {
+		configFields, err = cueTopLevelFields(configValue)
+		if err != nil {
+			return LoadConfigOutput{}, NewInputFailure("config.decode_invalid", input.ConfigPath, "config could not be loaded", ErrConfigLoadInvalid)
+		}
+
+		decoded := new(ExecutionConfig)
+		if err := configValue.Decode(decoded); err != nil {
+			return LoadConfigOutput{}, NewInputFailure("config.decode_invalid", input.ConfigPath, "config could not be loaded", ErrConfigLoadInvalid)
+		}
+		executionConfig = decoded
+	}
+
 	return LoadConfigOutput{
 		Config: LoadedConfig{
 			Path:           configPath,
 			Evaluated:      string(formatted),
 			TopLevelFields: domain.CanonicalNames(fields),
+			ConfigFields:   domain.CanonicalNames(configFields),
+			Config:         executionConfig,
 		},
-	}, nil
-}
-
-type DefaultModelValidator struct{}
-
-func (DefaultModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
-	return ValidateModelOutput{
-		ValidatedModel: domain.CanonicalValidatedModelSummary(domain.ValidatedModelSummary{
-			ConfigPath: input.Config.Path,
-		}),
 	}, nil
 }
 
@@ -131,7 +139,7 @@ func cueTopLevelFields(value cue.Value) ([]string, error) {
 
 	var fields []string
 	for iterator.Next() {
-		fields = append(fields, iterator.Label())
+		fields = append(fields, iterator.Selector().Unquoted())
 	}
 
 	return fields, nil

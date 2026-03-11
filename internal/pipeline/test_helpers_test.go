@@ -10,12 +10,16 @@ import (
 type fakeConfigLoader struct {
 	recorder *[]string
 	err      error
+	output   LoadConfigOutput
 }
 
 func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
 	*f.recorder = append(*f.recorder, "load")
 	if f.err != nil {
 		return LoadConfigOutput{}, f.err
+	}
+	if f.output.Config.Path != "" || f.output.Config.Config != nil {
+		return f.output, nil
 	}
 	return LoadConfigOutput{
 		Config: LoadedConfig{
@@ -39,6 +43,16 @@ func (f *fakeModelValidator) ValidateModel(input ValidateModelInput) (ValidateMo
 			ConfigPath: input.Config.Path,
 		},
 	}, nil
+}
+
+type recordingModelValidator struct {
+	recorder *[]string
+	inner    ModelValidator
+}
+
+func (r recordingModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+	*r.recorder = append(*r.recorder, "validate")
+	return r.inner.ValidateModel(input)
 }
 
 type fakeCriteriaWeighter struct {

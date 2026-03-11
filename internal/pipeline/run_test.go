@@ -299,6 +299,131 @@ func TestInvalidCueFailsAtLoadStage(t *testing.T) {
 	}
 }
 
+func TestValidationFailureStopsPipeline(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		command domain.CommandRequest
+		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+	}{
+		{
+			name: "validate stops at validation",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  fixtureConfigPath(),
+			},
+			run: Runner.RunValidate,
+		},
+		{
+			name: "report generate stops at validation",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  fixtureConfigPath(),
+			},
+			run: Runner.RunReportGenerate,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			order := []string{}
+			runner := newFakeRunner(&order)
+			runner.ConfigLoader = &fakeConfigLoader{
+				recorder: &order,
+				output: LoadConfigOutput{
+					Config: LoadedConfig{
+						Path:           fixtureConfigPath(),
+						TopLevelFields: []string{"config"},
+						ConfigFields: []string{
+							"aggregation",
+							"alternatives",
+							"criteriaCatalog",
+							"evaluations",
+							"problem",
+							"reports",
+							"scenarios",
+						},
+						Config: &ExecutionConfig{
+							Problem:         &ProblemConfig{Name: "minimal"},
+							Reports:         []ReportConfig{{Name: "summary"}},
+							CriteriaCatalog: []CriterionConfig{{Name: "cost"}},
+							Alternatives:    []AlternativeConfig{{Name: "option_a"}},
+							Scenarios:       []ScenarioConfig{{Name: "baseline", ActiveCriteria: []ScenarioCriterionRef{{CriterionName: "missing"}}}},
+							Evaluations:     []EvaluationConfig{{ScenarioName: "baseline", Evaluations: []AlternativeEvaluationConfig{{AlternativeName: "option_a"}}}},
+							Aggregation:     &AggregationConfig{},
+						},
+					},
+				},
+			}
+			runner.ModelValidator = recordingModelValidator{
+				recorder: &order,
+				inner:    DefaultModelValidator{},
+			}
+
+			_, err := tt.run(runner, tt.command)
+			if !errors.Is(err, ErrValidationFailed) {
+				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
+			}
+
+			if got, want := order, []string{"load", "validate"}; !reflect.DeepEqual(got, want) {
+				t.Fatalf("order = %#v, want %#v", got, want)
+			}
+		})
+	}
+}
+
+func TestRealValidationFailureFromFixture(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		command domain.CommandRequest
+		run     func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+	}{
+		{
+			name: "validate invalid reference fixture",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
+			},
+			run: Runner.RunValidate,
+		},
+		{
+			name: "report generate invalid reference fixture",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameReportGenerate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_reference.cue"),
+			},
+			run: Runner.RunReportGenerate,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := tt.run(NewDefaultRunner(), tt.command)
+			if !errors.Is(err, ErrValidationFailed) {
+				t.Fatalf("error = %v, want %v", err, ErrValidationFailed)
+			}
+
+			failure := domain.AsCommandFailure(err)
+			if failure == nil {
+				t.Fatal("AsCommandFailure(err) = nil, want value")
+			}
+
+			if got, want := failure.Diagnostics[0].Message, "unknown scenario name in evaluations: missing"; got != want {
+				t.Fatalf("message = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 

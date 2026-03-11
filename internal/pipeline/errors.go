@@ -8,4 +8,5 @@ var (
 	ErrConfigPathIsDirectory  = errors.New("config path is a directory")
 	ErrConfigLoadInvalid      = errors.New("config could not be loaded")
 	ErrConfigNotConcrete      = errors.New("config must evaluate to a concrete value")
+	ErrValidationFailed       = errors.New("validation failed")
 )

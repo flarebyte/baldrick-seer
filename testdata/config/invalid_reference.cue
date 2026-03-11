@@ -2,7 +2,7 @@ package seer
 
 config: {
 	problem: {
-		name: "minimal"
+		name: "invalid-reference"
 	}
 	reports: [{
 		name:   "summary"
@@ -22,7 +22,7 @@ config: {
 		}]
 	}]
 	evaluations: [{
-		scenarioName: "baseline"
+		scenarioName: "missing"
 		evaluations: [{
 			alternativeName: "option_a"
 			values: {
