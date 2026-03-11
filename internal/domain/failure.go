@@ -25,6 +25,7 @@ const (
 type CommandFailure struct {
 	Category    FailureCategory
 	ExitCode    ExitCode
+	Message     string
 	Diagnostics []Diagnostic
 	Err         error
 }
@@ -46,20 +47,26 @@ func NewDiagnostic(
 }
 
 func NewFailure(category FailureCategory, diagnostics []Diagnostic, err error) *CommandFailure {
+	return NewFailureWithMessage(category, "", diagnostics, err)
+}
+
+func NewFailureWithMessage(category FailureCategory, message string, diagnostics []Diagnostic, err error) *CommandFailure {
+	if message == "" {
+		message = failureMessageFromDiagnostics(diagnostics)
+	}
+
 	return &CommandFailure{
 		Category:    category,
 		ExitCode:    ExitCodeForCategory(category),
+		Message:     message,
 		Diagnostics: diagnostics,
 		Err:         err,
 	}
 }
 
 func (f *CommandFailure) Error() string {
-	if len(f.Diagnostics) > 0 && f.Diagnostics[0].Message != "" {
-		return f.Diagnostics[0].Message
-	}
-	if f.Err != nil {
-		return f.Err.Error()
+	if f.Message != "" {
+		return f.Message
 	}
 	return "command failed"
 }
@@ -97,4 +104,33 @@ func AsCommandFailure(err error) *CommandFailure {
 		return failure
 	}
 	return nil
+}
+
+type FailurePresentation struct {
+	ExitCode ExitCode
+	Stderr   string
+}
+
+func PresentError(err error) FailurePresentation {
+	return FailurePresentation{
+		ExitCode: ExitCodeForError(err),
+		Stderr:   "status: error\nmessage: " + UserMessageForError(err) + "\n",
+	}
+}
+
+func UserMessageForError(err error) string {
+	if failure := AsCommandFailure(err); failure != nil {
+		if failure.Message != "" {
+			return failure.Message
+		}
+	}
+
+	return "command failed"
+}
+
+func failureMessageFromDiagnostics(diagnostics []Diagnostic) string {
+	if len(diagnostics) > 0 && diagnostics[0].Message != "" {
+		return diagnostics[0].Message
+	}
+	return "command failed"
 }

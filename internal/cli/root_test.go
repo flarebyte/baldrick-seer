@@ -234,3 +234,109 @@ func TestExecuteIsDeterministic(t *testing.T) {
 		t.Fatalf("stderr1 = %q, stderr2 = %q", stderr1.String(), stderr2.String())
 	}
 }
+
+func TestExecuteUsesCentralizedFailureEmission(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		deps         dependencies
+		args         []string
+		wantExitCode int
+		wantStdout   string
+		wantStderr   string
+	}{
+		{
+			name: "validate validation failure",
+			deps: dependencies{
+				runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					return domain.CommandResult{}, domain.NewFailure(
+						domain.FailureCategoryValidation,
+						[]domain.Diagnostic{
+							domain.NewDiagnostic(domain.DiagnosticSeverityError, "validation.failed", "config", domain.DiagnosticLocation{}, "validation failed"),
+						},
+						nil,
+					)
+				},
+				runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					t.Fatal("runReportGenerate should not be called")
+					return domain.CommandResult{}, nil
+				},
+			},
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: validation failed\n",
+		},
+		{
+			name: "report generate execution failure",
+			deps: dependencies{
+				runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					t.Fatal("runValidate should not be called")
+					return domain.CommandResult{}, nil
+				},
+				runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					return domain.CommandResult{}, domain.NewFailure(
+						domain.FailureCategoryExecution,
+						[]domain.Diagnostic{
+							domain.NewDiagnostic(domain.DiagnosticSeverityError, "execution.failed", "config", domain.DiagnosticLocation{}, "command failed"),
+						},
+						nil,
+					)
+				},
+			},
+			args:         []string{"report", "generate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: command failed\n",
+		},
+		{
+			name: "validate cancellation failure",
+			deps: dependencies{
+				runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					return domain.CommandResult{}, domain.NewFailureWithMessage(
+						domain.FailureCategoryExecution,
+						"command canceled",
+						nil,
+						nil,
+					)
+				},
+				runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
+					t.Fatal("runReportGenerate should not be called")
+					return domain.CommandResult{}, nil
+				},
+			},
+			args:         []string{"validate", "--config", testConfigPath()},
+			wantExitCode: 1,
+			wantStderr:   "status: error\nmessage: command canceled\n",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			cmd := newRootCmd(tt.deps)
+			stdout := new(bytes.Buffer)
+			stderr := new(bytes.Buffer)
+			cmd.SetOut(stdout)
+			cmd.SetErr(stderr)
+			cmd.SetArgs(tt.args)
+
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatal("Execute() error = nil, want error")
+			}
+
+			presentation := domain.PresentError(err)
+			if got, want := int(presentation.ExitCode), tt.wantExitCode; got != want {
+				t.Fatalf("exitCode = %d, want %d", got, want)
+			}
+			if got, want := stdout.String(), tt.wantStdout; got != want {
+				t.Fatalf("stdout = %q, want %q", got, want)
+			}
+			if got, want := presentation.Stderr, tt.wantStderr; got != want {
+				t.Fatalf("stderr = %q, want %q", got, want)
+			}
+		})
+	}
+}
