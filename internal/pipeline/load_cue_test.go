@@ -38,6 +38,20 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 			},
 		},
 		{
+			name:       "valid cue directory config",
+			configPath: filepath.Join("..", "..", "testdata", "config_split"),
+			wantFields: []string{"config"},
+			wantConfigFields: []string{
+				"aggregation",
+				"alternatives",
+				"criteriaCatalog",
+				"evaluations",
+				"problem",
+				"reports",
+				"scenarios",
+			},
+		},
+		{
 			name:         "non concrete cue config",
 			configPath:   filepath.Join("..", "..", "testdata", "config", "non_concrete.cue"),
 			wantErr:      ErrConfigNotConcrete,
@@ -62,12 +76,20 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 			wantMessage:  "config path does not exist",
 		},
 		{
-			name:         "directory path",
-			configPath:   filepath.Join("..", "..", "testdata", "config"),
-			wantErr:      ErrConfigPathIsDirectory,
+			name:         "invalid file extension",
+			configPath:   filepath.Join("..", "..", "testdata", "config", "not_cue.txt"),
+			wantErr:      ErrConfigFileExtension,
 			wantCategory: domain.FailureCategoryInput,
-			wantCode:     "config.is_directory",
-			wantMessage:  "config path is a directory",
+			wantCode:     "config.invalid_file_type",
+			wantMessage:  "config file must have .cue extension",
+		},
+		{
+			name:         "empty directory",
+			configPath:   filepath.Join("..", "..", "testdata", "config_empty"),
+			wantErr:      ErrConfigDirectoryEmpty,
+			wantCategory: domain.FailureCategoryInput,
+			wantCode:     "config.directory_empty",
+			wantMessage:  "config directory does not contain any .cue files",
 		},
 	}
 
@@ -128,5 +150,58 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 				t.Fatalf("Message = %q, want %q", failure.Diagnostics[0].Message, tt.wantMessage)
 			}
 		})
+	}
+}
+
+func TestDefaultConfigLoaderDirectoryDeterminism(t *testing.T) {
+	t.Parallel()
+
+	loader := DefaultConfigLoader{}
+	path := filepath.Join("..", "..", "testdata", "config_split")
+
+	first, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: path})
+	if err != nil {
+		t.Fatalf("first LoadConfig() error = %v", err)
+	}
+
+	second, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: path})
+	if err != nil {
+		t.Fatalf("second LoadConfig() error = %v", err)
+	}
+
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("first = %#v, second = %#v", first, second)
+	}
+}
+
+func TestDefaultConfigLoaderFileAndDirectoryEquivalence(t *testing.T) {
+	t.Parallel()
+
+	loader := DefaultConfigLoader{}
+
+	fromFile, err := loader.LoadConfig(context.Background(), LoadConfigInput{
+		ConfigPath: filepath.Join("..", "..", "testdata", "config", "minimal.cue"),
+	})
+	if err != nil {
+		t.Fatalf("LoadConfig(file) error = %v", err)
+	}
+
+	fromDirectory, err := loader.LoadConfig(context.Background(), LoadConfigInput{
+		ConfigPath: filepath.Join("..", "..", "testdata", "config_split"),
+	})
+	if err != nil {
+		t.Fatalf("LoadConfig(directory) error = %v", err)
+	}
+
+	if !reflect.DeepEqual(fromFile.Config.TopLevelFields, fromDirectory.Config.TopLevelFields) {
+		t.Fatalf("TopLevelFields(file) = %#v, TopLevelFields(directory) = %#v", fromFile.Config.TopLevelFields, fromDirectory.Config.TopLevelFields)
+	}
+
+	if !reflect.DeepEqual(fromFile.Config.ConfigFields, fromDirectory.Config.ConfigFields) {
+		t.Fatalf("ConfigFields(file) = %#v, ConfigFields(directory) = %#v", fromFile.Config.ConfigFields, fromDirectory.Config.ConfigFields)
+	}
+
+	if !reflect.DeepEqual(fromFile.Config.Config, fromDirectory.Config.Config) {
+		t.Fatalf("Config(file) = %#v, Config(directory) = %#v", fromFile.Config.Config, fromDirectory.Config.Config)
 	}
 }

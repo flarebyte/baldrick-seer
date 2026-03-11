@@ -802,18 +802,39 @@ func TestRunReportGenerateStopsOnRenderingFailure(t *testing.T) {
 func TestDefaultConfigLoader(t *testing.T) {
 	t.Parallel()
 
-	loader := DefaultConfigLoader{}
-
-	got, err := loader.LoadConfig(context.Background(), LoadConfigInput{
-		ConfigPath: fixtureConfigPath(),
-	})
-	if err != nil {
-		t.Fatalf("LoadConfig() error = %v", err)
+	tests := []struct {
+		name       string
+		configPath string
+	}{
+		{
+			name:       "single file",
+			configPath: fixtureConfigPath(),
+		},
+		{
+			name:       "directory package",
+			configPath: filepath.Join("..", "..", "testdata", "config_split"),
+		},
 	}
 
-	want := filepath.Clean(fixtureConfigPath())
-	if got.Config.Path != want {
-		t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
+	loader := DefaultConfigLoader{}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := loader.LoadConfig(context.Background(), LoadConfigInput{
+				ConfigPath: tt.configPath,
+			})
+			if err != nil {
+				t.Fatalf("LoadConfig() error = %v", err)
+			}
+
+			want := filepath.Clean(tt.configPath)
+			if got.Config.Path != want {
+				t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
+			}
+		})
 	}
 }
 
@@ -839,16 +860,16 @@ func TestDefaultConfigLoaderMissingFile(t *testing.T) {
 	}
 }
 
-func TestDefaultConfigLoaderDirectoryPath(t *testing.T) {
+func TestDefaultConfigLoaderEmptyDirectoryPath(t *testing.T) {
 	t.Parallel()
 
 	loader := DefaultConfigLoader{}
 
 	_, err := loader.LoadConfig(context.Background(), LoadConfigInput{
-		ConfigPath: filepath.Join("..", "..", "testdata", "config"),
+		ConfigPath: filepath.Join("..", "..", "testdata", "config_empty"),
 	})
-	if !errors.Is(err, ErrConfigPathIsDirectory) {
-		t.Fatalf("error = %v, want %v", err, ErrConfigPathIsDirectory)
+	if !errors.Is(err, ErrConfigDirectoryEmpty) {
+		t.Fatalf("error = %v, want %v", err, ErrConfigDirectoryEmpty)
 	}
 
 	failure := domain.AsCommandFailure(err)

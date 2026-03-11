@@ -67,8 +67,8 @@ func TestCommandOutputGoldens(t *testing.T) {
 			stderrGolden: "missing_file.stderr.golden",
 		},
 		{
-			name:         "report generate directory path",
-			args:         []string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config")},
+			name:         "report generate empty directory",
+			args:         []string{"report", "generate", "--config", filepath.Join("..", "..", "testdata", "config_empty")},
 			wantExitCode: 1,
 			stderrGolden: "directory_path.stderr.golden",
 		},
