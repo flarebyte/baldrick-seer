@@ -1,8 +1,14 @@
 package pipeline
 
+import "context"
+
 import "github.com/flarebyte/baldrick-seer/internal/domain"
 
-func (DefaultCriteriaWeighter) WeightCriteria(input WeightCriteriaInput) (WeightCriteriaOutput, error) {
+func (DefaultCriteriaWeighter) WeightCriteria(ctx context.Context, input WeightCriteriaInput) (WeightCriteriaOutput, error) {
+	if err := checkContext(ctx, input.Command.ConfigPath); err != nil {
+		return WeightCriteriaOutput{}, err
+	}
+
 	if input.Config.Config == nil {
 		return WeightCriteriaOutput{}, NewExecutionFailure("weighting.config_missing", input.Command.ConfigPath, "criteria weights could not be computed", ErrWeightingFailed)
 	}

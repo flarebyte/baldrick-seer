@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"reflect"
 	"testing"
@@ -145,7 +146,7 @@ func TestDefaultScenarioAggregator(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := aggregator.AggregateScenarios(AggregateScenariosInput{
+			got, err := aggregator.AggregateScenarios(context.Background(), AggregateScenariosInput{
 				Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
 				ScenarioResults: tt.scenarios,
 				Config:          tt.config,
@@ -192,12 +193,12 @@ func TestDefaultScenarioAggregatorIsDeterministic(t *testing.T) {
 		},
 	}
 
-	first, err := DefaultScenarioAggregator{}.AggregateScenarios(input)
+	first, err := DefaultScenarioAggregator{}.AggregateScenarios(context.Background(), input)
 	if err != nil {
 		t.Fatalf("first AggregateScenarios() error = %v", err)
 	}
 
-	second, err := DefaultScenarioAggregator{}.AggregateScenarios(input)
+	second, err := DefaultScenarioAggregator{}.AggregateScenarios(context.Background(), input)
 	if err != nil {
 		t.Fatalf("second AggregateScenarios() error = %v", err)
 	}

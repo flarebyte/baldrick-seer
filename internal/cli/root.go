@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"context"
+
 	"github.com/flarebyte/baldrick-seer/internal/app"
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 	"github.com/spf13/cobra"
@@ -8,8 +10,8 @@ import (
 
 const configFlagName = "config"
 
-type validateRunner func(domain.CommandRequest) (domain.CommandResult, error)
-type reportGenerateRunner func(domain.CommandRequest) (domain.CommandResult, error)
+type validateRunner func(context.Context, domain.CommandRequest) (domain.CommandResult, error)
+type reportGenerateRunner func(context.Context, domain.CommandRequest) (domain.CommandResult, error)
 
 type dependencies struct {
 	runValidate       validateRunner
@@ -43,7 +45,7 @@ func newValidateCmd(run validateRunner) *cobra.Command {
 		Use:   "validate",
 		Short: "Validate the input model",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			_, err := run(domain.CommandRequest{
+			_, err := run(cmd.Context(), domain.CommandRequest{
 				CommandName: domain.CommandNameValidate,
 				ConfigPath:  configPath,
 			})
@@ -73,7 +75,7 @@ func newReportCmd(run reportGenerateRunner) *cobra.Command {
 		Use:   "generate",
 		Short: "Generate a report",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			result, err := run(domain.CommandRequest{
+			result, err := run(cmd.Context(), domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
 				ConfigPath:  configPath,
 			})

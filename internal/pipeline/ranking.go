@@ -1,5 +1,7 @@
 package pipeline
 
+import "context"
+
 import (
 	"math"
 	"sort"
@@ -9,7 +11,11 @@ import (
 
 const topsisTieTolerance = 1e-12
 
-func (DefaultScenarioRanker) RankScenarios(input RankScenariosInput) (RankScenariosOutput, error) {
+func (DefaultScenarioRanker) RankScenarios(ctx context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
+	if err := checkContext(ctx, input.Command.ConfigPath); err != nil {
+		return RankScenariosOutput{}, err
+	}
+
 	if input.Config.Config == nil {
 		return RankScenariosOutput{}, NewExecutionFailure("ranking.config_missing", input.Command.ConfigPath, "scenario ranking could not be computed", ErrRankingFailed)
 	}

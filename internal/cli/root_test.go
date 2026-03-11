@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -124,8 +125,11 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(req domain.CommandRequest) (domain.CommandResult, error) {
+		runValidate: func(ctx context.Context, req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if ctx == nil {
+				t.Fatal("context = nil, want value")
+			}
 			if req.CommandName != domain.CommandNameValidate {
 				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameValidate)
 			}
@@ -135,7 +139,7 @@ func TestValidateCommandDelegatesToExecutor(t *testing.T) {
 
 			return domain.CommandResult{CommandName: domain.CommandNameValidate}, nil
 		},
-		runReportGenerate: func(domain.CommandRequest) (domain.CommandResult, error) {
+		runReportGenerate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runReportGenerate should not be called")
 			return domain.CommandResult{}, nil
 		},
@@ -164,12 +168,15 @@ func TestReportGenerateCommandDelegatesToExecutor(t *testing.T) {
 
 	called := false
 	cmd := newRootCmd(dependencies{
-		runValidate: func(domain.CommandRequest) (domain.CommandResult, error) {
+		runValidate: func(context.Context, domain.CommandRequest) (domain.CommandResult, error) {
 			t.Fatal("runValidate should not be called")
 			return domain.CommandResult{}, nil
 		},
-		runReportGenerate: func(req domain.CommandRequest) (domain.CommandResult, error) {
+		runReportGenerate: func(ctx context.Context, req domain.CommandRequest) (domain.CommandResult, error) {
 			called = true
+			if ctx == nil {
+				t.Fatal("context = nil, want value")
+			}
 			if req.CommandName != domain.CommandNameReportGenerate {
 				t.Fatalf("CommandName = %q, want %q", req.CommandName, domain.CommandNameReportGenerate)
 			}

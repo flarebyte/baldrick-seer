@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -77,7 +78,7 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := loader.LoadConfig(LoadConfigInput{ConfigPath: tt.configPath})
+			got, err := loader.LoadConfig(context.Background(), LoadConfigInput{ConfigPath: tt.configPath})
 			if tt.wantErr == nil {
 				if err != nil {
 					t.Fatalf("LoadConfig() error = %v", err)

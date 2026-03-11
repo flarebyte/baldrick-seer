@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -243,7 +244,7 @@ func TestDefaultScenarioRanker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := ranker.RankScenarios(RankScenariosInput{
+			got, err := ranker.RankScenarios(context.Background(), RankScenariosInput{
 				Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: tt.config.Path},
 				ValidatedModel:  domain.ValidatedModelSummary{ConfigPath: tt.config.Path},
 				ScenarioWeights: tt.weights,
@@ -301,12 +302,12 @@ func TestDefaultScenarioRankerIsDeterministic(t *testing.T) {
 		Config: config,
 	}
 
-	first, err := DefaultScenarioRanker{}.RankScenarios(input)
+	first, err := DefaultScenarioRanker{}.RankScenarios(context.Background(), input)
 	if err != nil {
 		t.Fatalf("first RankScenarios() error = %v", err)
 	}
 
-	second, err := DefaultScenarioRanker{}.RankScenarios(input)
+	second, err := DefaultScenarioRanker{}.RankScenarios(context.Background(), input)
 	if err != nil {
 		t.Fatalf("second RankScenarios() error = %v", err)
 	}
@@ -362,7 +363,7 @@ func TestRunReportGenerateUsesRealScenarioResults(t *testing.T) {
 				ReportRenderer:     DefaultReportRenderer{},
 			}
 
-			got, err := runner.RunReportGenerate(domain.CommandRequest{
+			got, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 				CommandName: domain.CommandNameReportGenerate,
 				ConfigPath:  tt.path,
 			})
@@ -396,7 +397,7 @@ func TestRunReportGenerateStopsOnRankingFailure(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  fixtureConfigPath(),
 	})
@@ -423,9 +424,9 @@ type recordingScenarioRanker struct {
 	inner    ScenarioRanker
 }
 
-func (r recordingScenarioRanker) RankScenarios(input RankScenariosInput) (RankScenariosOutput, error) {
+func (r recordingScenarioRanker) RankScenarios(ctx context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
 	*r.recorder = append(*r.recorder, "rank")
-	return r.inner.RankScenarios(input)
+	return r.inner.RankScenarios(ctx, input)
 }
 
 type fixedScenarioWeighter struct {
@@ -433,7 +434,7 @@ type fixedScenarioWeighter struct {
 	scenarioWeights []ScenarioCriterionWeights
 }
 
-func (f *fixedScenarioWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
+func (f *fixedScenarioWeighter) WeightCriteria(_ context.Context, input WeightCriteriaInput) (WeightCriteriaOutput, error) {
 	*f.recorder = append(*f.recorder, "weight")
 	return WeightCriteriaOutput{ScenarioWeights: f.scenarioWeights}, nil
 }

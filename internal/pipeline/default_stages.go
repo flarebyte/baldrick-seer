@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
@@ -13,7 +14,11 @@ import (
 
 type DefaultConfigLoader struct{}
 
-func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
+func (DefaultConfigLoader) LoadConfig(ctx context.Context, input LoadConfigInput) (LoadConfigOutput, error) {
+	if err := checkContext(ctx, input.ConfigPath); err != nil {
+		return LoadConfigOutput{}, err
+	}
+
 	if input.ConfigPath == "" {
 		return LoadConfigOutput{}, NewInputFailure("config.required", "", "config flag is required", ErrConfigPathRequired)
 	}
@@ -74,6 +79,9 @@ func (DefaultConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 	var configFields []string
 	configValue := value.LookupPath(cue.ParsePath("config"))
 	if configValue.Exists() {
+		if err := checkContext(ctx, input.ConfigPath); err != nil {
+			return LoadConfigOutput{}, err
+		}
 		configFields, err = cueTopLevelFields(configValue)
 		if err != nil {
 			return LoadConfigOutput{}, NewInputFailure("config.decode_invalid", input.ConfigPath, "config could not be loaded", ErrConfigLoadInvalid)

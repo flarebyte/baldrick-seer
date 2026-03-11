@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -107,7 +108,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 			t.Parallel()
 
 			config := reportLoadedConfig(tt.report)
-			got, err := renderer.RenderReports(RenderReportsInput{
+			got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
 				Command: domain.CommandRequest{
 					CommandName: domain.CommandNameReportGenerate,
 					ConfigPath:  config.Path,

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"reflect"
@@ -186,7 +187,7 @@ func validateConfig(t *testing.T, config LoadedConfig) []domain.Diagnostic {
 	t.Helper()
 
 	validator := DefaultModelValidator{}
-	_, err := validator.ValidateModel(ValidateModelInput{
+	_, err := validator.ValidateModel(context.Background(), ValidateModelInput{
 		Command: domain.CommandRequest{
 			CommandName: domain.CommandNameValidate,
 			ConfigPath:  config.Path,
@@ -225,7 +226,7 @@ func runValidatorFailureCases(t *testing.T, tests []validatorFailureCase) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := validator.ValidateModel(ValidateModelInput{
+			_, err := validator.ValidateModel(context.Background(), ValidateModelInput{
 				Command: domain.CommandRequest{
 					CommandName: domain.CommandNameValidate,
 					ConfigPath:  tt.config.Path,

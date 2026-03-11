@@ -13,4 +13,5 @@ var (
 	ErrRankingFailed          = errors.New("scenario ranking could not be computed")
 	ErrAggregationFailed      = errors.New("final ranking could not be computed")
 	ErrRenderingFailed        = errors.New("reports could not be rendered")
+	ErrExecutionCanceled      = errors.New("command canceled")
 )

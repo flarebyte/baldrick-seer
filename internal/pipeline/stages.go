@@ -1,29 +1,31 @@
 package pipeline
 
+import "context"
+
 import "github.com/flarebyte/baldrick-seer/internal/domain"
 
 type ConfigLoader interface {
-	LoadConfig(LoadConfigInput) (LoadConfigOutput, error)
+	LoadConfig(context.Context, LoadConfigInput) (LoadConfigOutput, error)
 }
 
 type ModelValidator interface {
-	ValidateModel(ValidateModelInput) (ValidateModelOutput, error)
+	ValidateModel(context.Context, ValidateModelInput) (ValidateModelOutput, error)
 }
 
 type CriteriaWeighter interface {
-	WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error)
+	WeightCriteria(context.Context, WeightCriteriaInput) (WeightCriteriaOutput, error)
 }
 
 type ScenarioRanker interface {
-	RankScenarios(RankScenariosInput) (RankScenariosOutput, error)
+	RankScenarios(context.Context, RankScenariosInput) (RankScenariosOutput, error)
 }
 
 type ScenarioAggregator interface {
-	AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error)
+	AggregateScenarios(context.Context, AggregateScenariosInput) (AggregateScenariosOutput, error)
 }
 
 type ReportRenderer interface {
-	RenderReports(RenderReportsInput) (RenderReportsOutput, error)
+	RenderReports(context.Context, RenderReportsInput) (RenderReportsOutput, error)
 }
 
 type LoadConfigInput struct {

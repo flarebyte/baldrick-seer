@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"math"
 	"path/filepath"
@@ -96,7 +97,7 @@ func TestDefaultCriteriaWeighter(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := weighter.WeightCriteria(WeightCriteriaInput{
+			got, err := weighter.WeightCriteria(context.Background(), WeightCriteriaInput{
 				Command: domain.CommandRequest{
 					CommandName: domain.CommandNameReportGenerate,
 					ConfigPath:  tt.config.Path,
@@ -126,7 +127,7 @@ func TestDefaultCriteriaWeighterNormalizesWeights(t *testing.T) {
 
 	config := validThreeCriteriaAHPConfig()
 
-	got, err := DefaultCriteriaWeighter{}.WeightCriteria(WeightCriteriaInput{
+	got, err := DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), WeightCriteriaInput{
 		Command:        domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: config.Path},
 		ValidatedModel: domain.ValidatedModelSummary{ConfigPath: config.Path},
 		Config:         config,
@@ -156,12 +157,12 @@ func TestDefaultCriteriaWeighterIsDeterministic(t *testing.T) {
 		Config:         config,
 	}
 
-	first, err := DefaultCriteriaWeighter{}.WeightCriteria(input)
+	first, err := DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), input)
 	if err != nil {
 		t.Fatalf("first WeightCriteria() error = %v", err)
 	}
 
-	second, err := DefaultCriteriaWeighter{}.WeightCriteria(input)
+	second, err := DefaultCriteriaWeighter{}.WeightCriteria(context.Background(), input)
 	if err != nil {
 		t.Fatalf("second WeightCriteria() error = %v", err)
 	}
@@ -185,7 +186,7 @@ func TestRunReportGenerateUsesRealScenarioWeights(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  filepath.Join("..", "..", "testdata", "config", "pairwise_valid.cue"),
 	})
@@ -248,7 +249,7 @@ func TestRunReportGenerateStopsOnRealWeightingFailure(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(domain.CommandRequest{
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
 		CommandName: domain.CommandNameReportGenerate,
 		ConfigPath:  fixtureConfigPath(),
 	})
@@ -275,7 +276,7 @@ type capturingScenarioRanker struct {
 	scenarioWeights []ScenarioCriterionWeights
 }
 
-func (c *capturingScenarioRanker) RankScenarios(input RankScenariosInput) (RankScenariosOutput, error) {
+func (c *capturingScenarioRanker) RankScenarios(_ context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
 	*c.recorder = append(*c.recorder, "rank")
 	c.scenarioWeights = append([]ScenarioCriterionWeights(nil), input.ScenarioWeights...)
 	return RankScenariosOutput{}, nil

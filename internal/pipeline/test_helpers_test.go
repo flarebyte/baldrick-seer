@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"errors"
 	"math"
 	"path/filepath"
@@ -14,10 +15,14 @@ type fakeConfigLoader struct {
 	recorder *[]string
 	err      error
 	output   LoadConfigOutput
+	contexts *[]context.Context
 }
 
-func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, error) {
+func (f *fakeConfigLoader) LoadConfig(ctx context.Context, input LoadConfigInput) (LoadConfigOutput, error) {
 	*f.recorder = append(*f.recorder, "load")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return LoadConfigOutput{}, f.err
 	}
@@ -34,10 +39,14 @@ func (f *fakeConfigLoader) LoadConfig(input LoadConfigInput) (LoadConfigOutput, 
 type fakeModelValidator struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+func (f *fakeModelValidator) ValidateModel(ctx context.Context, input ValidateModelInput) (ValidateModelOutput, error) {
 	*f.recorder = append(*f.recorder, "validate")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return ValidateModelOutput{}, f.err
 	}
@@ -53,18 +62,26 @@ type recordingModelValidator struct {
 	inner    ModelValidator
 }
 
-func (r recordingModelValidator) ValidateModel(input ValidateModelInput) (ValidateModelOutput, error) {
+func (r recordingModelValidator) ValidateModel(ctx context.Context, input ValidateModelInput) (ValidateModelOutput, error) {
 	*r.recorder = append(*r.recorder, "validate")
-	return r.inner.ValidateModel(input)
+	return r.inner.ValidateModel(ctx, input)
 }
 
 type fakeCriteriaWeighter struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
+	onCall   func()
 }
 
-func (f *fakeCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriteriaOutput, error) {
+func (f *fakeCriteriaWeighter) WeightCriteria(ctx context.Context, input WeightCriteriaInput) (WeightCriteriaOutput, error) {
 	*f.recorder = append(*f.recorder, "weight")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
+	if f.onCall != nil {
+		f.onCall()
+	}
 	if f.err != nil {
 		return WeightCriteriaOutput{}, f.err
 	}
@@ -74,10 +91,14 @@ func (f *fakeCriteriaWeighter) WeightCriteria(WeightCriteriaInput) (WeightCriter
 type fakeScenarioRanker struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOutput, error) {
+func (f *fakeScenarioRanker) RankScenarios(ctx context.Context, input RankScenariosInput) (RankScenariosOutput, error) {
 	*f.recorder = append(*f.recorder, "rank")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return RankScenariosOutput{}, f.err
 	}
@@ -87,10 +108,14 @@ func (f *fakeScenarioRanker) RankScenarios(RankScenariosInput) (RankScenariosOut
 type fakeScenarioAggregator struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (AggregateScenariosOutput, error) {
+func (f *fakeScenarioAggregator) AggregateScenarios(ctx context.Context, input AggregateScenariosInput) (AggregateScenariosOutput, error) {
 	*f.recorder = append(*f.recorder, "aggregate")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return AggregateScenariosOutput{}, f.err
 	}
@@ -100,10 +125,14 @@ func (f *fakeScenarioAggregator) AggregateScenarios(AggregateScenariosInput) (Ag
 type fakeReportRenderer struct {
 	recorder *[]string
 	err      error
+	contexts *[]context.Context
 }
 
-func (f *fakeReportRenderer) RenderReports(RenderReportsInput) (RenderReportsOutput, error) {
+func (f *fakeReportRenderer) RenderReports(ctx context.Context, input RenderReportsInput) (RenderReportsOutput, error) {
 	*f.recorder = append(*f.recorder, "render")
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
 	if f.err != nil {
 		return RenderReportsOutput{}, f.err
 	}
@@ -146,7 +175,7 @@ func assertValidatedModelPath(t *testing.T, result domain.CommandResult, wantPat
 type flowBehaviorCase struct {
 	name        string
 	command     domain.CommandRequest
-	run         func(Runner, domain.CommandRequest) (domain.CommandResult, error)
+	run         func(Runner, context.Context, domain.CommandRequest) (domain.CommandResult, error)
 	wantErr     error
 	wantMessage string
 }
@@ -159,7 +188,7 @@ func runFlowBehaviorTests(t *testing.T, tests []flowBehaviorCase) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := tt.run(NewDefaultRunner(), tt.command)
+			got, err := tt.run(NewDefaultRunner(), context.Background(), tt.command)
 			if tt.wantErr == nil {
 				if err != nil {
 					t.Fatalf("run() error = %v", err)
