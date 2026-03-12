@@ -89,7 +89,10 @@ func CanonicalRankedAlternatives(input []RankedAlternative) []RankedAlternative 
 			return !left.Excluded
 		}
 		if left.Excluded {
-			return left.Name < right.Name
+			if left.Name != right.Name {
+				return left.Name < right.Name
+			}
+			return left.ExclusionReason < right.ExclusionReason
 		}
 		if left.Rank != right.Rank {
 			return left.Rank < right.Rank

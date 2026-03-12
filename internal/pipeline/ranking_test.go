@@ -13,6 +13,8 @@ import (
 func TestDefaultScenarioRanker(t *testing.T) {
 	t.Parallel()
 
+	mixedConfig, mixedWeights := mixedCriteriaRankingFixture()
+
 	tests := []struct {
 		name        string
 		config      LoadedConfig
@@ -21,32 +23,9 @@ func TestDefaultScenarioRanker(t *testing.T) {
 		wantErr     error
 	}{
 		{
-			name: "basic topsis ranking with mixed cost and benefit criteria",
-			config: rankingConfig(
-				[]CriterionConfig{
-					{Name: "cost", Polarity: "cost", ValueType: "number"},
-					{Name: "quality", Polarity: "benefit", ValueType: "number"},
-				},
-				[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
-				ScenarioConfig{
-					Name: "baseline",
-					ActiveCriteria: []ScenarioCriterionRef{
-						{CriterionName: "cost"},
-						{CriterionName: "quality"},
-					},
-				},
-				[]AlternativeEvaluationConfig{
-					{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}, "quality": {Kind: "number", Value: 4}}},
-					{AlternativeName: "beta", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 2}, "quality": {Kind: "number", Value: 5}}},
-				},
-			),
-			weights: []ScenarioCriterionWeights{{
-				ScenarioName: "baseline",
-				CriterionWeights: []CriterionWeight{
-					{CriterionName: "cost", Weight: 0.5},
-					{CriterionName: "quality", Weight: 0.5},
-				},
-			}},
+			name:    "basic topsis ranking with mixed cost and benefit criteria",
+			config:  mixedConfig,
+			weights: mixedWeights,
 			wantResults: []domain.ScenarioRankingResult{{
 				ScenarioName: "baseline",
 				RankedAlternatives: []domain.RankedAlternative{
@@ -190,41 +169,45 @@ func TestDefaultScenarioRanker(t *testing.T) {
 func TestDefaultScenarioRankerIsDeterministic(t *testing.T) {
 	t.Parallel()
 
-	config := rankingConfig(
-		[]CriterionConfig{
-			{Name: "cost", Polarity: "cost", ValueType: "number"},
-			{Name: "quality", Polarity: "benefit", ValueType: "number"},
-		},
-		[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
-		ScenarioConfig{
-			Name: "baseline",
-			ActiveCriteria: []ScenarioCriterionRef{
-				{CriterionName: "cost"},
-				{CriterionName: "quality"},
-			},
-		},
-		[]AlternativeEvaluationConfig{
-			{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}, "quality": {Kind: "number", Value: 4}}},
-			{AlternativeName: "beta", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 2}, "quality": {Kind: "number", Value: 5}}},
-		},
-	)
+	config, weights := mixedCriteriaRankingFixture()
 
 	input := RankScenariosInput{
-		Command:        domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: config.Path},
-		ValidatedModel: domain.ValidatedModelSummary{ConfigPath: config.Path},
-		ScenarioWeights: []ScenarioCriterionWeights{{
-			ScenarioName: "baseline",
-			CriterionWeights: []CriterionWeight{
-				{CriterionName: "cost", Weight: 0.5},
-				{CriterionName: "quality", Weight: 0.5},
-			},
-		}},
-		Config: config,
+		Command:         domain.CommandRequest{CommandName: domain.CommandNameReportGenerate, ConfigPath: config.Path},
+		ValidatedModel:  domain.ValidatedModelSummary{ConfigPath: config.Path},
+		ScenarioWeights: weights,
+		Config:          config,
 	}
 
 	assertRepeatedDeepEqual(t, 1, func() (RankScenariosOutput, error) {
 		return DefaultScenarioRanker{}.RankScenarios(context.Background(), input)
 	})
+}
+
+func mixedCriteriaRankingFixture() (LoadedConfig, []ScenarioCriterionWeights) {
+	return rankingConfig(
+			[]CriterionConfig{
+				{Name: "cost", Polarity: "cost", ValueType: "number"},
+				{Name: "quality", Polarity: "benefit", ValueType: "number"},
+			},
+			[]AlternativeConfig{{Name: "alpha"}, {Name: "beta"}},
+			ScenarioConfig{
+				Name: "baseline",
+				ActiveCriteria: []ScenarioCriterionRef{
+					{CriterionName: "cost"},
+					{CriterionName: "quality"},
+				},
+			},
+			[]AlternativeEvaluationConfig{
+				{AlternativeName: "alpha", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 1}, "quality": {Kind: "number", Value: 4}}},
+				{AlternativeName: "beta", Values: map[string]CriterionValue{"cost": {Kind: "number", Value: 2}, "quality": {Kind: "number", Value: 5}}},
+			},
+		), []ScenarioCriterionWeights{{
+			ScenarioName: "baseline",
+			CriterionWeights: []CriterionWeight{
+				{CriterionName: "cost", Weight: 0.5},
+				{CriterionName: "quality", Weight: 0.5},
+			},
+		}}
 }
 
 func TestRunReportGenerateUsesRealScenarioResults(t *testing.T) {

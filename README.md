@@ -104,27 +104,28 @@ The repository now includes the full v1 CLI pipeline with:
 - markdown, JSON, and CSV rendering
 - Bun + TypeScript end-to-end tests
 
-## Local development
+## Install and build
 
 ```sh
 make build
-make test
-make test-unit
-make coverage
-make test-race
-make test-e2e
-make lint
-make format
 ```
 
-`make test-unit` runs verbose Go tests, writes a coverage profile to `tmp/test-unit.coverage.out`, and prints a package/function coverage summary.
+The CLI binary is written to:
 
-`make coverage` additionally writes an HTML report to `tmp/test-unit.coverage.html`.
+```text
+.e2e-bin/seer
+```
 
-The build target embeds deterministic build metadata inputs through linker flags:
+Release binaries for supported operating systems are written to:
+
+```text
+build/
+```
+
+You can embed build metadata when needed:
 
 ```sh
-make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-03-11T00:00:00Z
+make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-03-12T00:00:00Z
 ```
 
 ## CLI usage
@@ -137,19 +138,54 @@ make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-0
 
 `--config` accepts either a single `.cue` file or a directory containing a CUE package.
 
-## Release preparation
+## Quick start examples
 
-Keep release preparation local and explicit:
-- run `make format`
-- run `make lint`
-- run `make test-unit`
-- run `make test-race`
-- run `make test-e2e`
-- build with explicit metadata using `make build VERSION=... COMMIT=... BUILD_DATE=...`
+If you want a working model to copy and adapt, start with:
+- [examples/hello-world.cue](./examples/hello-world.cue) for the smallest single-file markdown example
+- [examples/hello-world-json.cue](./examples/hello-world-json.cue) for a minimal JSON report example
+- [examples/hello-world-package](./examples/hello-world-package) for a split CUE package loaded from a directory
 
-This repository intentionally does not include CI workflows, goreleaser, containers, or publishing automation at this stage.
+Try them with:
 
-## Design references
+```sh
+./.e2e-bin/seer validate --config examples/hello-world.cue
+./.e2e-bin/seer report generate --config examples/hello-world.cue
+./.e2e-bin/seer report generate --config examples/hello-world-json.cue
+./.e2e-bin/seer validate --config examples/hello-world-package
+./.e2e-bin/seer report generate --config examples/hello-world-package
+```
+
+These examples are intentionally small:
+- one criterion
+- one alternative
+- one scenario
+- one report
+
+They are meant as a quick-start baseline, not a full demonstration of the v1 feature set.
+
+## Output formats
+
+`seer report generate` currently renders:
+- Markdown for human-readable summaries
+- JSON for tool-friendly structured output
+- CSV for spreadsheet and analytics workflows
+
+The output is deterministic across repeated runs for the same input.
+
+## Validation behavior
+
+`seer validate` checks the loaded model before any ranking or report generation. Current validation covers:
+- top-level structure
+- duplicate names
+- reference resolution
+- AHP pairwise comparison completeness and shape
+- evaluation coverage and value types
+- scenario constraint definitions
+- report definition and argument validation
+
+Validation failures return deterministic error output with concise remediation guidance.
+
+## Learn more
 
 See:
 - [Overview](./doc/design/overview.md)
@@ -158,6 +194,11 @@ See:
 - [Implementation Notes](./doc/design/implementation.md)
 - [Execution Flows](./doc/design/flows.md)
 - [Use Cases](./doc/design/use-cases.md)
+- [Contributing](./CONTRIBUTING.md)
+
+## Contributing
+
+Contributor workflow, development commands, coverage, and release-preparation notes are documented in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Why this shape
 

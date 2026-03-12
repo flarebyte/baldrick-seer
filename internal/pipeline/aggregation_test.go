@@ -18,24 +18,9 @@ func TestDefaultScenarioAggregator(t *testing.T) {
 		wantErr   error
 	}{
 		{
-			name:   "equal average aggregation",
-			config: aggregationConfig("equal_average", nil),
-			scenarios: []domain.ScenarioRankingResult{
-				{
-					ScenarioName: "growth",
-					RankedAlternatives: []domain.RankedAlternative{
-						{Name: "alpha", Rank: 1, Score: 0.4},
-						{Name: "beta", Rank: 2, Score: 0.2},
-					},
-				},
-				{
-					ScenarioName: "baseline",
-					RankedAlternatives: []domain.RankedAlternative{
-						{Name: "alpha", Rank: 2, Score: 0.2},
-						{Name: "beta", Rank: 1, Score: 0.8},
-					},
-				},
-			},
+			name:      "equal average aggregation",
+			config:    aggregationConfig("equal_average", nil),
+			scenarios: aggregationScenarioResults(0.4, 0.2, 0.2, 0.8),
 			want: domain.AggregatedRankingResult{
 				RankedAlternatives: []domain.RankedAlternative{
 					{Name: "beta", Rank: 1, Score: 0.5},
@@ -49,22 +34,7 @@ func TestDefaultScenarioAggregator(t *testing.T) {
 				"baseline": 3,
 				"growth":   1,
 			}),
-			scenarios: []domain.ScenarioRankingResult{
-				{
-					ScenarioName: "growth",
-					RankedAlternatives: []domain.RankedAlternative{
-						{Name: "alpha", Rank: 1, Score: 0.8},
-						{Name: "beta", Rank: 2, Score: 0.2},
-					},
-				},
-				{
-					ScenarioName: "baseline",
-					RankedAlternatives: []domain.RankedAlternative{
-						{Name: "alpha", Rank: 2, Score: 0.2},
-						{Name: "beta", Rank: 1, Score: 0.6},
-					},
-				},
-			},
+			scenarios: aggregationScenarioResults(0.8, 0.2, 0.2, 0.6),
 			want: domain.AggregatedRankingResult{
 				RankedAlternatives: []domain.RankedAlternative{
 					{Name: "beta", Rank: 1, Score: 0.5},
@@ -196,4 +166,23 @@ func aggregationConfig(method string, scenarioWeights map[string]float64) Loaded
 		ScenarioWeights: scenarioWeights,
 	}
 	return config
+}
+
+func aggregationScenarioResults(growthAlpha float64, growthBeta float64, baselineAlpha float64, baselineBeta float64) []domain.ScenarioRankingResult {
+	return []domain.ScenarioRankingResult{
+		{
+			ScenarioName: "growth",
+			RankedAlternatives: []domain.RankedAlternative{
+				{Name: "alpha", Rank: 1, Score: growthAlpha},
+				{Name: "beta", Rank: 2, Score: growthBeta},
+			},
+		},
+		{
+			ScenarioName: "baseline",
+			RankedAlternatives: []domain.RankedAlternative{
+				{Name: "alpha", Rank: 2, Score: baselineAlpha},
+				{Name: "beta", Rank: 1, Score: baselineBeta},
+			},
+		},
+	}
 }

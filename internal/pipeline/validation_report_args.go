@@ -122,12 +122,14 @@ func isValidCSVColumns(value string) bool {
 	}
 
 	allowedColumns := map[string]struct{}{
-		"scenario":    {},
-		"alternative": {},
-		"criterion":   {},
-		"value":       {},
-		"score":       {},
-		"rank":        {},
+		"scenario":         {},
+		"alternative":      {},
+		"criterion":        {},
+		"value":            {},
+		"score":            {},
+		"rank":             {},
+		"excluded":         {},
+		"exclusion_reason": {},
 	}
 
 	seen := map[string]struct{}{}

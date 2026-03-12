@@ -1,6 +1,6 @@
 {
   "problemName": "Decision Demo",
-  "reportName": "summary-json",
+  "reportName": "b-json",
   "format": "json",
   "aggregation": {
     "method": "equal_average",
@@ -43,30 +43,6 @@
           "alternativeName": "beta",
           "rank": 2,
           "score": 0.4
-        }
-      ]
-    }
-  ],
-  "scenarioWeights": [
-    {
-      "scenarioName": "baseline",
-      "weights": [
-        {
-          "criterionName": "cost",
-          "weight": 1
-        }
-      ]
-    },
-    {
-      "scenarioName": "growth",
-      "weights": [
-        {
-          "criterionName": "cost",
-          "weight": 0.6
-        },
-        {
-          "criterionName": "quality",
-          "weight": 0.4
         }
       ]
     }

@@ -1,2 +1,3 @@
 status: error
 message: unknown scenario name in evaluations: missing
+guidance: Define the referenced name or fix the reference to match an existing entry.

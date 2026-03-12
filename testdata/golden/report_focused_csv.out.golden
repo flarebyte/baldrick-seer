@@ -1,0 +1,6 @@
+scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason
+baseline,alpha,cost,10,0.900000,1,false,
+baseline,beta,cost,20,,,true,excluded by scenario constraints
+growth,alpha,cost,12,0.800000,1,false,
+growth,beta,cost,18,0.400000,2,false,
+overall,alpha,,,0.850000,1,false,

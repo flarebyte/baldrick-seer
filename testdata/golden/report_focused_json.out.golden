@@ -1,6 +1,6 @@
 {
   "problemName": "Decision Demo",
-  "reportName": "summary-json",
+  "reportName": "summary-json-focused",
   "format": "json",
   "aggregation": {
     "method": "equal_average",
@@ -23,11 +23,6 @@
           "alternativeName": "alpha",
           "rank": 1,
           "score": 0.9
-        },
-        {
-          "alternativeName": "beta",
-          "excluded": true,
-          "exclusionReason": "excluded by scenario constraints"
         }
       ]
     },
@@ -38,11 +33,6 @@
           "alternativeName": "alpha",
           "rank": 1,
           "score": 0.8
-        },
-        {
-          "alternativeName": "beta",
-          "rank": 2,
-          "score": 0.4
         }
       ]
     }

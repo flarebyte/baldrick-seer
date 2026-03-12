@@ -202,10 +202,7 @@ func TestRunReportGenerateStopsOnRealWeightingFailure(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  fixtureConfigPath(),
-	})
+	_, err := runReportGenerateForTest(runner)
 	if !errors.Is(err, ErrWeightingFailed) {
 		t.Fatalf("error = %v, want %v", err, ErrWeightingFailed)
 	}

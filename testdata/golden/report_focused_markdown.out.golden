@@ -5,8 +5,15 @@ Problem: Decision Demo
 ## Scenarios
 
 ### growth
+Weights: cost=0.600000, quality=0.400000
 - 1. alpha (0.800000)
 - 2. beta (0.400000)
+
+## Aggregation
+
+Method: equal_average
+Scenario weights:
+- growth: 1.000000
 
 ## Final Ranking
 - 1. alpha (0.800000)

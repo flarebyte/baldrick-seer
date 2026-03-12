@@ -5,12 +5,21 @@ Problem: Decision Demo
 ## Scenarios
 
 ### baseline
+Weights: cost=1.000000
 - 1. alpha (0.900000)
-- beta: excluded
+- beta: excluded (excluded by scenario constraints)
 
 ### growth
+Weights: cost=0.600000, quality=0.400000
 - 1. alpha (0.800000)
 - 2. beta (0.400000)
+
+## Aggregation
+
+Method: equal_average
+Scenario weights:
+- baseline: 0.500000
+- growth: 0.500000
 
 ## Final Ranking
 - 1. alpha (0.850000)

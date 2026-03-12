@@ -103,8 +103,9 @@ func rankScenario(
 		}
 		if violates {
 			excluded = append(excluded, domain.RankedAlternative{
-				Name:     alternativeEvaluation.AlternativeName,
-				Excluded: true,
+				Name:            alternativeEvaluation.AlternativeName,
+				Excluded:        true,
+				ExclusionReason: "excluded by scenario constraints",
 			})
 			continue
 		}
