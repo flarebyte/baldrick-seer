@@ -104,17 +104,34 @@ The repository now includes the full v1 CLI pipeline with:
 - markdown, JSON, and CSV rendering
 - Bun + TypeScript end-to-end tests
 
-## Install and build
+## Install
+
+Recommended install method:
+
+```sh
+brew install flarebyte/tap/baldrick-seer
+```
+
+Check that the CLI is available:
+
+```sh
+seer -v
+seer
+```
+
+## Build from source
 
 ```sh
 make build
 ```
 
-The CLI binary is written to:
+The local development CLI binary is written to:
 
 ```text
 .e2e-bin/seer
 ```
+
+If you build from source and want to run `seer` directly, add `.e2e-bin/` to your shell `PATH`.
 
 Release binaries for supported operating systems are written to:
 
@@ -131,9 +148,9 @@ make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-0
 ## CLI usage
 
 ```sh
-./.e2e-bin/seer validate --config testdata/config/minimal.cue
-./.e2e-bin/seer report generate --config testdata/config/minimal.cue
-./.e2e-bin/seer validate --config testdata/config_split
+seer validate --config testdata/config/minimal.cue
+seer report generate --config testdata/config/minimal.cue
+seer validate --config testdata/config_split
 ```
 
 `--config` accepts either a single `.cue` file or a directory containing a CUE package.
@@ -148,11 +165,11 @@ If you want a working model to copy and adapt, start with:
 Try them with:
 
 ```sh
-./.e2e-bin/seer validate --config examples/hello-world.cue
-./.e2e-bin/seer report generate --config examples/hello-world.cue
-./.e2e-bin/seer report generate --config examples/hello-world-json.cue
-./.e2e-bin/seer validate --config examples/hello-world-package
-./.e2e-bin/seer report generate --config examples/hello-world-package
+seer validate --config examples/hello-world.cue
+seer report generate --config examples/hello-world.cue
+seer report generate --config examples/hello-world-json.cue
+seer validate --config examples/hello-world-package
+seer report generate --config examples/hello-world-package
 ```
 
 These examples are intentionally small:
