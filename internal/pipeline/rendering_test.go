@@ -100,6 +100,35 @@ func TestDefaultReportRenderer(t *testing.T) {
 			},
 			wantGolden: "report_focused_markdown.out.golden",
 		},
+		{
+			name: "json report honors alternative focus",
+			report: ReportConfig{
+				Name:      "summary-json-focused",
+				Title:     "Summary JSON Focused",
+				Format:    "json",
+				Arguments: []string{"include-weights=true", "pretty=true"},
+				Focus: &ReportFocus{
+					AlternativeNames: []string{"alpha"},
+				},
+			},
+			scenarios:  reportScenarioResults(),
+			weights:    reportScenarioWeights(),
+			wantGolden: "report_focused_json.out.golden",
+		},
+		{
+			name: "csv report honors criterion focus",
+			report: ReportConfig{
+				Name:      "summary-csv-focused",
+				Title:     "Summary CSV Focused",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank", "header=true"},
+				Focus: &ReportFocus{
+					CriterionNames: []string{"cost"},
+				},
+			},
+			scenarios:  reportScenarioResults(),
+			wantGolden: "report_focused_csv.out.golden",
+		},
 	}
 
 	renderer := DefaultReportRenderer{}
@@ -170,6 +199,30 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
 			},
 		},
+		{
+			name: "focused json",
+			report: ReportConfig{
+				Name:      "summary-json-focused",
+				Title:     "Summary JSON Focused",
+				Format:    "json",
+				Arguments: []string{"include-weights=true", "pretty=true"},
+				Focus: &ReportFocus{
+					AlternativeNames: []string{"alpha"},
+				},
+			},
+		},
+		{
+			name: "focused csv",
+			report: ReportConfig{
+				Name:      "summary-csv-focused",
+				Title:     "Summary CSV Focused",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank", "header=true"},
+				Focus: &ReportFocus{
+					CriterionNames: []string{"cost"},
+				},
+			},
+		},
 	}
 
 	renderer := DefaultReportRenderer{}
@@ -207,6 +260,52 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				t.Fatalf("first = %#v, second = %#v", first, second)
 			}
 		})
+	}
+}
+
+func TestDefaultReportRendererHonorsSelectedReportDefinitions(t *testing.T) {
+	t.Parallel()
+
+	renderer := DefaultReportRenderer{}
+	reportA := ReportConfig{
+		Name:   "a-markdown",
+		Title:  "A Markdown",
+		Format: "markdown",
+	}
+	reportB := ReportConfig{
+		Name:      "b-json",
+		Title:     "B JSON",
+		Format:    "json",
+		Arguments: []string{"pretty=true"},
+	}
+
+	config := reportLoadedConfig(reportA, reportB)
+	got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
+		Command: domain.CommandRequest{
+			CommandName: domain.CommandNameReportGenerate,
+			ConfigPath:  config.Path,
+		},
+		ValidatedModel: domain.ValidatedModelSummary{
+			ConfigPath: config.Path,
+		},
+		ScenarioResults: reportScenarioResults(),
+		ReportDefinitions: []domain.ReportDefinition{
+			{Name: reportB.Name, Title: reportB.Title, Format: reportB.Format},
+		},
+		Config: config,
+	})
+	if err != nil {
+		t.Fatalf("RenderReports() error = %v", err)
+	}
+
+	if got, want := len(got.ReportDefinitions), 1; got != want {
+		t.Fatalf("len(ReportDefinitions) = %d, want %d", got, want)
+	}
+	if got, want := got.ReportDefinitions[0].Name, reportB.Name; got != want {
+		t.Fatalf("ReportDefinitions[0].Name = %q, want %q", got, want)
+	}
+	if got.RenderedOutput != readPipelineGolden(t, "report_selected_json.out.golden") {
+		t.Fatalf("RenderedOutput = %q, want selected json golden", got.RenderedOutput)
 	}
 }
 
@@ -301,10 +400,71 @@ func readPipelineGolden(t *testing.T, name string) string {
 	return string(content)
 }
 
-func reportLoadedConfig(report ReportConfig) LoadedConfig {
+func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.Problem = &ProblemConfig{Name: "Decision Demo"}
-	config.Config.Reports = []ReportConfig{report}
+	config.Config.Reports = append([]ReportConfig(nil), reports...)
+	config.Config.CriteriaCatalog = []CriterionConfig{
+		{Name: "cost", Polarity: "cost", ValueType: "number"},
+		{Name: "quality", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"poor", "good"}},
+	}
+	config.Config.Alternatives = []AlternativeConfig{
+		{Name: "alpha"},
+		{Name: "beta"},
+	}
+	config.Config.Scenarios = []ScenarioConfig{
+		{
+			Name: "baseline",
+			ActiveCriteria: []ScenarioCriterionRef{
+				{CriterionName: "cost"},
+			},
+		},
+		{
+			Name: "growth",
+			ActiveCriteria: []ScenarioCriterionRef{
+				{CriterionName: "cost"},
+				{CriterionName: "quality"},
+			},
+		},
+	}
+	config.Config.Evaluations = []EvaluationConfig{
+		{
+			ScenarioName: "baseline",
+			Evaluations: []AlternativeEvaluationConfig{
+				{
+					AlternativeName: "alpha",
+					Values: map[string]CriterionValue{
+						"cost": {Kind: "number", Value: 10},
+					},
+				},
+				{
+					AlternativeName: "beta",
+					Values: map[string]CriterionValue{
+						"cost": {Kind: "number", Value: 20},
+					},
+				},
+			},
+		},
+		{
+			ScenarioName: "growth",
+			Evaluations: []AlternativeEvaluationConfig{
+				{
+					AlternativeName: "alpha",
+					Values: map[string]CriterionValue{
+						"cost":    {Kind: "number", Value: 12},
+						"quality": {Kind: "ordinal", Value: 3},
+					},
+				},
+				{
+					AlternativeName: "beta",
+					Values: map[string]CriterionValue{
+						"cost":    {Kind: "number", Value: 18},
+						"quality": {Kind: "ordinal", Value: 2},
+					},
+				},
+			},
+		},
+	}
 	config.Config.Aggregation = &AggregationConfig{Method: "equal_average"}
 	return config
 }

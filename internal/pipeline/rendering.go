@@ -61,19 +61,21 @@ func renderReport(
 	scenarioWeights []ScenarioCriterionWeights,
 ) (string, error) {
 	filteredScenarioResults := filterScenarioResultsForReport(report, scenarioResults)
+	displayScenarioResults := filterScenarioAlternativesForReport(report, filteredScenarioResults)
 	filteredFinalRanking, err := aggregateScenarioResults(aggregation, filteredScenarioResults)
 	if err != nil {
 		return "", err
 	}
 	filteredFinalRanking = filterFinalRankingForReport(report, filteredFinalRanking)
+	filteredScenarioWeights := filterScenarioWeightsForReport(report, scenarioWeights)
 
 	switch report.Format {
 	case "markdown":
-		return renderMarkdownReport(report, config, filteredScenarioResults, filteredFinalRanking), nil
+		return renderMarkdownReport(report, config, displayScenarioResults, filteredFinalRanking), nil
 	case "json":
-		return renderJSONReport(report, config, filteredScenarioResults, filteredFinalRanking, aggregation, scenarioWeights)
+		return renderJSONReport(report, config, displayScenarioResults, filteredFinalRanking, aggregation, filteredScenarioWeights)
 	case "csv":
-		return renderCSVReport(report, filteredScenarioResults, filteredFinalRanking)
+		return renderCSVReport(report, config, displayScenarioResults, filteredFinalRanking)
 	default:
 		return "", ErrRenderingFailed
 	}
@@ -218,10 +220,17 @@ func renderJSONReport(
 	return string(content) + "\n", nil
 }
 
-func renderCSVReport(report ReportConfig, scenarioResults []domain.ScenarioRankingResult, finalRanking domain.AggregatedRankingResult) (string, error) {
+func renderCSVReport(
+	report ReportConfig,
+	config *ExecutionConfig,
+	scenarioResults []domain.ScenarioRankingResult,
+	finalRanking domain.AggregatedRankingResult,
+) (string, error) {
 	columnsValue := reportArgumentValue(report.Arguments, "columns", "scenario,alternative,score,rank")
 	columns := strings.Split(columnsValue, ",")
 	includeHeader := reportArgumentValue(report.Arguments, "header", "true") == "true"
+	includeCriterionRows := csvColumnsIncludeCriterionData(columns)
+	valueLookup := buildEvaluationValueLookup(config, report)
 
 	buffer := new(bytes.Buffer)
 	writer := csv.NewWriter(buffer)
@@ -233,14 +242,16 @@ func renderCSVReport(report ReportConfig, scenarioResults []domain.ScenarioRanki
 
 	for _, scenarioResult := range scenarioResults {
 		for _, alternative := range scenarioResult.RankedAlternatives {
-			record := csvRecord(columns, scenarioResult.ScenarioName, alternative)
-			if err := writer.Write(record); err != nil {
-				return "", err
+			records := csvRecords(columns, scenarioResult.ScenarioName, alternative, valueLookup[scenarioResult.ScenarioName][alternative.Name], includeCriterionRows)
+			for _, record := range records {
+				if err := writer.Write(record); err != nil {
+					return "", err
+				}
 			}
 		}
 	}
 	for _, alternative := range finalRanking.RankedAlternatives {
-		record := csvRecord(columns, "overall", alternative)
+		record := csvRecord(columns, "overall", alternative, criterionValueRecord{})
 		if err := writer.Write(record); err != nil {
 			return "", err
 		}
@@ -249,7 +260,37 @@ func renderCSVReport(report ReportConfig, scenarioResults []domain.ScenarioRanki
 	return buffer.String(), writer.Error()
 }
 
-func csvRecord(columns []string, scenarioName string, alternative domain.RankedAlternative) []string {
+func csvColumnsIncludeCriterionData(columns []string) bool {
+	for _, column := range columns {
+		if column == "criterion" || column == "value" {
+			return true
+		}
+	}
+	return false
+}
+
+func csvRecords(
+	columns []string,
+	scenarioName string,
+	alternative domain.RankedAlternative,
+	values []criterionValueRecord,
+	includeCriterionRows bool,
+) [][]string {
+	if !includeCriterionRows {
+		return [][]string{csvRecord(columns, scenarioName, alternative, criterionValueRecord{})}
+	}
+	if len(values) == 0 {
+		return [][]string{csvRecord(columns, scenarioName, alternative, criterionValueRecord{})}
+	}
+
+	records := make([][]string, 0, len(values))
+	for _, value := range values {
+		records = append(records, csvRecord(columns, scenarioName, alternative, value))
+	}
+	return records
+}
+
+func csvRecord(columns []string, scenarioName string, alternative domain.RankedAlternative, value criterionValueRecord) []string {
 	record := make([]string, 0, len(columns))
 	for _, column := range columns {
 		switch column {
@@ -269,8 +310,10 @@ func csvRecord(columns []string, scenarioName string, alternative domain.RankedA
 			} else {
 				record = append(record, strconv.Itoa(alternative.Rank))
 			}
-		case "criterion", "value":
-			record = append(record, "")
+		case "criterion":
+			record = append(record, value.Name)
+		case "value":
+			record = append(record, value.Rendered)
 		default:
 			record = append(record, "")
 		}
@@ -297,15 +340,34 @@ func filterScenarioResultsForReport(report ReportConfig, scenarioResults []domai
 	return filtered
 }
 
+func filterScenarioAlternativesForReport(report ReportConfig, scenarioResults []domain.ScenarioRankingResult) []domain.ScenarioRankingResult {
+	if report.Focus == nil || len(report.Focus.AlternativeNames) == 0 {
+		return domain.CanonicalScenarioResults(scenarioResults)
+	}
+
+	allowed := toAllowedNameSet(report.Focus.AlternativeNames)
+	filtered := make([]domain.ScenarioRankingResult, 0, len(scenarioResults))
+	for _, scenarioResult := range domain.CanonicalScenarioResults(scenarioResults) {
+		alternatives := make([]domain.RankedAlternative, 0, len(scenarioResult.RankedAlternatives))
+		for _, alternative := range domain.CanonicalRankedAlternatives(scenarioResult.RankedAlternatives) {
+			if _, exists := allowed[alternative.Name]; exists {
+				alternatives = append(alternatives, alternative)
+			}
+		}
+		filtered = append(filtered, domain.ScenarioRankingResult{
+			ScenarioName:       scenarioResult.ScenarioName,
+			RankedAlternatives: alternatives,
+		})
+	}
+	return domain.CanonicalScenarioResults(filtered)
+}
+
 func filterFinalRankingForReport(report ReportConfig, finalRanking domain.AggregatedRankingResult) domain.AggregatedRankingResult {
 	if report.Focus == nil || len(report.Focus.AlternativeNames) == 0 {
 		return domain.CanonicalAggregatedRankingResult(finalRanking)
 	}
 
-	allowed := make(map[string]struct{}, len(report.Focus.AlternativeNames))
-	for _, alternativeName := range report.Focus.AlternativeNames {
-		allowed[alternativeName] = struct{}{}
-	}
+	allowed := toAllowedNameSet(report.Focus.AlternativeNames)
 
 	var filtered []domain.RankedAlternative
 	for _, alternative := range domain.CanonicalAggregatedRankingResult(finalRanking).RankedAlternatives {
@@ -317,6 +379,167 @@ func filterFinalRankingForReport(report ReportConfig, finalRanking domain.Aggreg
 		filtered[index].Rank = index + 1
 	}
 	return domain.AggregatedRankingResult{RankedAlternatives: filtered}
+}
+
+func filterScenarioWeightsForReport(report ReportConfig, scenarioWeights []ScenarioCriterionWeights) []ScenarioCriterionWeights {
+	if len(scenarioWeights) == 0 {
+		return nil
+	}
+
+	allowedScenarios := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+		return focus.ScenarioNames
+	})
+	allowedCriteria := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+		return focus.CriterionNames
+	})
+
+	filtered := make([]ScenarioCriterionWeights, 0, len(scenarioWeights))
+	for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
+		if len(allowedScenarios) > 0 {
+			if _, exists := allowedScenarios[scenarioWeight.ScenarioName]; !exists {
+				continue
+			}
+		}
+
+		weights := make([]CriterionWeight, 0, len(scenarioWeight.CriterionWeights))
+		for _, weight := range canonicalCriterionWeights(scenarioWeight.CriterionWeights) {
+			if len(allowedCriteria) > 0 {
+				if _, exists := allowedCriteria[weight.CriterionName]; !exists {
+					continue
+				}
+			}
+			weights = append(weights, weight)
+		}
+
+		filtered = append(filtered, ScenarioCriterionWeights{
+			ScenarioName:     scenarioWeight.ScenarioName,
+			CriterionWeights: weights,
+		})
+	}
+
+	return canonicalScenarioWeights(filtered)
+}
+
+type criterionValueRecord struct {
+	Name     string
+	Rendered string
+}
+
+func buildEvaluationValueLookup(config *ExecutionConfig, report ReportConfig) map[string]map[string][]criterionValueRecord {
+	if config == nil || len(config.Evaluations) == 0 {
+		return nil
+	}
+
+	allowedScenarios := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+		return focus.ScenarioNames
+	})
+	allowedAlternatives := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+		return focus.AlternativeNames
+	})
+	allowedCriteria := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+		return focus.CriterionNames
+	})
+
+	output := make(map[string]map[string][]criterionValueRecord, len(config.Evaluations))
+	for _, evaluation := range canonicalEvaluations(config.Evaluations) {
+		if len(allowedScenarios) > 0 {
+			if _, exists := allowedScenarios[evaluation.ScenarioName]; !exists {
+				continue
+			}
+		}
+
+		alternatives := make(map[string][]criterionValueRecord, len(evaluation.Evaluations))
+		for _, alternative := range canonicalAlternativeEvaluations(evaluation.Evaluations) {
+			if len(allowedAlternatives) > 0 {
+				if _, exists := allowedAlternatives[alternative.AlternativeName]; !exists {
+					continue
+				}
+			}
+			values := make([]criterionValueRecord, 0, len(alternative.Values))
+			for _, criterionName := range domain.CanonicalNames(valueNames(alternative.Values)) {
+				if len(allowedCriteria) > 0 {
+					if _, exists := allowedCriteria[criterionName]; !exists {
+						continue
+					}
+				}
+				values = append(values, criterionValueRecord{
+					Name:     criterionName,
+					Rendered: renderCriterionValue(alternative.Values[criterionName].Value),
+				})
+			}
+			alternatives[alternative.AlternativeName] = values
+		}
+		output[evaluation.ScenarioName] = alternatives
+	}
+
+	return output
+}
+
+func canonicalEvaluations(input []EvaluationConfig) []EvaluationConfig {
+	if len(input) == 0 {
+		return nil
+	}
+
+	output := append([]EvaluationConfig(nil), input...)
+	for i := range output {
+		output[i].Evaluations = canonicalAlternativeEvaluations(output[i].Evaluations)
+	}
+	for i := 1; i < len(output); i++ {
+		current := output[i]
+		j := i - 1
+		for ; j >= 0 && output[j].ScenarioName > current.ScenarioName; j-- {
+			output[j+1] = output[j]
+		}
+		output[j+1] = current
+	}
+	return output
+}
+
+func valueNames(values map[string]CriterionValue) []string {
+	names := make([]string, 0, len(values))
+	for name := range values {
+		names = append(names, name)
+	}
+	return names
+}
+
+func renderCriterionValue(value any) string {
+	switch typed := value.(type) {
+	case bool:
+		if typed {
+			return "true"
+		}
+		return "false"
+	case int:
+		return strconv.Itoa(typed)
+	case int8, int16, int32, int64, float32, float64:
+		number, err := numericValue(typed)
+		if err != nil {
+			return ""
+		}
+		return strconv.FormatFloat(number, 'f', -1, 64)
+	default:
+		return ""
+	}
+}
+
+func allowedFocusedNames(focus *ReportFocus, selectNames func(*ReportFocus) []string) map[string]struct{} {
+	if focus == nil {
+		return nil
+	}
+	names := selectNames(focus)
+	if len(names) == 0 {
+		return nil
+	}
+	return toAllowedNameSet(names)
+}
+
+func toAllowedNameSet(names []string) map[string]struct{} {
+	allowed := make(map[string]struct{}, len(names))
+	for _, name := range names {
+		allowed[name] = struct{}{}
+	}
+	return allowed
 }
 
 func reportArgumentValue(arguments []string, key string, fallback string) string {
