@@ -38,6 +38,7 @@ type Diagnostic struct {
 	Path     string
 	Location DiagnosticLocation
 	Message  string
+	Guidance string
 }
 
 type DiagnosticLocation struct {

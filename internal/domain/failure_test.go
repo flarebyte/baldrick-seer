@@ -31,6 +31,26 @@ func TestNewDiagnostic(t *testing.T) {
 	if got.Location.Line != 3 || got.Location.Column != 7 {
 		t.Fatalf("Location = %#v, want line=3 column=7", got.Location)
 	}
+
+	if got.Guidance != "" {
+		t.Fatalf("Guidance = %q, want empty", got.Guidance)
+	}
+}
+
+func TestNewDiagnosticAddsValidationGuidance(t *testing.T) {
+	t.Parallel()
+
+	got := NewDiagnostic(
+		DiagnosticSeverityError,
+		"validation.missing_pairwise_comparison",
+		"config",
+		DiagnosticLocation{},
+		"missing pairwise comparison for pair: reliability/speed",
+	)
+
+	if got.Guidance != "Add exactly one pairwise comparison for the missing criterion pair." {
+		t.Fatalf("Guidance = %q, want pairwise guidance", got.Guidance)
+	}
 }
 
 func TestExitCodeForCategory(t *testing.T) {
@@ -116,6 +136,18 @@ func TestPresentError(t *testing.T) {
 			),
 			wantExit:   ExitCodeValidation,
 			wantStderr: "status: error\nmessage: validation failed\n",
+		},
+		{
+			name: "validation failure includes guidance when available",
+			err: NewFailure(
+				FailureCategoryValidation,
+				[]Diagnostic{
+					NewDiagnostic(DiagnosticSeverityError, "validation.unknown_evaluation_scenario", "config", DiagnosticLocation{}, "unknown scenario name in evaluations: missing"),
+				},
+				errors.New("boom"),
+			),
+			wantExit:   ExitCodeValidation,
+			wantStderr: "status: error\nmessage: unknown scenario name in evaluations: missing\nguidance: Define the referenced name or fix the reference to match an existing entry.\n",
 		},
 		{
 			name: "explicit message is preserved",
