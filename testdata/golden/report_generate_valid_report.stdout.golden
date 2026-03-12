@@ -1,0 +1,56 @@
+scenario,alternative,score,rank
+baseline,option_a,0.000000,1
+overall,option_a,0.000000,1
+
+{
+  "problemName": "valid-report",
+  "reportName": "summary-json",
+  "format": "json",
+  "aggregation": {
+    "method": "equal_average",
+    "scenarioWeights": [
+      {
+        "scenarioName": "baseline",
+        "weight": 1
+      }
+    ]
+  },
+  "scenarioResults": [
+    {
+      "scenarioName": "baseline",
+      "ranking": [
+        {
+          "alternativeName": "option_a",
+          "rank": 1,
+          "score": 0
+        }
+      ]
+    }
+  ],
+  "finalRanking": [
+    {
+      "alternativeName": "option_a",
+      "rank": 1,
+      "score": 0
+    }
+  ]
+}
+
+# Summary Markdown
+
+Problem: valid-report
+
+## Scenarios
+
+### baseline
+Weights: cost=1.000000
+- 1. option_a (0.000000)
+
+## Aggregation
+
+Method: equal_average
+Scenario weights:
+- baseline: 1.000000
+
+## Final Ranking
+- 1. option_a (0.000000)
