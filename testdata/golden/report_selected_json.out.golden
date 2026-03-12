@@ -3,7 +3,17 @@
   "reportName": "b-json",
   "format": "json",
   "aggregation": {
-    "method": "equal_average"
+    "method": "equal_average",
+    "scenarioWeights": [
+      {
+        "scenarioName": "baseline",
+        "weight": 0.5
+      },
+      {
+        "scenarioName": "growth",
+        "weight": 0.5
+      }
+    ]
   },
   "scenarioResults": [
     {
@@ -16,7 +26,8 @@
         },
         {
           "alternativeName": "beta",
-          "excluded": true
+          "excluded": true,
+          "exclusionReason": "excluded by scenario constraints"
         }
       ]
     },

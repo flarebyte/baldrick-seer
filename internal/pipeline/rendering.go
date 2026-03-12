@@ -68,12 +68,16 @@ func renderReport(
 	}
 	filteredFinalRanking = filterFinalRankingForReport(report, filteredFinalRanking)
 	filteredScenarioWeights := filterScenarioWeightsForReport(report, scenarioWeights)
+	aggregationScenarioWeights, err := aggregationWeights(aggregation, filteredScenarioResults)
+	if err != nil {
+		return "", err
+	}
 
 	switch report.Format {
 	case "markdown":
-		return renderMarkdownReport(report, config, displayScenarioResults, filteredFinalRanking), nil
+		return renderMarkdownReport(report, config, displayScenarioResults, filteredFinalRanking, aggregation, filteredScenarioWeights, aggregationScenarioWeights), nil
 	case "json":
-		return renderJSONReport(report, config, displayScenarioResults, filteredFinalRanking, aggregation, filteredScenarioWeights)
+		return renderJSONReport(report, config, displayScenarioResults, filteredFinalRanking, aggregation, filteredScenarioWeights, aggregationScenarioWeights)
 	case "csv":
 		return renderCSVReport(report, config, displayScenarioResults, filteredFinalRanking)
 	default:
@@ -86,9 +90,13 @@ func renderMarkdownReport(
 	config *ExecutionConfig,
 	scenarioResults []domain.ScenarioRankingResult,
 	finalRanking domain.AggregatedRankingResult,
+	aggregation *AggregationConfig,
+	scenarioWeights []ScenarioCriterionWeights,
+	aggregationScenarioWeights map[string]float64,
 ) string {
 	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
 	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
+	includeExplain := reportArgumentValue(report.Arguments, "explain", "true") == "true"
 
 	var builder strings.Builder
 	builder.WriteString("# ")
@@ -103,10 +111,17 @@ func renderMarkdownReport(
 		builder.WriteString("\n### ")
 		builder.WriteString(scenarioResult.ScenarioName)
 		builder.WriteString("\n")
+		if includeExplain {
+			writeMarkdownScenarioExplanation(&builder, scenarioResult.ScenarioName, scenarioWeights)
+		}
 		rows := limitRankedAlternatives(scenarioResult.RankedAlternatives, topAlternatives)
 		for _, alternative := range rows {
 			writeMarkdownAlternative(&builder, alternative, includeScores)
 		}
+	}
+
+	if includeExplain {
+		writeMarkdownAggregationExplanation(&builder, aggregation, aggregationScenarioWeights)
 	}
 
 	builder.WriteString("\n## Final Ranking\n")
@@ -129,12 +144,14 @@ func renderJSONReport(
 	finalRanking domain.AggregatedRankingResult,
 	aggregation *AggregationConfig,
 	scenarioWeights []ScenarioCriterionWeights,
+	aggregationScenarioWeights map[string]float64,
 ) (string, error) {
 	type jsonRankedAlternative struct {
 		AlternativeName string   `json:"alternativeName"`
 		Rank            *int     `json:"rank,omitempty"`
 		Score           *float64 `json:"score,omitempty"`
 		Excluded        bool     `json:"excluded,omitempty"`
+		ExclusionReason string   `json:"exclusionReason,omitempty"`
 	}
 	type jsonScenarioResult struct {
 		ScenarioName string                  `json:"scenarioName"`
@@ -148,8 +165,13 @@ func renderJSONReport(
 		ScenarioName string                     `json:"scenarioName"`
 		Weights      []jsonCriterionWeightEntry `json:"weights,omitempty"`
 	}
+	type jsonAggregationWeight struct {
+		ScenarioName string  `json:"scenarioName"`
+		Weight       float64 `json:"weight"`
+	}
 	type jsonAggregation struct {
-		Method string `json:"method"`
+		Method          string                  `json:"method"`
+		ScenarioWeights []jsonAggregationWeight `json:"scenarioWeights,omitempty"`
 	}
 	type jsonReport struct {
 		ProblemName     string                  `json:"problemName"`
@@ -168,6 +190,12 @@ func renderJSONReport(
 	}
 	if aggregation != nil {
 		payload.Aggregation = jsonAggregation{Method: aggregation.Method}
+		for _, scenarioName := range orderedWeightNames(aggregationScenarioWeights) {
+			payload.Aggregation.ScenarioWeights = append(payload.Aggregation.ScenarioWeights, jsonAggregationWeight{
+				ScenarioName: scenarioName,
+				Weight:       aggregationScenarioWeights[scenarioName],
+			})
+		}
 	}
 	for _, scenarioResult := range scenarioResults {
 		jsonResult := jsonScenarioResult{
@@ -177,6 +205,7 @@ func renderJSONReport(
 			entry := jsonRankedAlternative{
 				AlternativeName: alternative.Name,
 				Excluded:        alternative.Excluded,
+				ExclusionReason: alternative.ExclusionReason,
 			}
 			if !alternative.Excluded {
 				entry.Rank = intPointer(alternative.Rank)
@@ -314,6 +343,14 @@ func csvRecord(columns []string, scenarioName string, alternative domain.RankedA
 			record = append(record, value.Name)
 		case "value":
 			record = append(record, value.Rendered)
+		case "excluded":
+			if alternative.Excluded {
+				record = append(record, "true")
+			} else {
+				record = append(record, "false")
+			}
+		case "exclusion_reason":
+			record = append(record, alternative.ExclusionReason)
 		default:
 			record = append(record, "")
 		}
@@ -595,6 +632,48 @@ func floatPointer(value float64) *float64 {
 	return &value
 }
 
+func writeMarkdownScenarioExplanation(builder *strings.Builder, scenarioName string, scenarioWeights []ScenarioCriterionWeights) {
+	for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
+		if scenarioWeight.ScenarioName != scenarioName {
+			continue
+		}
+		builder.WriteString("Weights: ")
+		for index, weight := range canonicalCriterionWeights(scenarioWeight.CriterionWeights) {
+			if index > 0 {
+				builder.WriteString(", ")
+			}
+			builder.WriteString(weight.CriterionName)
+			builder.WriteString("=")
+			builder.WriteString(formatScore(weight.Weight))
+		}
+		builder.WriteString("\n")
+		return
+	}
+}
+
+func writeMarkdownAggregationExplanation(builder *strings.Builder, aggregation *AggregationConfig, aggregationScenarioWeights map[string]float64) {
+	builder.WriteString("\n## Aggregation\n")
+	if aggregation == nil {
+		builder.WriteString("\nMethod: \n")
+		return
+	}
+
+	builder.WriteString("\nMethod: ")
+	builder.WriteString(aggregation.Method)
+	builder.WriteString("\n")
+	if len(aggregationScenarioWeights) == 0 {
+		return
+	}
+	builder.WriteString("Scenario weights:\n")
+	for _, scenarioName := range orderedWeightNames(aggregationScenarioWeights) {
+		builder.WriteString("- ")
+		builder.WriteString(scenarioName)
+		builder.WriteString(": ")
+		builder.WriteString(formatScore(aggregationScenarioWeights[scenarioName]))
+		builder.WriteString("\n")
+	}
+}
+
 func canonicalScenarioWeights(input []ScenarioCriterionWeights) []ScenarioCriterionWeights {
 	if len(input) == 0 {
 		return nil
@@ -635,7 +714,13 @@ func writeMarkdownAlternative(builder *strings.Builder, alternative domain.Ranke
 	builder.WriteString("- ")
 	if alternative.Excluded {
 		builder.WriteString(alternative.Name)
-		builder.WriteString(": excluded\n")
+		builder.WriteString(": excluded")
+		if alternative.ExclusionReason != "" {
+			builder.WriteString(" (")
+			builder.WriteString(alternative.ExclusionReason)
+			builder.WriteString(")")
+		}
+		builder.WriteString("\n")
 		return
 	}
 
@@ -648,4 +733,12 @@ func writeMarkdownAlternative(builder *strings.Builder, alternative domain.Ranke
 		builder.WriteString(")")
 	}
 	builder.WriteString("\n")
+}
+
+func orderedWeightNames(weights map[string]float64) []string {
+	names := make([]string, 0, len(weights))
+	for name := range weights {
+		names = append(names, name)
+	}
+	return domain.CanonicalNames(names)
 }

@@ -29,6 +29,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 				Arguments: []string{"include-scores=true"},
 			},
 			scenarios:  reportScenarioResults(),
+			weights:    reportScenarioWeights(),
 			wantGolden: "report_markdown.out.golden",
 		},
 		{
@@ -86,7 +87,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 				{
 					ScenarioName: "baseline",
 					RankedAlternatives: []domain.RankedAlternative{
-						{Name: "alpha", Excluded: true},
+						{Name: "alpha", Excluded: true, ExclusionReason: "excluded by scenario constraints"},
 						{Name: "beta", Rank: 1, Score: 0.7},
 					},
 				},
@@ -95,6 +96,15 @@ func TestDefaultReportRenderer(t *testing.T) {
 					RankedAlternatives: []domain.RankedAlternative{
 						{Name: "alpha", Rank: 1, Score: 0.8},
 						{Name: "beta", Rank: 2, Score: 0.4},
+					},
+				},
+			},
+			weights: []ScenarioCriterionWeights{
+				{
+					ScenarioName: "growth",
+					CriterionWeights: []CriterionWeight{
+						{CriterionName: "cost", Weight: 0.6},
+						{CriterionName: "quality", Weight: 0.4},
 					},
 				},
 			},
@@ -121,7 +131,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 				Name:      "summary-csv-focused",
 				Title:     "Summary CSV Focused",
 				Format:    "csv",
-				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank", "header=true"},
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
 				Focus: &ReportFocus{
 					CriterionNames: []string{"cost"},
 				},
@@ -217,7 +227,7 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Name:      "summary-csv-focused",
 				Title:     "Summary CSV Focused",
 				Format:    "csv",
-				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank", "header=true"},
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
 				Focus: &ReportFocus{
 					CriterionNames: []string{"cost"},
 				},
@@ -344,7 +354,7 @@ func TestDefaultReportRendererCanonicalizesShuffledInput(t *testing.T) {
 			{
 				ScenarioName: "baseline",
 				RankedAlternatives: []domain.RankedAlternative{
-					{Name: "beta", Excluded: true},
+					{Name: "beta", Excluded: true, ExclusionReason: "excluded by scenario constraints"},
 					{Name: "alpha", Rank: 1, Score: 0.9},
 				},
 			},
@@ -482,7 +492,7 @@ func reportScenarioResults() []domain.ScenarioRankingResult {
 			ScenarioName: "baseline",
 			RankedAlternatives: []domain.RankedAlternative{
 				{Name: "alpha", Rank: 1, Score: 0.9},
-				{Name: "beta", Excluded: true},
+				{Name: "beta", Excluded: true, ExclusionReason: "excluded by scenario constraints"},
 			},
 		},
 	}

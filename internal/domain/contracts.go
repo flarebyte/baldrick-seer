@@ -61,10 +61,11 @@ type ValidatedModelSummary struct {
 
 // RankedAlternatives is ordered for deterministic rendering.
 type RankedAlternative struct {
-	Name     string
-	Rank     int
-	Score    float64
-	Excluded bool
+	Name            string
+	Rank            int
+	Score           float64
+	Excluded        bool
+	ExclusionReason string
 }
 
 // ScenarioRankingResult carries ordered scenario-local rankings.
