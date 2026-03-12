@@ -156,6 +156,57 @@ func newFakeRunner(order *[]string) Runner {
 	}
 }
 
+type fakeRankingStrategySelector struct {
+	recorder    *[]string
+	method      RankingMethod
+	selectErr   error
+	strategy    RankingStrategy
+	strategyErr error
+}
+
+func (f fakeRankingStrategySelector) Select(_ LoadedConfig, _ ValidateModelOutput) (RankingMethod, error) {
+	if f.recorder != nil {
+		*f.recorder = append(*f.recorder, "select-strategy")
+	}
+	if f.selectErr != nil {
+		return "", f.selectErr
+	}
+	if f.method == "" {
+		return RankingMethodV1AHPTopsis, nil
+	}
+	return f.method, nil
+}
+
+func (f fakeRankingStrategySelector) Strategy(method RankingMethod) (RankingStrategy, error) {
+	if f.recorder != nil {
+		*f.recorder = append(*f.recorder, "strategy:"+string(method))
+	}
+	if f.strategyErr != nil {
+		return nil, f.strategyErr
+	}
+	return f.strategy, nil
+}
+
+type fakeRankingStrategy struct {
+	recorder *[]string
+	contexts *[]context.Context
+	output   RankingStrategyOutput
+	err      error
+}
+
+func (f fakeRankingStrategy) Execute(ctx context.Context, _ RankingStrategyInput) (RankingStrategyOutput, error) {
+	if f.recorder != nil {
+		*f.recorder = append(*f.recorder, "strategy-execute")
+	}
+	if f.contexts != nil {
+		*f.contexts = append(*f.contexts, ctx)
+	}
+	if f.err != nil {
+		return RankingStrategyOutput{}, f.err
+	}
+	return f.output, nil
+}
+
 func fixtureConfigPath() string {
 	return filepath.Join("..", "..", "testdata", "config", "minimal.cue")
 }

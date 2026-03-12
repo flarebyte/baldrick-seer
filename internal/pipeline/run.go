@@ -9,16 +9,21 @@ type Runner struct {
 	ModelValidator     ModelValidator
 	CriteriaWeighter   CriteriaWeighter
 	ScenarioRanker     ScenarioRanker
+	RankingStrategies  RankingStrategySelector
 	ScenarioAggregator ScenarioAggregator
 	ReportRenderer     ReportRenderer
 }
 
 func NewDefaultRunner() Runner {
+	weighter := DefaultCriteriaWeighter{}
+	ranker := DefaultScenarioRanker{}
+
 	return Runner{
 		ConfigLoader:       DefaultConfigLoader{},
 		ModelValidator:     DefaultModelValidator{},
-		CriteriaWeighter:   DefaultCriteriaWeighter{},
-		ScenarioRanker:     DefaultScenarioRanker{},
+		CriteriaWeighter:   weighter,
+		ScenarioRanker:     ranker,
+		RankingStrategies:  newDefaultRankingStrategySelector(weighter, ranker),
 		ScenarioAggregator: DefaultScenarioAggregator{},
 		ReportRenderer:     DefaultReportRenderer{},
 	}
@@ -51,36 +56,36 @@ func (r Runner) RunReportGenerate(ctx context.Context, command domain.CommandReq
 		return domain.CommandResult{}, err
 	}
 
-	weights, err := r.CriteriaWeighter.WeightCriteria(ctx, WeightCriteriaInput{
+	strategyMethod, err := r.rankingStrategySelector().Select(config, validation)
+	if err != nil {
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "strategy.select_failed", command.ConfigPath, "command failed", err)
+	}
+
+	if err := checkContext(ctx, command.ConfigPath); err != nil {
+		return domain.CommandResult{}, err
+	}
+
+	strategy, err := r.rankingStrategySelector().Strategy(strategyMethod)
+	if err != nil {
+		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "strategy.unsupported", command.ConfigPath, "command failed", err)
+	}
+
+	if err := checkContext(ctx, command.ConfigPath); err != nil {
+		return domain.CommandResult{}, err
+	}
+
+	ranking, err := strategy.Execute(ctx, RankingStrategyInput{
 		Command:        command,
 		ValidatedModel: validation.ValidatedModel,
 		Config:         config,
 	})
 	if err != nil {
-		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "weighting.failed", command.ConfigPath, "command failed", err)
-	}
-
-	if err := checkContext(ctx, command.ConfigPath); err != nil {
-		return domain.CommandResult{}, err
-	}
-
-	scenarios, err := r.ScenarioRanker.RankScenarios(ctx, RankScenariosInput{
-		Command:         command,
-		ValidatedModel:  validation.ValidatedModel,
-		ScenarioWeights: weights.ScenarioWeights,
-		Config:          config,
-	})
-	if err != nil {
 		return domain.CommandResult{}, WrapStageFailure(domain.FailureCategoryExecution, "ranking.failed", command.ConfigPath, "command failed", err)
-	}
-
-	if err := checkContext(ctx, command.ConfigPath); err != nil {
-		return domain.CommandResult{}, err
 	}
 
 	aggregated, err := r.ScenarioAggregator.AggregateScenarios(ctx, AggregateScenariosInput{
 		Command:         command,
-		ScenarioResults: scenarios.ScenarioResults,
+		ScenarioResults: ranking.ScenarioResults,
 		Config:          config,
 	})
 	if err != nil {
@@ -94,10 +99,10 @@ func (r Runner) RunReportGenerate(ctx context.Context, command domain.CommandReq
 	rendered, err := r.ReportRenderer.RenderReports(ctx, RenderReportsInput{
 		Command:           command,
 		ValidatedModel:    validation.ValidatedModel,
-		ScenarioResults:   scenarios.ScenarioResults,
+		ScenarioResults:   ranking.ScenarioResults,
 		FinalRanking:      aggregated.FinalRanking,
 		ReportDefinitions: validation.ReportDefinitions,
-		ScenarioWeights:   weights.ScenarioWeights,
+		ScenarioWeights:   ranking.ScenarioWeights,
 		Config:            config,
 	})
 	if err != nil {
@@ -107,11 +112,18 @@ func (r Runner) RunReportGenerate(ctx context.Context, command domain.CommandReq
 	return buildCommandResult(
 		command.CommandName,
 		validation,
-		scenarios.ScenarioResults,
+		ranking.ScenarioResults,
 		&aggregated.FinalRanking,
 		rendered.ReportDefinitions,
 		rendered.RenderedOutput,
 	), nil
+}
+
+func (r Runner) rankingStrategySelector() RankingStrategySelector {
+	if r.RankingStrategies != nil {
+		return r.RankingStrategies
+	}
+	return newDefaultRankingStrategySelector(r.CriteriaWeighter, r.ScenarioRanker)
 }
 
 func (r Runner) loadAndValidate(ctx context.Context, command domain.CommandRequest) (LoadedConfig, ValidateModelOutput, error) {

@@ -50,6 +50,98 @@ func TestRunReportGenerateStageOrdering(t *testing.T) {
 	assertStageOrder(t, got, want)
 }
 
+func TestRunReportGenerateSelectsCurrentV1Strategy(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	strategy := fakeRankingStrategy{
+		recorder: &order,
+		output: RankingStrategyOutput{
+			ScenarioWeights: []ScenarioCriterionWeights{
+				{
+					ScenarioName: "baseline",
+					CriterionWeights: []CriterionWeight{
+						{CriterionName: "cost", Weight: 1},
+					},
+				},
+			},
+			ScenarioResults: []domain.ScenarioRankingResult{
+				{
+					ScenarioName: "baseline",
+					RankedAlternatives: []domain.RankedAlternative{
+						{Name: "option_a", Rank: 1, Score: 0.9},
+					},
+				},
+			},
+		},
+	}
+	runner := Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: &order},
+		ModelValidator:     &fakeModelValidator{recorder: &order},
+		RankingStrategies:  fakeRankingStrategySelector{recorder: &order, method: RankingMethodV1AHPTopsis, strategy: strategy},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order},
+	}
+
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+	if err != nil {
+		t.Fatalf("RunReportGenerate() error = %v", err)
+	}
+
+	assertStageOrder(t, order, []string{"load", "validate", "select-strategy", "strategy:v1_ahp_topsis", "strategy-execute", "aggregate", "render"})
+}
+
+func TestRunReportGenerateUnsupportedStrategyFailsDeterministically(t *testing.T) {
+	t.Parallel()
+
+	order := []string{}
+	wantErr := ErrRankingFailed
+	runner := Runner{
+		ConfigLoader:       &fakeConfigLoader{recorder: &order},
+		ModelValidator:     &fakeModelValidator{recorder: &order},
+		RankingStrategies:  fakeRankingStrategySelector{recorder: &order, method: RankingMethodElectre, strategyErr: wantErr},
+		ScenarioAggregator: &fakeScenarioAggregator{recorder: &order},
+		ReportRenderer:     &fakeReportRenderer{recorder: &order},
+	}
+
+	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+
+	_ = assertFailureCategory(t, err, wantErr, domain.FailureCategoryExecution, "command failed")
+	assertStageOrder(t, order, []string{"load", "validate", "select-strategy", "strategy:electre"})
+}
+
+func TestDefaultRankingStrategySelectorIsDeterministic(t *testing.T) {
+	t.Parallel()
+
+	selector := newDefaultRankingStrategySelector(DefaultCriteriaWeighter{}, DefaultScenarioRanker{})
+	config := validLoadedConfig()
+	validation := ValidateModelOutput{
+		ValidatedModel: domain.ValidatedModelSummary{ConfigPath: config.Path},
+	}
+
+	firstMethod, err := selector.Select(config, validation)
+	if err != nil {
+		t.Fatalf("first Select() error = %v", err)
+	}
+	secondMethod, err := selector.Select(config, validation)
+	if err != nil {
+		t.Fatalf("second Select() error = %v", err)
+	}
+	if firstMethod != secondMethod {
+		t.Fatalf("methods differed: %q vs %q", firstMethod, secondMethod)
+	}
+
+	if got, want := firstMethod, RankingMethodV1AHPTopsis; got != want {
+		t.Fatalf("method = %q, want %q", got, want)
+	}
+}
+
 func TestRunReportGenerateFailsFast(t *testing.T) {
 	t.Parallel()
 
