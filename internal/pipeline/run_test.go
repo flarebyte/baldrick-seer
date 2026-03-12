@@ -83,10 +83,7 @@ func TestRunReportGenerateSelectsCurrentV1Strategy(t *testing.T) {
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  fixtureConfigPath(),
-	})
+	_, err := runReportGenerateForTest(runner)
 	if err != nil {
 		t.Fatalf("RunReportGenerate() error = %v", err)
 	}
@@ -107,10 +104,7 @@ func TestRunReportGenerateUnsupportedStrategyFailsDeterministically(t *testing.T
 		ReportRenderer:     &fakeReportRenderer{recorder: &order},
 	}
 
-	_, err := runner.RunReportGenerate(context.Background(), domain.CommandRequest{
-		CommandName: domain.CommandNameReportGenerate,
-		ConfigPath:  fixtureConfigPath(),
-	})
+	_, err := runReportGenerateForTest(runner)
 
 	_ = assertFailureCategory(t, err, wantErr, domain.FailureCategoryExecution, "command failed")
 	assertStageOrder(t, order, []string{"load", "validate", "select-strategy", "strategy:electre"})
@@ -852,16 +846,9 @@ func TestDefaultConfigLoader(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := loader.LoadConfig(context.Background(), LoadConfigInput{
-				ConfigPath: tt.configPath,
-			})
-			if err != nil {
-				t.Fatalf("LoadConfig() error = %v", err)
-			}
-
-			want := filepath.Clean(tt.configPath)
-			if got.Config.Path != want {
-				t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, want)
+			got := mustLoadConfig(t, loader, tt.configPath)
+			if got.Config.Path != filepath.Clean(tt.configPath) {
+				t.Fatalf("ConfigPath = %q, want %q", got.Config.Path, filepath.Clean(tt.configPath))
 			}
 		})
 	}

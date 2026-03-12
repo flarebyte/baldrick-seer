@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -521,14 +522,9 @@ func canonicalEvaluations(input []EvaluationConfig) []EvaluationConfig {
 	for i := range output {
 		output[i].Evaluations = canonicalAlternativeEvaluations(output[i].Evaluations)
 	}
-	for i := 1; i < len(output); i++ {
-		current := output[i]
-		j := i - 1
-		for ; j >= 0 && output[j].ScenarioName > current.ScenarioName; j-- {
-			output[j+1] = output[j]
-		}
-		output[j+1] = current
-	}
+	sort.Slice(output, func(i int, j int) bool {
+		return output[i].ScenarioName < output[j].ScenarioName
+	})
 	return output
 }
 
@@ -683,23 +679,9 @@ func canonicalScenarioWeights(input []ScenarioCriterionWeights) []ScenarioCriter
 	for index := range output {
 		output[index].CriterionWeights = canonicalCriterionWeights(output[index].CriterionWeights)
 	}
-	return sortScenarioWeightsByName(output)
-}
-
-func sortScenarioWeightsByName(input []ScenarioCriterionWeights) []ScenarioCriterionWeights {
-	if len(input) == 0 {
-		return nil
-	}
-
-	output := append([]ScenarioCriterionWeights(nil), input...)
-	for i := 1; i < len(output); i++ {
-		current := output[i]
-		j := i - 1
-		for ; j >= 0 && output[j].ScenarioName > current.ScenarioName; j-- {
-			output[j+1] = output[j]
-		}
-		output[j+1] = current
-	}
+	sort.Slice(output, func(i int, j int) bool {
+		return output[i].ScenarioName < output[j].ScenarioName
+	})
 	return output
 }
 

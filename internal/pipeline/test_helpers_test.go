@@ -337,6 +337,13 @@ func mustLoadConfig(t *testing.T, loader DefaultConfigLoader, configPath string)
 	return got
 }
 
+func runReportGenerateForTest(runner Runner) (domain.CommandResult, error) {
+	return runner.RunReportGenerate(context.Background(), domain.CommandRequest{
+		CommandName: domain.CommandNameReportGenerate,
+		ConfigPath:  fixtureConfigPath(),
+	})
+}
+
 func assertStageOrder(t *testing.T, got []string, want []string) {
 	t.Helper()
 
