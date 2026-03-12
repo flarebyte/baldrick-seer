@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
@@ -258,6 +259,64 @@ func TestRootCommandExposesBuildVersion(t *testing.T) {
 
 	if cmd.Version == "" {
 		t.Fatal("Version = empty, want build metadata string")
+	}
+}
+
+func TestHelpIncludesRepositoryAndExamples(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name         string
+		args         []string
+		wantSnippets []string
+	}{
+		{
+			name: "root help",
+			args: []string{"--help"},
+			wantSnippets: []string{
+				repositoryURL,
+				"seer validate --config testdata/config/minimal.cue",
+				"seer report generate --config testdata/config/valid_report.cue",
+			},
+		},
+		{
+			name: "validate help",
+			args: []string{"validate", "--help"},
+			wantSnippets: []string{
+				repositoryURL,
+				"Path to a .cue file or a directory containing a CUE package",
+				"seer validate --config testdata/config_split",
+			},
+		},
+		{
+			name: "report generate help",
+			args: []string{"report", "generate", "--help"},
+			wantSnippets: []string{
+				repositoryURL,
+				"AHP weighting",
+				"seer report generate --config testdata/config/valid_report.cue",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			exitCode, stdout, stderr := executeAndCapture(tt.args)
+			if exitCode != 0 {
+				t.Fatalf("exitCode = %d, want 0", exitCode)
+			}
+			if stderr != "" {
+				t.Fatalf("stderr = %q, want empty", stderr)
+			}
+			for _, snippet := range tt.wantSnippets {
+				if !strings.Contains(stdout, snippet) {
+					t.Fatalf("stdout did not contain %q\nstdout=%s", snippet, stdout)
+				}
+			}
+		})
 	}
 }
 
