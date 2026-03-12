@@ -116,6 +116,12 @@ The CLI binary is written to:
 .e2e-bin/seer
 ```
 
+Release binaries for supported operating systems are written to:
+
+```text
+build/
+```
+
 You can embed build metadata when needed:
 
 ```sh
@@ -131,6 +137,31 @@ make build VERSION=v1.0.0 COMMIT=$(git rev-parse --short HEAD) BUILD_DATE=2026-0
 ```
 
 `--config` accepts either a single `.cue` file or a directory containing a CUE package.
+
+## Quick start examples
+
+If you want a working model to copy and adapt, start with:
+- [examples/hello-world.cue](./examples/hello-world.cue) for the smallest single-file markdown example
+- [examples/hello-world-json.cue](./examples/hello-world-json.cue) for a minimal JSON report example
+- [examples/hello-world-package](./examples/hello-world-package) for a split CUE package loaded from a directory
+
+Try them with:
+
+```sh
+./.e2e-bin/seer validate --config examples/hello-world.cue
+./.e2e-bin/seer report generate --config examples/hello-world.cue
+./.e2e-bin/seer report generate --config examples/hello-world-json.cue
+./.e2e-bin/seer validate --config examples/hello-world-package
+./.e2e-bin/seer report generate --config examples/hello-world-package
+```
+
+These examples are intentionally small:
+- one criterion
+- one alternative
+- one scenario
+- one report
+
+They are meant as a quick-start baseline, not a full demonstration of the v1 feature set.
 
 ## Output formats
 
