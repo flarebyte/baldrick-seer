@@ -60,6 +60,7 @@ async function main() {
     throw new Error('version not found in main.project.yaml (tags.version)');
 
   const currentDirectory = process.cwd();
+  const binaryName = 'seer';
   const folderName = path.basename(currentDirectory);
   const modulePath =
     (await runCapture(['go', 'list', '-m'], { cwd: currentDirectory })) ||
@@ -80,7 +81,9 @@ async function main() {
   const platforms = [
     { label: 'Linux (amd64)', os: 'linux', arch: 'amd64' },
     { label: 'Linux (arm64)', os: 'linux', arch: 'arm64' },
+    { label: 'macOS (Intel)', os: 'darwin', arch: 'amd64' },
     { label: 'macOS (Apple Silicon)', os: 'darwin', arch: 'arm64' },
+    { label: 'Windows (amd64)', os: 'windows', arch: 'amd64' },
   ] as const;
 
   await ensureDir('build');
@@ -107,9 +110,10 @@ async function main() {
       env.MACOSX_DEPLOYMENT_TARGET = env.MACOSX_DEPLOYMENT_TARGET || '11.0';
     }
 
-    const out = path.join('build', `${folderName}-${p.os}-${p.arch}`);
+    const extension = p.os === 'windows' ? '.exe' : '';
+    const out = path.join('build', `${binaryName}-${p.os}-${p.arch}${extension}`);
     await runChecked(
-      ['go', 'build', '-o', out, '-ldflags', ldflags, './cmd/flyb'],
+      ['go', 'build', '-o', out, '-ldflags', ldflags, './cmd/seer'],
       {
         env,
       },

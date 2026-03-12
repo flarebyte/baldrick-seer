@@ -1,4 +1,4 @@
-.PHONY: build build-go test test-go test-unit test-race test-e2e lint lint-go lint-e2e format format-go format-e2e coverage coverage-go doc-design dup complexity release sec help
+.PHONY: build build-go build-dist test test-go test-unit test-race test-e2e lint lint-go lint-e2e format format-go format-e2e coverage coverage-go doc-design dup complexity release sec help
 
 GO := go
 BUN := bun
@@ -9,6 +9,7 @@ GO_CACHE_DIR := $(ROOT_DIR)/.gocache
 GO_MOD_CACHE_DIR := $(ROOT_DIR)/.gomodcache
 GO_LINT_CACHE_DIR := $(ROOT_DIR)/.golangci-lint-cache
 E2E_BIN_DIR := $(ROOT_DIR)/.e2e-bin
+BUILD_DIR := $(ROOT_DIR)/build
 GO_PACKAGES := ./...
 GO_ENV := GOTOOLCHAIN=local GOCACHE=$(GO_CACHE_DIR) GOMODCACHE=$(GO_MOD_CACHE_DIR)
 BUN_ENV := TMPDIR=$(TMP_DIR)
@@ -21,12 +22,17 @@ COMMIT ?= unknown
 BUILD_DATE ?= unknown
 GO_LDFLAGS := -X github.com/flarebyte/baldrick-seer/internal/buildinfo.Version=$(VERSION) -X github.com/flarebyte/baldrick-seer/internal/buildinfo.Commit=$(COMMIT) -X github.com/flarebyte/baldrick-seer/internal/buildinfo.Date=$(BUILD_DATE)
 
-build: build-go
+build: build-go build-dist
 
 build-go:
 	mkdir -p $(TMP_DIR)
 	mkdir -p $(E2E_BIN_DIR)
 	$(GO_ENV) $(GO) build -ldflags "$(GO_LDFLAGS)" -o $(E2E_BIN_DIR)/seer ./cmd/seer
+
+build-dist:
+	mkdir -p $(TMP_DIR)
+	mkdir -p $(BUILD_DIR)
+	$(BUN_ENV) $(BUN) run build-go.ts
 
 test: test-go test-e2e
 
@@ -104,8 +110,9 @@ sec:
 
 help:
 	@printf "Targets:\n"
-	@printf "  build        Build the seer binary.\n"
-	@printf "  build-go     Build the Go CLI into .e2e-bin/ with deterministic ldflags.\n"
+	@printf "  build        Build the E2E binary and release artifacts.\n"
+	@printf "  build-go     Build the Go CLI into .e2e-bin/ for local and E2E use.\n"
+	@printf "  build-dist   Build multi-platform release binaries into build/.\n"
 	@printf "  test         Run Go tests and Bun E2E tests.\n"
 	@printf "  test-go      Run Go test targets.\n"
 	@printf "  test-unit    Run verbose Go tests and print coverage summary.\n"
