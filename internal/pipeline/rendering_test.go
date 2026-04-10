@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -100,6 +101,17 @@ func TestDefaultReportRenderer(t *testing.T) {
 			scenarios:  reportScenarioResults(),
 			weights:    reportScenarioWeights(),
 			wantGolden: "report_json.out.golden",
+		},
+		{
+			name: "json renderer context output shape",
+			report: ReportConfig{
+				Name:      "summary-json-context",
+				Title:     "Summary JSON Context",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "include-weights=true", "pretty=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
 		},
 		{
 			name: "csv renderer output shape",
@@ -244,6 +256,10 @@ func TestDefaultReportRenderer(t *testing.T) {
 				assertMarkdownFlagsSuppressedOutput(t, got.RenderedOutput)
 				return
 			}
+			if tt.name == "json renderer context output shape" {
+				assertJSONContextOutput(t, got.RenderedOutput)
+				return
+			}
 
 			if got, want := got.RenderedOutput, readPipelineGolden(t, tt.wantGolden); got != want {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
@@ -309,6 +325,15 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Title:     "Summary JSON",
 				Format:    "json",
 				Arguments: []string{"include-weights=true", "pretty=true"},
+			},
+		},
+		{
+			name: "json context",
+			report: ReportConfig{
+				Name:      "summary-json-context",
+				Title:     "Summary JSON Context",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "include-weights=true", "pretty=true"},
 			},
 		},
 		{
@@ -837,6 +862,50 @@ func assertMarkdownFlagsSuppressedOutput(t *testing.T, got string) {
 	}
 }
 
+func assertJSONContextOutput(t *testing.T, got string) {
+	t.Helper()
+
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(got), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
+	}
+
+	if _, exists := payload["problem"]; !exists {
+		t.Fatalf("problem context missing in %q", got)
+	}
+	if _, exists := payload["report"]; !exists {
+		t.Fatalf("report context missing in %q", got)
+	}
+	if _, exists := payload["alternatives"]; !exists {
+		t.Fatalf("alternatives context missing in %q", got)
+	}
+	if _, exists := payload["criteria"]; !exists {
+		t.Fatalf("criteria context missing in %q", got)
+	}
+	if _, exists := payload["scenarios"]; !exists {
+		t.Fatalf("scenarios context missing in %q", got)
+	}
+	if _, exists := payload["evaluations"]; !exists {
+		t.Fatalf("evaluations context missing in %q", got)
+	}
+
+	problem := payload["problem"].(map[string]any)
+	if got, want := problem["title"], "Decision Demo Title"; got != want {
+		t.Fatalf("problem.title = %#v, want %#v", got, want)
+	}
+	if got, want := problem["goal"], "Choose the most robust option"; got != want {
+		t.Fatalf("problem.goal = %#v, want %#v", got, want)
+	}
+
+	report := payload["report"].(map[string]any)
+	if got, want := report["title"], "Summary JSON Context"; got != want {
+		t.Fatalf("report.title = %#v, want %#v", got, want)
+	}
+	if got, want := len(report["arguments"].([]any)), 3; got != want {
+		t.Fatalf("len(report.arguments) = %d, want %d", got, want)
+	}
+}
+
 func readPipelineGolden(t *testing.T, name string) string {
 	t.Helper()
 
@@ -849,25 +918,38 @@ func readPipelineGolden(t *testing.T, name string) string {
 
 func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 	config := validLoadedConfig()
-	config.Config.Problem = &ProblemConfig{Name: "Decision Demo"}
+	config.Config.Problem = &ProblemConfig{
+		Name:        "Decision Demo",
+		Title:       "Decision Demo Title",
+		Goal:        "Choose the most robust option",
+		Description: "Compare options across baseline and growth scenarios.",
+		Owner:       "platform-team",
+		Notes:       []string{"context note", "reviewable artifact"},
+	}
 	config.Config.Reports = append([]ReportConfig(nil), reports...)
 	config.Config.CriteriaCatalog = []CriterionConfig{
-		{Name: "cost", Polarity: "cost", ValueType: "number"},
-		{Name: "quality", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"poor", "good"}},
+		{Name: "cost", Title: "Cost", Description: "Lower is better", Polarity: "cost", ValueType: "number"},
+		{Name: "quality", Title: "Quality", Description: "Higher is better", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"poor", "good"}},
 	}
 	config.Config.Alternatives = []AlternativeConfig{
-		{Name: "alpha"},
-		{Name: "beta"},
+		{Name: "alpha", Title: "Alpha", Description: "Lower cost option"},
+		{Name: "beta", Title: "Beta", Description: "Higher feature depth"},
 	}
 	config.Config.Scenarios = []ScenarioConfig{
 		{
-			Name: "baseline",
+			Name:        "baseline",
+			Title:       "Baseline",
+			Description: "Current operating constraints.",
+			Narrative:   "Steady-state execution with tight delivery pressure.",
 			ActiveCriteria: []ScenarioCriterionRef{
 				{CriterionName: "cost"},
 			},
 		},
 		{
-			Name: "growth",
+			Name:        "growth",
+			Title:       "Growth",
+			Description: "Expansion-oriented scenario.",
+			Narrative:   "Rapid scale-up with higher demand volatility.",
 			ActiveCriteria: []ScenarioCriterionRef{
 				{CriterionName: "cost"},
 				{CriterionName: "quality"},
@@ -877,15 +959,18 @@ func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 	config.Config.Evaluations = []EvaluationConfig{
 		{
 			ScenarioName: "baseline",
+			Description:  "Observed baseline measurements.",
 			Evaluations: []AlternativeEvaluationConfig{
 				{
 					AlternativeName: "alpha",
+					Description:     "Alpha baseline observation.",
 					Values: map[string]CriterionValue{
 						"cost": {Kind: "number", Value: 10},
 					},
 				},
 				{
 					AlternativeName: "beta",
+					Description:     "Beta baseline observation.",
 					Values: map[string]CriterionValue{
 						"cost": {Kind: "number", Value: 20},
 					},
@@ -894,9 +979,11 @@ func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 		},
 		{
 			ScenarioName: "growth",
+			Description:  "Projected growth measurements.",
 			Evaluations: []AlternativeEvaluationConfig{
 				{
 					AlternativeName: "alpha",
+					Description:     "Alpha growth projection.",
 					Values: map[string]CriterionValue{
 						"cost":    {Kind: "number", Value: 12},
 						"quality": {Kind: "ordinal", Value: 3},
@@ -904,6 +991,7 @@ func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 				},
 				{
 					AlternativeName: "beta",
+					Description:     "Beta growth projection.",
 					Values: map[string]CriterionValue{
 						"cost":    {Kind: "number", Value: 18},
 						"quality": {Kind: "ordinal", Value: 2},

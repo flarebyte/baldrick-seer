@@ -23,7 +23,7 @@ var reportArgumentRules = map[string]reportArgumentRule{
 	"detail": {AllowedFormats: []string{"markdown"}, ValidateValue: func(value string) bool {
 		return value == "brief" || value == "standard" || value == "full"
 	}},
-	"include-context":                  {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
+	"include-context":                  {AllowedFormats: []string{"markdown", "json"}, ValidateValue: isBooleanString},
 	"include-weights":                  {AllowedFormats: []string{"markdown", "json"}, ValidateValue: isBooleanString},
 	"include-alternative-descriptions": {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
 	"include-evaluation-notes":         {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},

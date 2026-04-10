@@ -50,6 +50,15 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 		},
 		{
+			name: "valid json include context argument",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "pretty=true"},
+			}}),
+		},
+		{
 			name: "valid csv report definition",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
