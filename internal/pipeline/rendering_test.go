@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -123,6 +124,16 @@ func TestDefaultReportRenderer(t *testing.T) {
 			},
 			scenarios:  reportScenarioResults(),
 			wantGolden: "report_csv.out.golden",
+		},
+		{
+			name: "csv renderer schema output shape",
+			report: ReportConfig{
+				Name:      "summary-csv-schema",
+				Title:     "Summary CSV Schema",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
+			},
+			scenarios: reportScenarioResults(),
 		},
 		{
 			name: "empty final aggregated ranking when all alternatives are ineligible",
@@ -260,6 +271,10 @@ func TestDefaultReportRenderer(t *testing.T) {
 				assertJSONContextOutput(t, got.RenderedOutput)
 				return
 			}
+			if tt.name == "csv renderer schema output shape" {
+				assertCSVSchemaOutput(t, got.RenderedOutput)
+				return
+			}
 
 			if got, want := got.RenderedOutput, readPipelineGolden(t, tt.wantGolden); got != want {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
@@ -343,6 +358,15 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Title:     "Summary CSV",
 				Format:    "csv",
 				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			},
+		},
+		{
+			name: "csv schema",
+			report: ReportConfig{
+				Name:      "summary-csv-schema",
+				Title:     "Summary CSV Schema",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
 			},
 		},
 		{
@@ -754,6 +778,49 @@ func TestDefaultReportRendererOverwritesFileTargetedReportsDeterministically(t *
 	}
 }
 
+func TestDefaultReportRendererWritesFileTargetedCSVReports(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "model.cue")
+	report := ReportConfig{
+		Name:      "summary-csv",
+		Title:     "Summary CSV",
+		Format:    "csv",
+		Filepath:  "artifacts/summary.csv",
+		Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
+	}
+
+	config := reportLoadedConfig(report)
+	config.Path = configPath
+
+	renderer := DefaultReportRenderer{}
+	got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
+		Command: domain.CommandRequest{
+			CommandName: domain.CommandNameReportGenerate,
+			ConfigPath:  config.Path,
+		},
+		ValidatedModel:    domain.ValidatedModelSummary{ConfigPath: config.Path},
+		ScenarioResults:   reportScenarioResults(),
+		FinalRanking:      domain.AggregatedRankingResult{},
+		ReportDefinitions: []domain.ReportDefinition{{Name: report.Name, Title: report.Title, Format: report.Format}},
+		Config:            config,
+	})
+	if err != nil {
+		t.Fatalf("RenderReports() error = %v", err)
+	}
+	if got.RenderedOutput != "" {
+		t.Fatalf("RenderedOutput = %q, want empty stdout output", got.RenderedOutput)
+	}
+
+	content, err := os.ReadFile(filepath.Join(tempDir, "artifacts", "summary.csv"))
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+
+	assertCSVSchemaOutput(t, string(content))
+}
+
 func assertMarkdownStandardOutput(t *testing.T, got string) {
 	t.Helper()
 
@@ -903,6 +970,47 @@ func assertJSONContextOutput(t *testing.T, got string) {
 	}
 	if got, want := len(report["arguments"].([]any)), 3; got != want {
 		t.Fatalf("len(report.arguments) = %d, want %d", got, want)
+	}
+}
+
+func assertCSVSchemaOutput(t *testing.T, got string) {
+	t.Helper()
+
+	reader := csv.NewReader(strings.NewReader(got))
+	records, err := reader.ReadAll()
+	if err != nil {
+		t.Fatalf("csv.ReadAll() error = %v", err)
+	}
+	if len(records) < 2 {
+		t.Fatalf("len(records) = %d, want at least 2", len(records))
+	}
+
+	wantHeader := []string{"scenario", "alternative", "criterion", "value", "score", "rank", "excluded", "exclusion_reason"}
+	if !reflect.DeepEqual(records[0], wantHeader) {
+		t.Fatalf("header = %#v, want %#v", records[0], wantHeader)
+	}
+
+	for index, record := range records[1:] {
+		if len(record) != len(wantHeader) {
+			t.Fatalf("record %d width = %d, want %d", index+1, len(record), len(wantHeader))
+		}
+	}
+
+	schema := csvSchemaDescriptions()
+	for _, column := range wantHeader {
+		if schema[column] == "" {
+			t.Fatalf("missing schema description for %q", column)
+		}
+	}
+
+	if !strings.Contains(got, "overall,alpha,,,0.850000,1,false,") {
+		t.Fatalf("overall final ranking row missing in %q", got)
+	}
+	if !strings.Contains(got, "baseline,beta,cost,20,,,true,excluded by scenario constraints") {
+		t.Fatalf("excluded scenario row missing in %q", got)
+	}
+	if !strings.Contains(got, "growth,alpha,quality,3,0.800000,1,false,") {
+		t.Fatalf("criterion-level row missing in %q", got)
 	}
 }
 

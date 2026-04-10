@@ -25,6 +25,23 @@ The example outputs in this section are illustrative only. They demonstrate outp
 | provider_b | 1 | overall | 0.555 |
 | provider_a | 2 | overall | 0.445 |
 
+#### CSV Schema Contract
+
+Supported CSV columns and their stable meanings:
+
+| column | guaranteed meaning |
+| --- | --- |
+| `scenario` | Scenario name for scenario-local rows, or `overall` for aggregated final-ranking rows. |
+| `alternative` | Alternative name from the input model. |
+| `criterion` | Criterion name for criterion-expanded rows; blank otherwise. |
+| `value` | Rendered criterion value for criterion-expanded rows; blank otherwise. |
+| `score` | Scenario-local or aggregated score for ranked alternatives; blank for excluded rows. |
+| `rank` | Scenario-local or aggregated rank for ranked alternatives; blank for excluded rows. |
+| `excluded` | `true` when a scenario-local alternative was excluded before ranking; otherwise `false`. |
+| `exclusion_reason` | Exclusion reason for excluded scenario-local rows; blank otherwise. |
+
+When `criterion` or `value` is requested, the renderer emits one row per criterion value for each scenario-local alternative. Final aggregated rows still use the stable `overall` scenario marker and leave criterion-specific columns blank.
+
 #### Hosting Choice JSON Output
 
 ```json
@@ -1100,4 +1117,3 @@ export const exampleScenarioBasedMcda: McdaModel = {
   }
 };
 ```
-

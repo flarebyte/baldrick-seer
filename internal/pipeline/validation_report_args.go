@@ -13,6 +13,22 @@ type reportArgumentRule struct {
 	ValidateValue  func(string) bool
 }
 
+type csvColumnDefinition struct {
+	Name        string
+	Description string
+}
+
+var csvColumnDefinitions = []csvColumnDefinition{
+	{Name: "scenario", Description: "Scenario name for scenario-local rows, or overall for aggregated final-ranking rows."},
+	{Name: "alternative", Description: "Alternative name as used in the input model."},
+	{Name: "criterion", Description: "Criterion name for criterion-level rows; blank when the selected schema does not expand criterion rows."},
+	{Name: "value", Description: "Rendered criterion value for criterion-level rows; blank when criterion data is not present."},
+	{Name: "score", Description: "Scenario-local or aggregated score for ranked alternatives; blank for excluded rows."},
+	{Name: "rank", Description: "Scenario-local or aggregated rank for ranked alternatives; blank for excluded rows."},
+	{Name: "excluded", Description: "Boolean exclusion marker for scenario-local rows. Overall rows are false for final eligible alternatives."},
+	{Name: "exclusion_reason", Description: "Exclusion reason for scenario-local rows when an alternative was filtered before ranking."},
+}
+
 var reportArgumentRules = map[string]reportArgumentRule{
 	"include-scenarios": {AllowedFormats: []string{"markdown"}, ValidateValue: func(value string) bool {
 		return value == "all" || value == "focused"
@@ -128,16 +144,7 @@ func isValidCSVColumns(value string) bool {
 		return false
 	}
 
-	allowedColumns := map[string]struct{}{
-		"scenario":         {},
-		"alternative":      {},
-		"criterion":        {},
-		"value":            {},
-		"score":            {},
-		"rank":             {},
-		"excluded":         {},
-		"exclusion_reason": {},
-	}
+	allowedColumns := allowedCSVColumnNames()
 
 	seen := map[string]struct{}{}
 	for _, column := range strings.Split(value, ",") {
@@ -151,4 +158,12 @@ func isValidCSVColumns(value string) bool {
 	}
 
 	return true
+}
+
+func allowedCSVColumnNames() map[string]struct{} {
+	allowed := make(map[string]struct{}, len(csvColumnDefinitions))
+	for _, definition := range csvColumnDefinitions {
+		allowed[definition.Name] = struct{}{}
+	}
+	return allowed
 }
