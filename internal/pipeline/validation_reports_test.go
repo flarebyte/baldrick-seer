@@ -16,6 +16,15 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 		},
 		{
+			name: "valid markdown detail argument",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard"},
+			}}),
+		},
+		{
 			name: "valid json report definition",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
@@ -140,6 +149,17 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 			wantCodes:   []string{"validation.invalid_report_argument_value"},
 			wantMessage: "invalid value for report argument header: yes",
+		},
+		{
+			name: "invalid markdown detail value",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"detail=verbose"},
+			}}),
+			wantCodes:   []string{"validation.invalid_report_argument_value"},
+			wantMessage: "invalid value for report argument detail: verbose",
 		},
 		{
 			name: "absolute report filepath is invalid",

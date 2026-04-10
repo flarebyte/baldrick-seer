@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
@@ -31,6 +32,28 @@ func TestDefaultReportRenderer(t *testing.T) {
 			scenarios:  reportScenarioResults(),
 			weights:    reportScenarioWeights(),
 			wantGolden: "report_markdown.out.golden",
+		},
+		{
+			name: "markdown standard detail output shape",
+			report: ReportConfig{
+				Name:      "summary-markdown-standard",
+				Title:     "Summary Markdown Standard",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard", "include-scores=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
+			name: "markdown full detail output shape",
+			report: ReportConfig{
+				Name:      "summary-markdown-full",
+				Title:     "Summary Markdown Full",
+				Format:    "markdown",
+				Arguments: []string{"detail=full", "include-scores=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
 		},
 		{
 			name: "json renderer output shape",
@@ -168,6 +191,18 @@ func TestDefaultReportRenderer(t *testing.T) {
 				t.Fatalf("RenderReports() error = %v", err)
 			}
 
+			if tt.name == "markdown standard detail output shape" {
+				if !strings.Contains(got.RenderedOutput, "# Summary Markdown Standard") {
+					t.Fatalf("RenderedOutput missing standard title in %q", got.RenderedOutput)
+				}
+				assertMarkdownStandardOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "markdown full detail output shape" {
+				assertMarkdownFullOutput(t, got.RenderedOutput)
+				return
+			}
+
 			if got, want := got.RenderedOutput, readPipelineGolden(t, tt.wantGolden); got != want {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
 			}
@@ -189,6 +224,24 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Title:     "Summary Markdown",
 				Format:    "markdown",
 				Arguments: []string{"include-scores=true"},
+			},
+		},
+		{
+			name: "markdown standard",
+			report: ReportConfig{
+				Name:      "summary-markdown-standard",
+				Title:     "Summary Markdown Standard",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard", "include-scores=true"},
+			},
+		},
+		{
+			name: "markdown full",
+			report: ReportConfig{
+				Name:      "summary-markdown-full",
+				Title:     "Summary Markdown Full",
+				Format:    "markdown",
+				Arguments: []string{"detail=full", "include-scores=true"},
 			},
 		},
 		{
@@ -615,6 +668,57 @@ func TestDefaultReportRendererOverwritesFileTargetedReportsDeterministically(t *
 	}
 	if got := string(content); got != want {
 		t.Fatalf("file content = %q, want %q", got, want)
+	}
+}
+
+func assertMarkdownStandardOutput(t *testing.T, got string) {
+	t.Helper()
+
+	patterns := []string{
+		"## Problem",
+		"- Name: Decision Demo",
+		"## Alternatives",
+		"- alpha",
+		"- beta",
+		"## Scenarios",
+		"- baseline",
+		"- growth",
+		"## Criteria Weights",
+		"- baseline: cost=1.000000",
+		"- growth: cost=0.600000, quality=0.400000",
+		"## Scenario Rankings",
+		"### baseline",
+		"### growth",
+		"## Notes and Tradeoffs",
+		"- Aggregation method: equal_average",
+		"- Exclusions:",
+		"baseline: beta (excluded by scenario constraints)",
+	}
+	for _, pattern := range patterns {
+		if !strings.Contains(got, pattern) {
+			t.Fatalf("output missing %q in %q", pattern, got)
+		}
+	}
+}
+
+func assertMarkdownFullOutput(t *testing.T, got string) {
+	t.Helper()
+
+	assertMarkdownStandardOutput(t, got)
+	patterns := []string{
+		"# Summary Markdown Full",
+		"## Detailed Scenario Notes",
+		"- Ranked alternatives: 1",
+		"- Excluded alternatives: 1",
+		"- Leading alternative: alpha",
+		"## Aggregation Notes",
+		"- Participating scenarios: 2",
+		"- Final eligible alternatives: 1",
+	}
+	for _, pattern := range patterns {
+		if !strings.Contains(got, pattern) {
+			t.Fatalf("output missing %q in %q", pattern, got)
+		}
 	}
 }
 
