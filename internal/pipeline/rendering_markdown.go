@@ -95,27 +95,12 @@ func renderMarkdownBriefReport(
 	aggregationScenarioWeights map[string]float64,
 	options markdownRenderOptions,
 ) string {
-	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
-	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
-
+	includeScores, topAlternatives := markdownReportSettings(report)
 	var builder strings.Builder
-	builder.WriteString("# ")
-	builder.WriteString(report.Title)
-	builder.WriteString("\n\n")
+	writeMarkdownReportTitle(&builder, report.Title)
 	if options.IncludeContext {
-		builder.WriteString("## Problem\n\n")
-		builder.WriteString("- Name: ")
-		builder.WriteString(problemName(config))
+		writeMarkdownProblemSection(&builder, config, "", options.IncludeAltDescriptions)
 		builder.WriteString("\n")
-		if options.IncludeAltDescriptions {
-			builder.WriteString("\n## Alternatives\n")
-			for _, alternative := range canonicalAlternatives(config.Alternatives) {
-				builder.WriteString("- ")
-				builder.WriteString(alternative.Name)
-				builder.WriteString("\n")
-			}
-			builder.WriteString("\n")
-		}
 	} else {
 		builder.WriteString("Problem: ")
 		builder.WriteString(problemName(config))
@@ -163,53 +148,17 @@ func renderMarkdownStandardReport(
 	aggregationScenarioWeights map[string]float64,
 	options markdownRenderOptions,
 ) string {
-	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
-	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
-
+	includeScores, topAlternatives := markdownReportSettings(report)
 	var builder strings.Builder
-	builder.WriteString("# ")
-	builder.WriteString(report.Title)
-	builder.WriteString("\n\n")
+	writeMarkdownReportTitle(&builder, report.Title)
 
 	if options.IncludeContext {
-		builder.WriteString("## Problem\n\n")
-		builder.WriteString("- Name: ")
-		builder.WriteString(problemName(config))
-		builder.WriteString("\n")
-		builder.WriteString("- Report: ")
-		builder.WriteString(report.Name)
-		builder.WriteString("\n")
-
-		if options.IncludeAltDescriptions {
-			builder.WriteString("\n## Alternatives\n")
-			for _, alternative := range canonicalAlternatives(config.Alternatives) {
-				builder.WriteString("- ")
-				builder.WriteString(alternative.Name)
-				builder.WriteString("\n")
-			}
-		}
-
-		builder.WriteString("\n## Scenarios\n")
-		for _, scenario := range canonicalScenarios(config.Scenarios) {
-			builder.WriteString("- ")
-			builder.WriteString(scenario.Name)
-			builder.WriteString("\n")
-		}
+		writeMarkdownProblemSection(&builder, config, report.Name, options.IncludeAltDescriptions)
+		writeMarkdownScenarioCatalog(&builder, config)
 	}
 
 	if options.IncludeWeights {
-		builder.WriteString("\n## Criteria Weights\n")
-		if len(scenarioWeights) == 0 {
-			builder.WriteString("- (none)\n")
-		} else {
-			for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
-				builder.WriteString("- ")
-				builder.WriteString(scenarioWeight.ScenarioName)
-				builder.WriteString(": ")
-				writeMarkdownInlineWeights(&builder, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
-				builder.WriteString("\n")
-			}
-		}
+		writeMarkdownCriteriaWeights(&builder, scenarioWeights)
 	}
 
 	builder.WriteString("\n## Scenario Rankings\n")
@@ -266,6 +215,18 @@ func renderMarkdownFullReport(
 		writeMarkdownAggregationDetailNotes(&builder, aggregation, aggregationScenarioWeights, finalRanking)
 	}
 	return builder.String()
+}
+
+func markdownReportSettings(report ReportConfig) (bool, int) {
+	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
+	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
+	return includeScores, topAlternatives
+}
+
+func writeMarkdownReportTitle(builder *strings.Builder, title string) {
+	builder.WriteString("# ")
+	builder.WriteString(title)
+	builder.WriteString("\n\n")
 }
 
 func writeMarkdownScenarioExplanation(builder *strings.Builder, scenarioName string, scenarioWeights []ScenarioCriterionWeights) {
@@ -326,6 +287,52 @@ func writeMarkdownAlternative(builder *strings.Builder, alternative domain.Ranke
 		builder.WriteString(")")
 	}
 	builder.WriteString("\n")
+}
+
+func writeMarkdownProblemSection(builder *strings.Builder, config *ExecutionConfig, reportName string, includeAlternatives bool) {
+	builder.WriteString("## Problem\n\n")
+	builder.WriteString("- Name: ")
+	builder.WriteString(problemName(config))
+	builder.WriteString("\n")
+	if reportName != "" {
+		builder.WriteString("- Report: ")
+		builder.WriteString(reportName)
+		builder.WriteString("\n")
+	}
+
+	if includeAlternatives {
+		builder.WriteString("\n## Alternatives\n")
+		for _, alternative := range canonicalAlternatives(config.Alternatives) {
+			builder.WriteString("- ")
+			builder.WriteString(alternative.Name)
+			builder.WriteString("\n")
+		}
+	}
+}
+
+func writeMarkdownScenarioCatalog(builder *strings.Builder, config *ExecutionConfig) {
+	builder.WriteString("\n## Scenarios\n")
+	for _, scenario := range canonicalScenarios(config.Scenarios) {
+		builder.WriteString("- ")
+		builder.WriteString(scenario.Name)
+		builder.WriteString("\n")
+	}
+}
+
+func writeMarkdownCriteriaWeights(builder *strings.Builder, scenarioWeights []ScenarioCriterionWeights) {
+	builder.WriteString("\n## Criteria Weights\n")
+	if len(scenarioWeights) == 0 {
+		builder.WriteString("- (none)\n")
+		return
+	}
+
+	for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
+		builder.WriteString("- ")
+		builder.WriteString(scenarioWeight.ScenarioName)
+		builder.WriteString(": ")
+		writeMarkdownInlineWeights(builder, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
+		builder.WriteString("\n")
+	}
 }
 
 func writeMarkdownInlineWeights(builder *strings.Builder, weights []CriterionWeight) {
