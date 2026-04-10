@@ -106,3 +106,18 @@ If you need to regenerate derived design docs:
 ```sh
 make doc-design
 ```
+
+Decision records live under:
+
+```text
+doc/decision-meta/
+doc/decision/
+```
+
+Each `*.seer.cue` file under `doc/decision-meta/` is treated as one decision config and generates a mirrored markdown report under `doc/decision/`.
+
+To validate all decision configs and regenerate their markdown reports:
+
+```sh
+make doc-decision
+```

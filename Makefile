@@ -1,4 +1,4 @@
-.PHONY: build build-go build-dist test test-go test-unit test-race test-e2e lint lint-go lint-e2e format format-go format-e2e coverage coverage-go doc-design dup complexity release sec help
+.PHONY: build build-go build-dist test test-go test-unit test-race test-e2e lint lint-go lint-e2e format format-go format-e2e coverage coverage-go doc-design doc-decision dup complexity release sec help
 
 GO := go
 BUN := bun
@@ -10,6 +10,7 @@ GO_MOD_CACHE_DIR := $(ROOT_DIR)/.gomodcache
 GO_LINT_CACHE_DIR := $(ROOT_DIR)/.golangci-lint-cache
 E2E_BIN_DIR := $(ROOT_DIR)/.e2e-bin
 BUILD_DIR := $(ROOT_DIR)/build
+SEER := $(E2E_BIN_DIR)/seer
 GO_PACKAGES := ./...
 GO_ENV := GOTOOLCHAIN=local GOCACHE=$(GO_CACHE_DIR) GOMODCACHE=$(GO_MOD_CACHE_DIR)
 BUN_ENV := TMPDIR=$(TMP_DIR)
@@ -94,6 +95,11 @@ doc-design:
 	flyb validate --config doc/design-meta/flows.cue
 	flyb generate markdown --config doc/design-meta/flows.cue
 
+doc-decision: build-go
+	mkdir -p doc/decision-meta
+	mkdir -p doc/decision
+	SEER_BIN=$(SEER) sh ./script/generate-decision-docs.sh
+
 dup:
 	npx jscpd --format go --min-lines 10 --ignore "**/.gomodcache/**,**/.gocache/**,**/.e2e-bin/**,**/node_modules/**,**/dist/**" --gitignore .
 	npx jscpd --format typescript --min-lines 10 --gitignore .
@@ -127,6 +133,7 @@ help:
 	@printf "  format-go    Format Go files with gofmt.\n"
 	@printf "  format-e2e   Format TypeScript and tooling files with Biome.\n"
 	@printf "  doc-design   Regenerate design docs from flyb configs.\n"
+	@printf "  doc-decision Validate decision configs and regenerate markdown decision reports.\n"
 	@printf "  dup          Run duplicate code detection.\n"
 	@printf "  complexity   Show top Go and TypeScript files by complexity.\n"
 	@printf "  release      Run the local release helper script.\n"
