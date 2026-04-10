@@ -224,6 +224,24 @@ func TestReportDefinitionValidationFlowBehavior(t *testing.T) {
 			},
 			run: Runner.RunValidate,
 		},
+		{
+			name: "valid report filepath definitions proceed",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "valid_report_filepath.cue"),
+			},
+			run: Runner.RunValidate,
+		},
+		{
+			name: "invalid report filepath stops validation",
+			command: domain.CommandRequest{
+				CommandName: domain.CommandNameValidate,
+				ConfigPath:  filepath.Join("..", "..", "testdata", "config", "invalid_report_filepath.cue"),
+			},
+			run:         Runner.RunValidate,
+			wantErr:     ErrValidationFailed,
+			wantMessage: "report filepath must be relative: /tmp/summary.md",
+		},
 	})
 }
 

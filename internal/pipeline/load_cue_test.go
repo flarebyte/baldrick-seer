@@ -52,6 +52,20 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 			},
 		},
 		{
+			name:       "valid cue config with report filepath",
+			configPath: filepath.Join("..", "..", "testdata", "config", "valid_report_filepath.cue"),
+			wantFields: []string{"config"},
+			wantConfigFields: []string{
+				"aggregation",
+				"alternatives",
+				"criteriaCatalog",
+				"evaluations",
+				"problem",
+				"reports",
+				"scenarios",
+			},
+		},
+		{
 			name:         "non concrete cue config",
 			configPath:   filepath.Join("..", "..", "testdata", "config", "non_concrete.cue"),
 			wantErr:      ErrConfigNotConcrete,
@@ -114,6 +128,27 @@ func TestDefaultConfigLoaderWithCue(t *testing.T) {
 			}
 			assertLoaderFailure(t, err, tt.wantErr, tt.wantCategory, tt.wantCode, tt.wantMessage)
 		})
+	}
+}
+
+func TestDefaultConfigLoaderDecodesReportFilepath(t *testing.T) {
+	t.Parallel()
+
+	loader := DefaultConfigLoader{}
+	got := mustLoadConfig(t, loader, filepath.Join("..", "..", "testdata", "config", "valid_report_filepath.cue"))
+
+	if got.Config.Config == nil {
+		t.Fatal("Config = nil, want value")
+	}
+	if len(got.Config.Config.Reports) != 2 {
+		t.Fatalf("len(Reports) = %d, want 2", len(got.Config.Config.Reports))
+	}
+
+	if got, want := got.Config.Config.Reports[0].Filepath, "../artifacts/summary.md"; got != want {
+		t.Fatalf("Reports[0].Filepath = %q, want %q", got, want)
+	}
+	if got, want := got.Config.Config.Reports[1].Filepath, "artifacts/summary.json"; got != want {
+		t.Fatalf("Reports[1].Filepath = %q, want %q", got, want)
 	}
 }
 

@@ -58,6 +58,7 @@ type ReportConfig struct {
 	Name      string       `json:"name"`
 	Title     string       `json:"title"`
 	Format    string       `json:"format"`
+	Filepath  string       `json:"filepath"`
 	Arguments []string     `json:"arguments"`
 	Focus     *ReportFocus `json:"focus"`
 }

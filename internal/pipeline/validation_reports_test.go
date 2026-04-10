@@ -30,7 +30,17 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 				Name:      "summary",
 				Title:     "Summary",
 				Format:    "csv",
+				Filepath:  "artifacts/summary.csv",
 				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			}}),
+		},
+		{
+			name: "valid relative report filepath with parent directory segments",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "../decision/data/summary.md",
 			}}),
 		},
 		{
@@ -130,6 +140,39 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 			wantCodes:   []string{"validation.invalid_report_argument_value"},
 			wantMessage: "invalid value for report argument header: yes",
+		},
+		{
+			name: "absolute report filepath is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "/tmp/summary.md",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must be relative: /tmp/summary.md",
+		},
+		{
+			name: "filepath resolving to current directory is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: ".",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must name a file, got: .",
+		},
+		{
+			name: "filepath resolving to parent directory only is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "..",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must name a file, got: ..",
 		},
 		{
 			name: "valid mixed examples using spec argument patterns",

@@ -38,6 +38,11 @@ export interface ReportDefinition {
   description?: string;
   format: ReportFormat;
   /**
+   * Optional relative artifact path for config-driven report generation.
+   * When omitted, the report remains stdout-oriented.
+   */
+  filepath?: string;
+  /**
    * Optional report parameters using the same key=value convention as CLI args.
    * These are intended to be parsed with the same Cobra-based argument handling
    * used by the CLI so report-level customization stays consistent.
