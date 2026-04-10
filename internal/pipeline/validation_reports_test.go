@@ -25,6 +25,22 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 		},
 		{
+			name: "valid markdown granular explainability arguments",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"include-context=true",
+					"include-weights=true",
+					"include-alternative-descriptions=true",
+					"include-evaluation-notes=false",
+					"include-tradeoffs=true",
+				},
+			}}),
+		},
+		{
 			name: "valid json report definition",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
@@ -138,6 +154,17 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 			wantCodes:   []string{"validation.incompatible_report_argument"},
 			wantMessage: "report argument key header is not allowed for format json",
+		},
+		{
+			name: "markdown explainability key used with wrong report format",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"include-tradeoffs=true"},
+			}}),
+			wantCodes:   []string{"validation.incompatible_report_argument"},
+			wantMessage: "report argument key include-tradeoffs is not allowed for format json",
 		},
 		{
 			name: "invalid argument value",

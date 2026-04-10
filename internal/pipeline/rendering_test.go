@@ -56,6 +56,40 @@ func TestDefaultReportRenderer(t *testing.T) {
 			weights:   reportScenarioWeights(),
 		},
 		{
+			name: "markdown explicit include flags override legacy explain",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags",
+				Title:  "Summary Markdown Flags",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"explain=false",
+					"include-weights=true",
+					"include-tradeoffs=true",
+					"include-evaluation-notes=true",
+					"include-alternative-descriptions=false",
+				},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
+			name: "markdown explicit flags can suppress standard sections",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags-off",
+				Title:  "Summary Markdown Flags Off",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"include-context=false",
+					"include-weights=false",
+					"include-tradeoffs=false",
+				},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
 			name: "json renderer output shape",
 			report: ReportConfig{
 				Name:      "summary-json",
@@ -202,6 +236,14 @@ func TestDefaultReportRenderer(t *testing.T) {
 				assertMarkdownFullOutput(t, got.RenderedOutput)
 				return
 			}
+			if tt.name == "markdown explicit include flags override legacy explain" {
+				assertMarkdownFlagsOverrideOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "markdown explicit flags can suppress standard sections" {
+				assertMarkdownFlagsSuppressedOutput(t, got.RenderedOutput)
+				return
+			}
 
 			if got, want := got.RenderedOutput, readPipelineGolden(t, tt.wantGolden); got != want {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
@@ -242,6 +284,22 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 				Title:     "Summary Markdown Full",
 				Format:    "markdown",
 				Arguments: []string{"detail=full", "include-scores=true"},
+			},
+		},
+		{
+			name: "markdown explicit flags",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags",
+				Title:  "Summary Markdown Flags",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"explain=false",
+					"include-weights=true",
+					"include-tradeoffs=true",
+					"include-evaluation-notes=true",
+					"include-alternative-descriptions=false",
+				},
 			},
 		},
 		{
@@ -718,6 +776,63 @@ func assertMarkdownFullOutput(t *testing.T, got string) {
 	for _, pattern := range patterns {
 		if !strings.Contains(got, pattern) {
 			t.Fatalf("output missing %q in %q", pattern, got)
+		}
+	}
+}
+
+func assertMarkdownFlagsOverrideOutput(t *testing.T, got string) {
+	t.Helper()
+
+	present := []string{
+		"# Summary Markdown Flags",
+		"## Problem",
+		"## Criteria Weights",
+		"## Notes and Tradeoffs",
+		"## Detailed Scenario Notes",
+		"## Aggregation Notes",
+	}
+	for _, pattern := range present {
+		if !strings.Contains(got, pattern) {
+			t.Fatalf("output missing %q in %q", pattern, got)
+		}
+	}
+
+	absent := []string{
+		"## Alternatives",
+	}
+	for _, pattern := range absent {
+		if strings.Contains(got, pattern) {
+			t.Fatalf("output unexpectedly contained %q in %q", pattern, got)
+		}
+	}
+}
+
+func assertMarkdownFlagsSuppressedOutput(t *testing.T, got string) {
+	t.Helper()
+
+	present := []string{
+		"# Summary Markdown Flags Off",
+		"## Scenario Rankings",
+		"## Final Ranking",
+	}
+	for _, pattern := range present {
+		if !strings.Contains(got, pattern) {
+			t.Fatalf("output missing %q in %q", pattern, got)
+		}
+	}
+
+	absent := []string{
+		"## Problem",
+		"## Alternatives",
+		"## Scenarios\n- ",
+		"## Criteria Weights",
+		"## Notes and Tradeoffs",
+		"## Detailed Scenario Notes",
+		"## Aggregation Notes",
+	}
+	for _, pattern := range absent {
+		if strings.Contains(got, pattern) {
+			t.Fatalf("output unexpectedly contained %q in %q", pattern, got)
 		}
 	}
 }

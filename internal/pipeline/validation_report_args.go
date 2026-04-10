@@ -23,11 +23,15 @@ var reportArgumentRules = map[string]reportArgumentRule{
 	"detail": {AllowedFormats: []string{"markdown"}, ValidateValue: func(value string) bool {
 		return value == "brief" || value == "standard" || value == "full"
 	}},
-	"include-evidence": {AllowedFormats: []string{"json"}, ValidateValue: isBooleanString},
-	"include-weights":  {AllowedFormats: []string{"json"}, ValidateValue: isBooleanString},
-	"pretty":           {AllowedFormats: []string{"json"}, ValidateValue: isBooleanString},
-	"columns":          {AllowedFormats: []string{"csv"}, ValidateValue: isValidCSVColumns},
-	"header":           {AllowedFormats: []string{"csv"}, ValidateValue: isBooleanString},
+	"include-context":                  {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
+	"include-weights":                  {AllowedFormats: []string{"markdown", "json"}, ValidateValue: isBooleanString},
+	"include-alternative-descriptions": {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
+	"include-evaluation-notes":         {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
+	"include-tradeoffs":                {AllowedFormats: []string{"markdown"}, ValidateValue: isBooleanString},
+	"include-evidence":                 {AllowedFormats: []string{"json"}, ValidateValue: isBooleanString},
+	"pretty":                           {AllowedFormats: []string{"json"}, ValidateValue: isBooleanString},
+	"columns":                          {AllowedFormats: []string{"csv"}, ValidateValue: isValidCSVColumns},
+	"header":                           {AllowedFormats: []string{"csv"}, ValidateValue: isBooleanString},
 }
 
 func validateReportArguments(reportIndex int, report ReportConfig) []domain.Diagnostic {

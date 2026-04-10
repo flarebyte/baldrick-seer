@@ -16,14 +16,73 @@ func renderMarkdownReport(
 	scenarioWeights []ScenarioCriterionWeights,
 	aggregationScenarioWeights map[string]float64,
 ) string {
-	switch reportArgumentValue(report.Arguments, "detail", "brief") {
+	options := resolveMarkdownRenderOptions(report)
+	switch options.Detail {
 	case "standard":
-		return renderMarkdownStandardReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights)
+		if options.IncludeEvaluationNotes {
+			return renderMarkdownFullReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights, options)
+		}
+		return renderMarkdownStandardReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights, options)
 	case "full":
-		return renderMarkdownFullReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights)
+		return renderMarkdownFullReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights, options)
 	default:
-		return renderMarkdownBriefReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights)
+		return renderMarkdownBriefReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights, options)
 	}
+}
+
+type markdownRenderOptions struct {
+	Detail                 string
+	IncludeContext         bool
+	IncludeWeights         bool
+	IncludeAltDescriptions bool
+	IncludeEvaluationNotes bool
+	IncludeTradeoffs       bool
+}
+
+func resolveMarkdownRenderOptions(report ReportConfig) markdownRenderOptions {
+	detail := reportArgumentValue(report.Arguments, "detail", "brief")
+	options := markdownRenderOptions{Detail: detail}
+
+	switch detail {
+	case "standard":
+		options.IncludeContext = true
+		options.IncludeWeights = true
+		options.IncludeAltDescriptions = true
+		options.IncludeTradeoffs = true
+	case "full":
+		options.IncludeContext = true
+		options.IncludeWeights = true
+		options.IncludeAltDescriptions = true
+		options.IncludeEvaluationNotes = true
+		options.IncludeTradeoffs = true
+	default:
+		options.IncludeWeights = reportArgumentValue(report.Arguments, "explain", "true") == "true"
+		options.IncludeTradeoffs = options.IncludeWeights
+	}
+
+	if reportArgumentPresent(report.Arguments, "explain") && reportArgumentValue(report.Arguments, "explain", "true") == "false" {
+		options.IncludeWeights = false
+		options.IncludeEvaluationNotes = false
+		options.IncludeTradeoffs = false
+	}
+
+	if reportArgumentPresent(report.Arguments, "include-context") {
+		options.IncludeContext = reportArgumentValue(report.Arguments, "include-context", "false") == "true"
+	}
+	if reportArgumentPresent(report.Arguments, "include-weights") {
+		options.IncludeWeights = reportArgumentValue(report.Arguments, "include-weights", "false") == "true"
+	}
+	if reportArgumentPresent(report.Arguments, "include-alternative-descriptions") {
+		options.IncludeAltDescriptions = reportArgumentValue(report.Arguments, "include-alternative-descriptions", "false") == "true"
+	}
+	if reportArgumentPresent(report.Arguments, "include-evaluation-notes") {
+		options.IncludeEvaluationNotes = reportArgumentValue(report.Arguments, "include-evaluation-notes", "false") == "true"
+	}
+	if reportArgumentPresent(report.Arguments, "include-tradeoffs") {
+		options.IncludeTradeoffs = reportArgumentValue(report.Arguments, "include-tradeoffs", "false") == "true"
+	}
+
+	return options
 }
 
 func renderMarkdownBriefReport(
@@ -34,25 +93,41 @@ func renderMarkdownBriefReport(
 	aggregation *AggregationConfig,
 	scenarioWeights []ScenarioCriterionWeights,
 	aggregationScenarioWeights map[string]float64,
+	options markdownRenderOptions,
 ) string {
 	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
 	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
-	includeExplain := reportArgumentValue(report.Arguments, "explain", "true") == "true"
 
 	var builder strings.Builder
 	builder.WriteString("# ")
 	builder.WriteString(report.Title)
 	builder.WriteString("\n\n")
-	builder.WriteString("Problem: ")
-	builder.WriteString(problemName(config))
-	builder.WriteString("\n\n")
+	if options.IncludeContext {
+		builder.WriteString("## Problem\n\n")
+		builder.WriteString("- Name: ")
+		builder.WriteString(problemName(config))
+		builder.WriteString("\n")
+		if options.IncludeAltDescriptions {
+			builder.WriteString("\n## Alternatives\n")
+			for _, alternative := range canonicalAlternatives(config.Alternatives) {
+				builder.WriteString("- ")
+				builder.WriteString(alternative.Name)
+				builder.WriteString("\n")
+			}
+			builder.WriteString("\n")
+		}
+	} else {
+		builder.WriteString("Problem: ")
+		builder.WriteString(problemName(config))
+		builder.WriteString("\n\n")
+	}
 
 	builder.WriteString("## Scenarios\n")
 	for _, scenarioResult := range scenarioResults {
 		builder.WriteString("\n### ")
 		builder.WriteString(scenarioResult.ScenarioName)
 		builder.WriteString("\n")
-		if includeExplain {
+		if options.IncludeWeights {
 			writeMarkdownScenarioExplanation(&builder, scenarioResult.ScenarioName, scenarioWeights)
 		}
 		rows := limitRankedAlternatives(scenarioResult.RankedAlternatives, topAlternatives)
@@ -61,7 +136,7 @@ func renderMarkdownBriefReport(
 		}
 	}
 
-	if includeExplain {
+	if options.IncludeTradeoffs || options.IncludeWeights {
 		writeMarkdownAggregationExplanation(&builder, aggregation, aggregationScenarioWeights)
 	}
 
@@ -86,6 +161,7 @@ func renderMarkdownStandardReport(
 	aggregation *AggregationConfig,
 	scenarioWeights []ScenarioCriterionWeights,
 	aggregationScenarioWeights map[string]float64,
+	options markdownRenderOptions,
 ) string {
 	includeScores := reportArgumentValue(report.Arguments, "include-scores", "true") == "true"
 	topAlternatives := reportArgumentInt(report.Arguments, "top-alternatives")
@@ -95,38 +171,44 @@ func renderMarkdownStandardReport(
 	builder.WriteString(report.Title)
 	builder.WriteString("\n\n")
 
-	builder.WriteString("## Problem\n\n")
-	builder.WriteString("- Name: ")
-	builder.WriteString(problemName(config))
-	builder.WriteString("\n")
-	builder.WriteString("- Report: ")
-	builder.WriteString(report.Name)
-	builder.WriteString("\n")
-
-	builder.WriteString("\n## Alternatives\n")
-	for _, alternative := range canonicalAlternatives(config.Alternatives) {
-		builder.WriteString("- ")
-		builder.WriteString(alternative.Name)
+	if options.IncludeContext {
+		builder.WriteString("## Problem\n\n")
+		builder.WriteString("- Name: ")
+		builder.WriteString(problemName(config))
 		builder.WriteString("\n")
-	}
-
-	builder.WriteString("\n## Scenarios\n")
-	for _, scenario := range canonicalScenarios(config.Scenarios) {
-		builder.WriteString("- ")
-		builder.WriteString(scenario.Name)
+		builder.WriteString("- Report: ")
+		builder.WriteString(report.Name)
 		builder.WriteString("\n")
-	}
 
-	builder.WriteString("\n## Criteria Weights\n")
-	if len(scenarioWeights) == 0 {
-		builder.WriteString("- (none)\n")
-	} else {
-		for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
+		if options.IncludeAltDescriptions {
+			builder.WriteString("\n## Alternatives\n")
+			for _, alternative := range canonicalAlternatives(config.Alternatives) {
+				builder.WriteString("- ")
+				builder.WriteString(alternative.Name)
+				builder.WriteString("\n")
+			}
+		}
+
+		builder.WriteString("\n## Scenarios\n")
+		for _, scenario := range canonicalScenarios(config.Scenarios) {
 			builder.WriteString("- ")
-			builder.WriteString(scenarioWeight.ScenarioName)
-			builder.WriteString(": ")
-			writeMarkdownInlineWeights(&builder, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
+			builder.WriteString(scenario.Name)
 			builder.WriteString("\n")
+		}
+	}
+
+	if options.IncludeWeights {
+		builder.WriteString("\n## Criteria Weights\n")
+		if len(scenarioWeights) == 0 {
+			builder.WriteString("- (none)\n")
+		} else {
+			for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {
+				builder.WriteString("- ")
+				builder.WriteString(scenarioWeight.ScenarioName)
+				builder.WriteString(": ")
+				writeMarkdownInlineWeights(&builder, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
+				builder.WriteString("\n")
+			}
 		}
 	}
 
@@ -149,9 +231,11 @@ func renderMarkdownStandardReport(
 		}
 	}
 
-	builder.WriteString("\n## Notes and Tradeoffs\n")
-	writeMarkdownAggregationNotes(&builder, aggregation, aggregationScenarioWeights)
-	writeMarkdownExclusionNotes(&builder, scenarioResults)
+	if options.IncludeTradeoffs {
+		builder.WriteString("\n## Notes and Tradeoffs\n")
+		writeMarkdownAggregationNotes(&builder, aggregation, aggregationScenarioWeights)
+		writeMarkdownExclusionNotes(&builder, scenarioResults)
+	}
 
 	return builder.String()
 }
@@ -164,18 +248,23 @@ func renderMarkdownFullReport(
 	aggregation *AggregationConfig,
 	scenarioWeights []ScenarioCriterionWeights,
 	aggregationScenarioWeights map[string]float64,
+	options markdownRenderOptions,
 ) string {
 	var builder strings.Builder
-	builder.WriteString(renderMarkdownStandardReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights))
-	builder.WriteString("\n## Detailed Scenario Notes\n")
-	for _, scenarioResult := range scenarioResults {
-		builder.WriteString("\n### ")
-		builder.WriteString(scenarioResult.ScenarioName)
-		builder.WriteString("\n")
-		writeMarkdownScenarioDetailNotes(&builder, scenarioResult)
+	builder.WriteString(renderMarkdownStandardReport(report, config, scenarioResults, finalRanking, aggregation, scenarioWeights, aggregationScenarioWeights, options))
+	if options.IncludeEvaluationNotes {
+		builder.WriteString("\n## Detailed Scenario Notes\n")
+		for _, scenarioResult := range scenarioResults {
+			builder.WriteString("\n### ")
+			builder.WriteString(scenarioResult.ScenarioName)
+			builder.WriteString("\n")
+			writeMarkdownScenarioDetailNotes(&builder, scenarioResult)
+		}
 	}
-	builder.WriteString("\n## Aggregation Notes\n")
-	writeMarkdownAggregationDetailNotes(&builder, aggregation, aggregationScenarioWeights, finalRanking)
+	if options.IncludeTradeoffs {
+		builder.WriteString("\n## Aggregation Notes\n")
+		writeMarkdownAggregationDetailNotes(&builder, aggregation, aggregationScenarioWeights, finalRanking)
+	}
 	return builder.String()
 }
 
