@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"os"
@@ -257,6 +258,55 @@ func readPipelineGolden(t *testing.T, name string) string {
 		t.Fatalf("ReadFile(%q) error = %v", name, err)
 	}
 	return string(content)
+}
+
+func singleReportDefinitions(report ReportConfig) []domain.ReportDefinition {
+	return []domain.ReportDefinition{{Name: report.Name, Title: report.Title, Format: report.Format}}
+}
+
+func renderReportsForTest(
+	t *testing.T,
+	config LoadedConfig,
+	scenarioResults []domain.ScenarioRankingResult,
+	finalRanking domain.AggregatedRankingResult,
+	reportDefinitions []domain.ReportDefinition,
+	scenarioWeights []ScenarioCriterionWeights,
+) RenderReportsOutput {
+	t.Helper()
+
+	renderer := DefaultReportRenderer{}
+	got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
+		Command: domain.CommandRequest{
+			CommandName: domain.CommandNameReportGenerate,
+			ConfigPath:  config.Path,
+		},
+		ValidatedModel:    domain.ValidatedModelSummary{ConfigPath: config.Path},
+		ScenarioResults:   scenarioResults,
+		FinalRanking:      finalRanking,
+		ReportDefinitions: reportDefinitions,
+		ScenarioWeights:   scenarioWeights,
+		Config:            config,
+	})
+	if err != nil {
+		t.Fatalf("RenderReports() error = %v", err)
+	}
+	return got
+}
+
+func expectedRenderedReport(
+	t *testing.T,
+	report ReportConfig,
+	config LoadedConfig,
+	scenarioResults []domain.ScenarioRankingResult,
+	scenarioWeights []ScenarioCriterionWeights,
+) string {
+	t.Helper()
+
+	want, err := renderReport(report, config.Config, scenarioResults, config.Config.Aggregation, scenarioWeights)
+	if err != nil {
+		t.Fatalf("renderReport() error = %v", err)
+	}
+	return want
 }
 
 func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {

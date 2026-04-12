@@ -64,12 +64,7 @@ func filterScenarioWeightsForReport(report ReportConfig, scenarioWeights []Scena
 		return nil
 	}
 
-	allowedScenarios := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
-		return focus.ScenarioNames
-	})
-	allowedCriteria := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
-		return focus.CriterionNames
-	})
+	allowedScenarios, allowedCriteria := focusedScenarioAndCriterionNames(report)
 
 	filtered := make([]ScenarioCriterionWeights, 0, len(scenarioWeights))
 	for _, scenarioWeight := range canonicalScenarioWeights(scenarioWeights) {

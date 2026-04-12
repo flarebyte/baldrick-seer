@@ -262,14 +262,7 @@ func writeMarkdownDecisionDriversSection(
 	}
 
 	if includeWeights && len(weights) > 0 {
-		builder.WriteString("\n### Criteria Weights\n")
-		for _, scenarioWeight := range weights {
-			builder.WriteString("- ")
-			builder.WriteString(scenarioLabelByName(config, scenarioWeight.ScenarioName))
-			builder.WriteString(": ")
-			writeMarkdownNamedWeights(builder, config, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
-			builder.WriteString("\n")
-		}
+		writeMarkdownScenarioWeightList(builder, "\n### Criteria Weights\n", config, weights)
 	}
 }
 
@@ -376,14 +369,7 @@ func writeMarkdownTradeoffCriteriaWeights(
 	if len(weights) == 0 {
 		return
 	}
-	builder.WriteString("\n### Scenario Criteria Weights\n")
-	for _, scenarioWeight := range weights {
-		builder.WriteString("- ")
-		builder.WriteString(scenarioLabelByName(config, scenarioWeight.ScenarioName))
-		builder.WriteString(": ")
-		writeMarkdownNamedWeights(builder, config, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
-		builder.WriteString("\n")
-	}
+	writeMarkdownScenarioWeightList(builder, "\n### Scenario Criteria Weights\n", config, weights)
 }
 
 func writeMarkdownExclusionSection(builder *strings.Builder, config *ExecutionConfig, scenarioResults []domain.ScenarioRankingResult) {
@@ -490,17 +476,28 @@ func writeMarkdownNamedWeights(builder *strings.Builder, config *ExecutionConfig
 	}
 }
 
+func writeMarkdownScenarioWeightList(
+	builder *strings.Builder,
+	heading string,
+	config *ExecutionConfig,
+	scenarioWeights []ScenarioCriterionWeights,
+) {
+	builder.WriteString(heading)
+	for _, scenarioWeight := range scenarioWeights {
+		builder.WriteString("- ")
+		builder.WriteString(scenarioLabelByName(config, scenarioWeight.ScenarioName))
+		builder.WriteString(": ")
+		writeMarkdownNamedWeights(builder, config, canonicalCriterionWeights(scenarioWeight.CriterionWeights))
+		builder.WriteString("\n")
+	}
+}
+
 func markdownPreferenceComparisons(report ReportConfig, config *ExecutionConfig) []string {
 	if config == nil {
 		return nil
 	}
 
-	allowedScenarios := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
-		return focus.ScenarioNames
-	})
-	allowedCriteria := allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
-		return focus.CriterionNames
-	})
+	allowedScenarios, allowedCriteria := focusedScenarioAndCriterionNames(report)
 
 	var output []string
 	for _, scenario := range config.Scenarios {
@@ -534,6 +531,15 @@ func markdownPreferenceComparisons(report ReportConfig, config *ExecutionConfig)
 		}
 	}
 	return output
+}
+
+func focusedScenarioAndCriterionNames(report ReportConfig) (map[string]struct{}, map[string]struct{}) {
+	return allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+			return focus.ScenarioNames
+		}),
+		allowedFocusedNames(report.Focus, func(focus *ReportFocus) []string {
+			return focus.CriterionNames
+		})
 }
 
 func orderedScenarioResultsForMarkdown(report ReportConfig, config *ExecutionConfig, scenarioResults []domain.ScenarioRankingResult) []domain.ScenarioRankingResult {
