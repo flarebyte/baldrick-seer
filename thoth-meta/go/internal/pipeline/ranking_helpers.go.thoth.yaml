@@ -1,0 +1,7 @@
+locator: internal/pipeline/ranking_helpers.go
+meta:
+  function_list:
+    - canonicalAlternativeEvaluations
+  import_files_list:
+    - sort
+  language: go

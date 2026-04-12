@@ -1,0 +1,7 @@
+locator: internal/pipeline/validation_pairwise_test.go
+meta:
+  function_list:
+    - TestDefaultModelValidatorAHPPairwiseValidation
+  import_files_list:
+    - testing
+  language: go

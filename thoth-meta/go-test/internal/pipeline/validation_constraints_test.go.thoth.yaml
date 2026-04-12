@@ -1,0 +1,7 @@
+locator: internal/pipeline/validation_constraints_test.go
+meta:
+  function_list:
+    - TestDefaultModelValidatorConstraintValidation
+  import_files_list:
+    - testing
+  language: go

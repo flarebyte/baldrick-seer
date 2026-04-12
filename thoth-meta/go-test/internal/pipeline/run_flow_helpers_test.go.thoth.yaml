@@ -1,0 +1,15 @@
+locator: internal/pipeline/run_flow_helpers_test.go
+meta:
+  function_list:
+    - assertLoadStageFailureStopsPipeline
+    - assertRunnerUsesConfigPath
+    - assertValidationStageFailureStopsPipeline
+    - fixtureFlowCases
+    - invalidValidationLoadOutput
+  import_files_list:
+    - context
+    - errors
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - path/filepath
+    - testing
+  language: go

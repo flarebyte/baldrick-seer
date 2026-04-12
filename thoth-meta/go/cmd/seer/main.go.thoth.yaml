@@ -1,0 +1,8 @@
+locator: cmd/seer/main.go
+meta:
+  function_list:
+    - main
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/cli
+    - os
+  language: go

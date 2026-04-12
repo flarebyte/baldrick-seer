@@ -1,0 +1,15 @@
+locator: internal/pipeline/validation_report_args.go
+meta:
+  function_list:
+    - allowedCSVColumnNames
+    - isBooleanString
+    - isPositiveIntegerString
+    - isValidCSVColumns
+    - reportArgumentAllowedForFormat
+    - validateReportArguments
+  import_files_list:
+    - fmt
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strconv
+    - strings
+  language: go

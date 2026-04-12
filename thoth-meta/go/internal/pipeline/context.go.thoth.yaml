@@ -1,0 +1,7 @@
+locator: internal/pipeline/context.go
+meta:
+  function_list:
+    - checkContext
+  import_files_list:
+    - context
+  language: go

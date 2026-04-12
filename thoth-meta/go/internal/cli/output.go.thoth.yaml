@@ -1,0 +1,10 @@
+locator: internal/cli/output.go
+meta:
+  function_list:
+    - Execute
+    - renderReportGenerateSuccess
+    - renderValidateSuccess
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - io
+  language: go

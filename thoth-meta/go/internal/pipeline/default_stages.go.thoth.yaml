@@ -1,0 +1,16 @@
+locator: internal/pipeline/default_stages.go
+meta:
+  function_list:
+    - cueLoadTarget
+    - cueTopLevelFields
+  import_files_list:
+    - context
+    - cuelang.org/go/cue
+    - cuelang.org/go/cue/cuecontext
+    - cuelang.org/go/cue/format
+    - cuelang.org/go/cue/load
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - os
+    - path/filepath
+    - sort
+  language: go

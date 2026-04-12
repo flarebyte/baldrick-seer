@@ -1,0 +1,13 @@
+locator: internal/pipeline/failure.go
+meta:
+  function_list:
+    - NewExecutionFailure
+    - NewInputFailure
+    - NewRenderingFailure
+    - NewValidationDiagnosticsFailure
+    - NewValidationFailure
+    - WrapStageFailure
+    - newFailure
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go

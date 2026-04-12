@@ -1,0 +1,19 @@
+locator: internal/pipeline/weighting_test.go
+meta:
+  function_list:
+    - TestDefaultCriteriaWeighter
+    - TestDefaultCriteriaWeighterIsDeterministic
+    - TestDefaultCriteriaWeighterNormalizesWeights
+    - TestRunReportGenerateStopsOnRealWeightingFailure
+    - TestRunReportGenerateUsesRealScenarioWeights
+    - invalidWeightingLoadOutput
+    - validThreeCriteriaAHPConfig
+  import_files_list:
+    - context
+    - errors
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - math
+    - path/filepath
+    - reflect
+    - testing
+  language: go

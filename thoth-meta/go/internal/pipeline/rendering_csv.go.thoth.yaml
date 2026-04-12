@@ -1,0 +1,15 @@
+locator: internal/pipeline/rendering_csv.go
+meta:
+  function_list:
+    - csvColumnsIncludeCriterionData
+    - csvRecord
+    - csvRecords
+    - csvSchemaDescriptions
+    - renderCSVReport
+  import_files_list:
+    - bytes
+    - encoding/csv
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strconv
+    - strings
+  language: go

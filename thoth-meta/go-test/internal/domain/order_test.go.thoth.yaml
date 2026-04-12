@@ -1,0 +1,11 @@
+locator: internal/domain/order_test.go
+meta:
+  function_list:
+    - TestCanonicalCommandResultDeterministic
+    - TestCanonicalDiagnostics
+    - TestCanonicalNamedCollections
+    - TestCanonicalRankedAlternatives
+  import_files_list:
+    - reflect
+    - testing
+  language: go

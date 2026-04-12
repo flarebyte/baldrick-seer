@@ -1,0 +1,24 @@
+locator: internal/cli/root.go
+meta:
+  function_list:
+    - NewRootCmd
+    - configFlagUsage
+    - newReportCmd
+    - newRootCmd
+    - newValidateCmd
+    - reportExamples
+    - reportGenerateExamples
+    - reportGenerateLongHelp
+    - reportLongHelp
+    - rootExamples
+    - rootLongHelp
+    - validateExamples
+    - validateLongHelp
+  import_files_list:
+    - context
+    - fmt
+    - github.com/flarebyte/baldrick-seer/internal/app
+    - github.com/flarebyte/baldrick-seer/internal/buildinfo
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - github.com/spf13/cobra
+  language: go

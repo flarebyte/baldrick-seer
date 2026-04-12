@@ -1,0 +1,10 @@
+locator: internal/pipeline/validation_pairwise.go
+meta:
+  function_list:
+    - canonicalPairKey
+    - expectedAHPPairs
+    - validateScenarioPairwiseComparisons
+  import_files_list:
+    - fmt
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go

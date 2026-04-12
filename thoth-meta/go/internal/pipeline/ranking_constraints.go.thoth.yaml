@@ -1,0 +1,7 @@
+locator: internal/pipeline/ranking_constraints.go
+meta:
+  function_list:
+    - alternativeViolatesConstraints
+    - constraintMatches
+  import_files_list: []
+  language: go

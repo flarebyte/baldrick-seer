@@ -1,0 +1,17 @@
+locator: internal/domain/failure.go
+meta:
+  function_list:
+    - AsCommandFailure
+    - ExitCodeForCategory
+    - ExitCodeForError
+    - NewDiagnostic
+    - NewFailure
+    - NewFailureWithMessage
+    - PresentError
+    - UserGuidanceForError
+    - UserMessageForError
+    - failureMessageFromDiagnostics
+    - guidanceForDiagnosticCode
+  import_files_list:
+    - errors
+  language: go

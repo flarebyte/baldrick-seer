@@ -1,0 +1,10 @@
+locator: internal/cli/stress_test.go
+meta:
+  function_list:
+    - TestExecuteLargeFixtureStressDeterminism
+    - largeCLIInvalidConfigPath
+    - largeCLIValidConfigPath
+  import_files_list:
+    - path/filepath
+    - testing
+  language: go
