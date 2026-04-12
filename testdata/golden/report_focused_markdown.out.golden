@@ -1,20 +1,85 @@
 # Summary Focused
 
-Problem: Decision Demo
+## Problem
 
-## Scenarios
+### Title
+Decision Demo Title
 
-### growth
-Weights: cost=0.600000, quality=0.400000
-- 1. alpha (0.800000)
-- 2. beta (0.400000)
+### Goal
+Choose the most robust option
 
-## Aggregation
+### Description
+Compare options across baseline and growth scenarios.
 
-Method: equal_average
-Scenario weights:
-- growth: 1.000000
+### Notes
+- context note
+- reviewable artifact
+
+## Alternatives
+
+### Alpha
+Lower cost option
+
+### Beta
+Higher feature depth
+
+## Scenario
+
+### Growth
+Expansion-oriented scenario.
+
+Rapid scale-up with higher demand volatility.
+
+## Decision Drivers
+
+### Criteria
+
+#### Cost
+Lower is better
+
+#### Quality
+Higher is better
+
+### Preference Justifications
+- Growth: Cost over Quality (strength 3.000000)
+
+### Criteria Weights
+- Growth: Cost=0.600000, Quality=0.400000
+
+## Scenario Ranking
+
+### Growth
+1. Alpha (0.800000)
+2. Beta (0.400000)
+
+#### Evaluation Notes
+Projected growth measurements.
+
+##### Alpha
+Alpha growth projection.
+
+Scores:
+- Cost: 12
+- Quality: 3
+
+##### Beta
+Beta growth projection.
+
+Scores:
+- Cost: 18
+- Quality: 2
 
 ## Final Ranking
-- 1. alpha (0.800000)
-- 2. beta (0.400000)
+
+1. Alpha (0.800000)
+2. Beta (0.400000)
+
+## Notes and Tradeoffs
+
+- Aggregation method: equal_average
+
+### Scenario Weights
+- Growth: 1.000000
+
+### Scenario Criteria Weights
+- Growth: Cost=0.600000, Quality=0.400000

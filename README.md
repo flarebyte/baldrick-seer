@@ -139,6 +139,11 @@ Release binaries for supported operating systems are written to:
 build/
 ```
 
+`make build-dist` currently produces:
+- `seer-darwin-arm64`
+- `seer-linux-amd64`
+- `checksums.txt`
+
 You can embed build metadata when needed:
 
 ```sh
@@ -183,8 +188,8 @@ They are meant as a quick-start baseline, not a full demonstration of the v1 fea
 ## Output formats
 
 `seer report generate` currently renders:
-- Markdown for human-readable summaries
-- JSON for tool-friendly structured output
+- Markdown as a standalone, source-backed decision report
+- JSON as a standalone, source-backed machine-readable report
 - CSV for spreadsheet and analytics workflows
 
 The output is deterministic across repeated runs for the same input.

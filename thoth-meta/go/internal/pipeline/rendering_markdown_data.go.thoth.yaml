@@ -1,0 +1,16 @@
+locator: internal/pipeline/rendering_markdown_data.go
+meta:
+  function_list:
+    - filteredAlternativesForMarkdown
+    - filteredCriteriaForMarkdown
+    - filteredScenariosForMarkdown
+    - findScenarioEvaluation
+    - focusedScenarioAndCriterionNames
+    - markdownPreferenceComparisons
+    - orderedAlternativeEvaluations
+    - orderedCriterionValueRecords
+    - orderedScenarioResultsForMarkdown
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strings
+  language: go

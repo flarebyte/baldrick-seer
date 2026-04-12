@@ -1,18 +1,49 @@
 # Summary
 
-Problem: minimal
+## Problem
 
-## Scenarios
+### Title
+minimal
+
+## Alternatives
+
+### option_a
+
+## Scenario
 
 ### baseline
-Weights: cost=1.000000
-- 1. option_a (0.000000)
 
-## Aggregation
+## Decision Drivers
 
-Method: equal_average
-Scenario weights:
-- baseline: 1.000000
+### Criteria
+
+#### cost
+
+### Criteria Weights
+- baseline: cost=1.000000
+
+## Scenario Ranking
+
+### baseline
+1. option_a (0.000000)
+
+#### Evaluation Notes
+
+##### option_a
+
+Scores:
+- cost: 1
 
 ## Final Ranking
-- 1. option_a (0.000000)
+
+1. option_a (0.000000)
+
+## Notes and Tradeoffs
+
+- Aggregation method: equal_average
+
+### Scenario Weights
+- baseline: 1.000000
+
+### Scenario Criteria Weights
+- baseline: cost=1.000000

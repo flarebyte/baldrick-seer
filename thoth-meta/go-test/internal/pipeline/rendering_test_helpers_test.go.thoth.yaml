@@ -7,11 +7,15 @@ meta:
     - assertMarkdownFlagsSuppressedOutput
     - assertMarkdownFullOutput
     - assertMarkdownStandardOutput
+    - expectedRenderedReport
     - readPipelineGolden
+    - renderReportsForTest
     - reportLoadedConfig
     - reportScenarioResults
     - reportScenarioWeights
+    - singleReportDefinitions
   import_files_list:
+    - context
     - encoding/csv
     - encoding/json
     - github.com/flarebyte/baldrick-seer/internal/domain

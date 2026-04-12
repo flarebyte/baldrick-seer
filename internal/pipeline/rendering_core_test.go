@@ -81,6 +81,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 					"detail=standard",
 					"include-context=false",
 					"include-weights=false",
+					"include-evaluation-notes=false",
 					"include-tradeoffs=false",
 				},
 			},
@@ -217,32 +218,13 @@ func TestDefaultReportRenderer(t *testing.T) {
 		},
 	}
 
-	renderer := DefaultReportRenderer{}
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			config := reportLoadedConfig(tt.report)
-			got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
-				Command: domain.CommandRequest{
-					CommandName: domain.CommandNameReportGenerate,
-					ConfigPath:  config.Path,
-				},
-				ValidatedModel: domain.ValidatedModelSummary{
-					ConfigPath: config.Path,
-				},
-				ScenarioResults: tt.scenarios,
-				FinalRanking:    domain.AggregatedRankingResult{},
-				ReportDefinitions: []domain.ReportDefinition{
-					{Name: tt.report.Name, Title: tt.report.Title, Format: tt.report.Format},
-				},
-				ScenarioWeights: tt.weights,
-				Config:          config,
-			})
-			if err != nil {
-				t.Fatalf("RenderReports() error = %v", err)
-			}
+			got := renderReportsForTest(t, config, tt.scenarios, domain.AggregatedRankingResult{}, singleReportDefinitions(tt.report), tt.weights)
 
 			if tt.name == "markdown standard detail output shape" {
 				if !strings.Contains(got.RenderedOutput, "# Summary Markdown Standard") {
@@ -432,7 +414,6 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 func TestDefaultReportRendererHonorsSelectedReportDefinitions(t *testing.T) {
 	t.Parallel()
 
-	renderer := DefaultReportRenderer{}
 	reportA := ReportConfig{
 		Name:   "a-markdown",
 		Title:  "A Markdown",
@@ -446,23 +427,7 @@ func TestDefaultReportRendererHonorsSelectedReportDefinitions(t *testing.T) {
 	}
 
 	config := reportLoadedConfig(reportA, reportB)
-	got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
-		Command: domain.CommandRequest{
-			CommandName: domain.CommandNameReportGenerate,
-			ConfigPath:  config.Path,
-		},
-		ValidatedModel: domain.ValidatedModelSummary{
-			ConfigPath: config.Path,
-		},
-		ScenarioResults: reportScenarioResults(),
-		ReportDefinitions: []domain.ReportDefinition{
-			{Name: reportB.Name, Title: reportB.Title, Format: reportB.Format},
-		},
-		Config: config,
-	})
-	if err != nil {
-		t.Fatalf("RenderReports() error = %v", err)
-	}
+	got := renderReportsForTest(t, config, reportScenarioResults(), domain.AggregatedRankingResult{}, singleReportDefinitions(reportB), nil)
 
 	if got, want := len(got.ReportDefinitions), 1; got != want {
 		t.Fatalf("len(ReportDefinitions) = %d, want %d", got, want)

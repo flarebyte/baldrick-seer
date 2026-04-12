@@ -1,0 +1,12 @@
+locator: internal/pipeline/validation_sections_scenarios.go
+meta:
+  function_list:
+    - validateCriteriaCatalog
+    - validateEvaluations
+    - validateScenarioConstraints
+    - validateScenarioEvaluationAlternatives
+    - validateScenarios
+  import_files_list:
+    - fmt
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go

@@ -7,10 +7,12 @@
     "scenarioWeights": [
       {
         "scenarioName": "baseline",
+        "scenarioTitle": "Baseline",
         "weight": 0.5
       },
       {
         "scenarioName": "growth",
+        "scenarioTitle": "Growth",
         "weight": 0.5
       }
     ]
@@ -18,9 +20,11 @@
   "scenarioResults": [
     {
       "scenarioName": "baseline",
+      "scenarioTitle": "Baseline",
       "ranking": [
         {
           "alternativeName": "alpha",
+          "alternativeTitle": "Alpha",
           "rank": 1,
           "score": 0.9
         }
@@ -28,9 +32,11 @@
     },
     {
       "scenarioName": "growth",
+      "scenarioTitle": "Growth",
       "ranking": [
         {
           "alternativeName": "alpha",
+          "alternativeTitle": "Alpha",
           "rank": 1,
           "score": 0.8
         }
@@ -40,22 +46,27 @@
   "scenarioWeights": [
     {
       "scenarioName": "baseline",
+      "scenarioTitle": "Baseline",
       "weights": [
         {
           "criterionName": "cost",
+          "criterionTitle": "Cost",
           "weight": 1
         }
       ]
     },
     {
       "scenarioName": "growth",
+      "scenarioTitle": "Growth",
       "weights": [
         {
           "criterionName": "cost",
+          "criterionTitle": "Cost",
           "weight": 0.6
         },
         {
           "criterionName": "quality",
+          "criterionTitle": "Quality",
           "weight": 0.4
         }
       ]
@@ -64,8 +75,138 @@
   "finalRanking": [
     {
       "alternativeName": "alpha",
+      "alternativeTitle": "Alpha",
       "rank": 1,
       "score": 0.8500000000000001
+    }
+  ],
+  "problem": {
+    "name": "Decision Demo",
+    "title": "Decision Demo Title",
+    "goal": "Choose the most robust option",
+    "description": "Compare options across baseline and growth scenarios.",
+    "owner": "platform-team",
+    "notes": [
+      "context note",
+      "reviewable artifact"
+    ]
+  },
+  "report": {
+    "name": "summary-json-focused",
+    "title": "Summary JSON Focused",
+    "format": "json",
+    "arguments": [
+      "include-weights=true",
+      "pretty=true"
+    ]
+  },
+  "alternatives": [
+    {
+      "name": "alpha",
+      "title": "Alpha",
+      "description": "Lower cost option"
+    }
+  ],
+  "criteria": [
+    {
+      "name": "cost",
+      "title": "Cost",
+      "description": "Lower is better",
+      "polarity": "cost",
+      "valueType": "number"
+    },
+    {
+      "name": "quality",
+      "title": "Quality",
+      "description": "Higher is better",
+      "polarity": "benefit",
+      "valueType": "ordinal",
+      "scaleGuidance": [
+        "poor",
+        "good"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "baseline",
+      "title": "Baseline",
+      "description": "Current operating constraints.",
+      "narrative": "Steady-state execution with tight delivery pressure.",
+      "activeCriteria": [
+        "cost"
+      ]
+    },
+    {
+      "name": "growth",
+      "title": "Growth",
+      "description": "Expansion-oriented scenario.",
+      "narrative": "Rapid scale-up with higher demand volatility.",
+      "activeCriteria": [
+        "cost",
+        "quality"
+      ],
+      "preferences": {
+        "method": "ahp",
+        "scale": "saaty",
+        "comparisons": [
+          {
+            "moreImportantCriterionName": "cost",
+            "moreImportantCriterionTitle": "Cost",
+            "lessImportantCriterionName": "quality",
+            "lessImportantCriterionTitle": "Quality",
+            "strength": 3
+          }
+        ]
+      }
+    }
+  ],
+  "evaluations": [
+    {
+      "scenarioName": "baseline",
+      "scenarioTitle": "Baseline",
+      "description": "Observed baseline measurements.",
+      "evaluations": [
+        {
+          "alternativeName": "alpha",
+          "alternativeTitle": "Alpha",
+          "description": "Alpha baseline observation.",
+          "values": [
+            {
+              "criterionName": "cost",
+              "criterionTitle": "Cost",
+              "value": 10,
+              "rendered": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "scenarioName": "growth",
+      "scenarioTitle": "Growth",
+      "description": "Projected growth measurements.",
+      "evaluations": [
+        {
+          "alternativeName": "alpha",
+          "alternativeTitle": "Alpha",
+          "description": "Alpha growth projection.",
+          "values": [
+            {
+              "criterionName": "cost",
+              "criterionTitle": "Cost",
+              "value": 12,
+              "rendered": "12"
+            },
+            {
+              "criterionName": "quality",
+              "criterionTitle": "Quality",
+              "value": 3,
+              "rendered": "3"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

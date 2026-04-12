@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"os"
@@ -17,23 +18,48 @@ func assertMarkdownStandardOutput(t *testing.T, got string) {
 
 	patterns := []string{
 		"## Problem",
-		"- Name: Decision Demo",
+		"### Title\nDecision Demo Title",
+		"### Goal\nChoose the most robust option",
+		"### Description\nCompare options across baseline and growth scenarios.",
+		"### Notes",
+		"- context note",
 		"## Alternatives",
-		"- alpha",
-		"- beta",
+		"### Alpha",
+		"Lower cost option",
+		"### Beta",
+		"Higher feature depth",
 		"## Scenarios",
-		"- baseline",
-		"- growth",
-		"## Criteria Weights",
-		"- baseline: cost=1.000000",
-		"- growth: cost=0.600000, quality=0.400000",
+		"### Baseline",
+		"Current operating constraints.",
+		"### Growth",
+		"Expansion-oriented scenario.",
+		"## Decision Drivers",
+		"### Criteria",
+		"#### Cost",
+		"Lower is better",
+		"### Preference Justifications",
+		"- Growth: Cost over Quality (strength 3.000000)",
+		"### Criteria Weights",
+		"- Baseline: Cost=1.000000",
+		"- Growth: Cost=0.600000, Quality=0.400000",
 		"## Scenario Rankings",
-		"### baseline",
-		"### growth",
+		"### Baseline",
+		"1. Alpha (0.900000)",
+		"- Beta: excluded (excluded by scenario constraints)",
+		"#### Evaluation Notes",
+		"Observed baseline measurements.",
+		"##### Alpha",
+		"Scores:",
+		"- Cost: 10",
+		"### Growth",
+		"1. Alpha (0.800000)",
+		"2. Beta (0.400000)",
 		"## Notes and Tradeoffs",
 		"- Aggregation method: equal_average",
-		"- Exclusions:",
-		"baseline: beta (excluded by scenario constraints)",
+		"### Scenario Weights",
+		"- Baseline: 0.500000",
+		"### Exclusions",
+		"- Baseline: Beta (excluded by scenario constraints)",
 	}
 	for _, pattern := range patterns {
 		if !strings.Contains(got, pattern) {
@@ -48,13 +74,10 @@ func assertMarkdownFullOutput(t *testing.T, got string) {
 	assertMarkdownStandardOutput(t, got)
 	patterns := []string{
 		"# Summary Markdown Full",
-		"## Detailed Scenario Notes",
-		"- Ranked alternatives: 1",
-		"- Excluded alternatives: 1",
-		"- Leading alternative: alpha",
-		"## Aggregation Notes",
-		"- Participating scenarios: 2",
-		"- Final eligible alternatives: 1",
+		"##### Beta",
+		"Beta growth projection.",
+		"- Quality: 2",
+		"## Final Ranking",
 	}
 	for _, pattern := range patterns {
 		if !strings.Contains(got, pattern) {
@@ -69,10 +92,10 @@ func assertMarkdownFlagsOverrideOutput(t *testing.T, got string) {
 	present := []string{
 		"# Summary Markdown Flags",
 		"## Problem",
-		"## Criteria Weights",
+		"## Decision Drivers",
+		"### Criteria Weights",
 		"## Notes and Tradeoffs",
-		"## Detailed Scenario Notes",
-		"## Aggregation Notes",
+		"#### Evaluation Notes",
 	}
 	for _, pattern := range present {
 		if !strings.Contains(got, pattern) {
@@ -81,7 +104,8 @@ func assertMarkdownFlagsOverrideOutput(t *testing.T, got string) {
 	}
 
 	absent := []string{
-		"## Alternatives",
+		"Lower cost option",
+		"Higher feature depth",
 	}
 	for _, pattern := range absent {
 		if strings.Contains(got, pattern) {
@@ -107,11 +131,10 @@ func assertMarkdownFlagsSuppressedOutput(t *testing.T, got string) {
 	absent := []string{
 		"## Problem",
 		"## Alternatives",
-		"## Scenarios\n- ",
-		"## Criteria Weights",
+		"## Scenarios",
+		"## Decision Drivers",
 		"## Notes and Tradeoffs",
-		"## Detailed Scenario Notes",
-		"## Aggregation Notes",
+		"#### Evaluation Notes",
 	}
 	for _, pattern := range absent {
 		if strings.Contains(got, pattern) {
@@ -161,6 +184,28 @@ func assertJSONContextOutput(t *testing.T, got string) {
 	}
 	if got, want := len(report["arguments"].([]any)), 3; got != want {
 		t.Fatalf("len(report.arguments) = %d, want %d", got, want)
+	}
+
+	scenarioResults := payload["scenarioResults"].([]any)
+	firstScenario := scenarioResults[0].(map[string]any)
+	if got, want := firstScenario["scenarioTitle"], "Baseline"; got != want {
+		t.Fatalf("scenarioResults[0].scenarioTitle = %#v, want %#v", got, want)
+	}
+
+	finalRanking := payload["finalRanking"].([]any)
+	firstRank := finalRanking[0].(map[string]any)
+	if got, want := firstRank["alternativeTitle"], "Alpha"; got != want {
+		t.Fatalf("finalRanking[0].alternativeTitle = %#v, want %#v", got, want)
+	}
+
+	evaluations := payload["evaluations"].([]any)
+	firstEvaluation := evaluations[0].(map[string]any)
+	entries := firstEvaluation["evaluations"].([]any)
+	firstAlternative := entries[0].(map[string]any)
+	values := firstAlternative["values"].([]any)
+	firstValue := values[0].(map[string]any)
+	if got, want := firstValue["criterionTitle"], "Cost"; got != want {
+		t.Fatalf("evaluations[0].evaluations[0].values[0].criterionTitle = %#v, want %#v", got, want)
 	}
 }
 
@@ -215,6 +260,55 @@ func readPipelineGolden(t *testing.T, name string) string {
 	return string(content)
 }
 
+func singleReportDefinitions(report ReportConfig) []domain.ReportDefinition {
+	return []domain.ReportDefinition{{Name: report.Name, Title: report.Title, Format: report.Format}}
+}
+
+func renderReportsForTest(
+	t *testing.T,
+	config LoadedConfig,
+	scenarioResults []domain.ScenarioRankingResult,
+	finalRanking domain.AggregatedRankingResult,
+	reportDefinitions []domain.ReportDefinition,
+	scenarioWeights []ScenarioCriterionWeights,
+) RenderReportsOutput {
+	t.Helper()
+
+	renderer := DefaultReportRenderer{}
+	got, err := renderer.RenderReports(context.Background(), RenderReportsInput{
+		Command: domain.CommandRequest{
+			CommandName: domain.CommandNameReportGenerate,
+			ConfigPath:  config.Path,
+		},
+		ValidatedModel:    domain.ValidatedModelSummary{ConfigPath: config.Path},
+		ScenarioResults:   scenarioResults,
+		FinalRanking:      finalRanking,
+		ReportDefinitions: reportDefinitions,
+		ScenarioWeights:   scenarioWeights,
+		Config:            config,
+	})
+	if err != nil {
+		t.Fatalf("RenderReports() error = %v", err)
+	}
+	return got
+}
+
+func expectedRenderedReport(
+	t *testing.T,
+	report ReportConfig,
+	config LoadedConfig,
+	scenarioResults []domain.ScenarioRankingResult,
+	scenarioWeights []ScenarioCriterionWeights,
+) string {
+	t.Helper()
+
+	want, err := renderReport(report, config.Config, scenarioResults, config.Config.Aggregation, scenarioWeights)
+	if err != nil {
+		t.Fatalf("renderReport() error = %v", err)
+	}
+	return want
+}
+
 func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 	config := validLoadedConfig()
 	config.Config.Problem = &ProblemConfig{
@@ -252,6 +346,17 @@ func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 			ActiveCriteria: []ScenarioCriterionRef{
 				{CriterionName: "cost"},
 				{CriterionName: "quality"},
+			},
+			Preferences: &ScenarioPreferences{
+				Method: "ahp",
+				Scale:  "saaty",
+				Comparisons: []PairwiseComparison{
+					{
+						MoreImportantCriterionName: "cost",
+						LessImportantCriterionName: "quality",
+						Strength:                   3,
+					},
+				},
 			},
 		},
 	}

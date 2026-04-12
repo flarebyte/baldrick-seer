@@ -5,18 +5,8 @@ meta:
     - hasName
     - isSupportedCriterionValueType
     - isSupportedReportFormat
-    - validateAggregation
-    - validateCriteriaCatalog
-    - validateEvaluations
-    - validateReportFilepath
-    - validateReportFocusNames
-    - validateReports
     - validateRequiredSections
-    - validateScenarioConstraints
-    - validateScenarioEvaluationAlternatives
-    - validateScenarios
   import_files_list:
     - fmt
     - github.com/flarebyte/baldrick-seer/internal/domain
-    - path/filepath
   language: go

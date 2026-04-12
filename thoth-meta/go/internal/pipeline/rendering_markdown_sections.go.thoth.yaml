@@ -1,0 +1,23 @@
+locator: internal/pipeline/rendering_markdown_sections.go
+meta:
+  function_list:
+    - writeMarkdownAggregationWeightsSection
+    - writeMarkdownAlternativesSection
+    - writeMarkdownDecisionDriversSection
+    - writeMarkdownExclusionSection
+    - writeMarkdownFinalRankingSection
+    - writeMarkdownNamedWeights
+    - writeMarkdownNotesAndTradeoffs
+    - writeMarkdownProblemSection
+    - writeMarkdownRankedAlternative
+    - writeMarkdownReportTitle
+    - writeMarkdownScenarioEvaluationNotes
+    - writeMarkdownScenarioRankingsSection
+    - writeMarkdownScenarioWeightList
+    - writeMarkdownScenariosSection
+    - writeMarkdownTradeoffCriteriaWeights
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strconv
+    - strings
+  language: go

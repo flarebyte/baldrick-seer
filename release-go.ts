@@ -2,7 +2,7 @@
 
 // Release helper for Go binaries using Bun/TypeScript
 // - Reads version from main.project.yaml (tags.version)
-// - Builds multi-platform binaries via build-go.ts
+// - Builds supported release binaries via build-go.ts
 // - Creates a GitHub release v<version> with generated artifacts
 
 import { promises as fs } from 'node:fs';

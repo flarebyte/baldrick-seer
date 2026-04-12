@@ -31,6 +31,7 @@ make test-race
 make test-e2e
 make lint
 make format
+make review
 make coverage
 ```
 
@@ -42,6 +43,7 @@ The public targets delegate to more specific targets:
 - `make coverage` -> `make coverage-go`
 - `make lint` -> `make lint-go` and `make lint-e2e`
 - `make format` -> `make format-go` and `make format-e2e`
+- `make review` -> `make format`, `make test`, and `make lint`
 
 Run `make help` to see the full target list.
 
@@ -50,11 +52,8 @@ Run `make help` to see the full target list.
 Recommended local verification before opening a change:
 
 ```sh
-make format
-make lint
-make test-unit
+make review
 make test-race
-make test-e2e
 ```
 
 `make test-unit` runs verbose Go tests, writes a coverage profile to:
@@ -86,12 +85,14 @@ Release preparation is intentionally local and explicit. The repository does not
 Typical local release-prep flow:
 
 ```sh
-make format
-make lint
-make test
+make review
 make test-race
-make build VERSION=... COMMIT=... BUILD_DATE=...
+make build-dist VERSION=... COMMIT=... BUILD_DATE=...
 ```
+
+The release build currently targets:
+- macOS ARM64
+- Linux AMD64
 
 ## Design docs
 
