@@ -6,8 +6,9 @@ meta:
     - TestDefaultReportRendererSplitsMixedStdoutAndFileOutputs
     - TestDefaultReportRendererWritesFileTargetedCSVReports
     - TestDefaultReportRendererWritesFileTargetedReports
+    - readArtifactFile
+    - tempConfigPath
   import_files_list:
-    - context
     - github.com/flarebyte/baldrick-seer/internal/domain
     - os
     - path/filepath

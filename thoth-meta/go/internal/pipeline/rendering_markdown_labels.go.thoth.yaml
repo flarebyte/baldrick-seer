@@ -1,0 +1,15 @@
+locator: internal/pipeline/rendering_markdown_labels.go
+meta:
+  function_list:
+    - alternativeLabel
+    - alternativeLabelByName
+    - alternativeTitleByName
+    - criterionLabel
+    - criterionLabelByName
+    - criterionTitleByName
+    - firstNonEmpty
+    - scenarioLabel
+    - scenarioLabelByName
+    - scenarioTitleByName
+  import_files_list: []
+  language: go

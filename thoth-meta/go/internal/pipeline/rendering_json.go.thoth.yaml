@@ -5,10 +5,11 @@ meta:
     - buildJSONCriteria
     - buildJSONEvaluations
     - buildJSONProblemContext
+    - buildJSONRankedAlternative
     - buildJSONReportContext
     - buildJSONScenarios
-    - canonicalCriteria
     - renderJSONReport
+    - resolveJSONRenderOptions
   import_files_list:
     - encoding/json
     - github.com/flarebyte/baldrick-seer/internal/domain
