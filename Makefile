@@ -159,7 +159,7 @@ help:
 	@printf "Targets:\n"
 	@printf "  build        Build the E2E binary and release artifacts.\n"
 	@printf "  build-go     Build the Go CLI into .e2e-bin/ for local and E2E use.\n"
-	@printf "  build-dist   Build multi-platform release binaries into build/.\n"
+	@printf "  build-dist   Build release binaries for macOS ARM64 and Linux AMD64 into build/.\n"
 	@printf "  test         Run Go tests and Bun E2E tests.\n"
 	@printf "  test-go      Run Go test targets.\n"
 	@printf "  test-unit    Run verbose Go tests and print coverage summary.\n"

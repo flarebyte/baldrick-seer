@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 // Bun/TypeScript rewrite of build-go.mjs (zx)
-// Builds Go binaries for multiple platforms and writes checksums
+// Builds Go binaries for the supported release targets and writes checksums
 
 import crypto from 'node:crypto';
 import { promises as fs } from 'node:fs';
@@ -80,10 +80,7 @@ async function main() {
 
   const platforms = [
     { label: 'Linux (amd64)', os: 'linux', arch: 'amd64' },
-    { label: 'Linux (arm64)', os: 'linux', arch: 'arm64' },
-    { label: 'macOS (Intel)', os: 'darwin', arch: 'amd64' },
     { label: 'macOS (Apple Silicon)', os: 'darwin', arch: 'arm64' },
-    { label: 'Windows (amd64)', os: 'windows', arch: 'amd64' },
   ] as const;
 
   await ensureDir('build');
