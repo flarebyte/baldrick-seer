@@ -1,0 +1,23 @@
+locator: internal/pipeline/rendering_test_helpers_test.go
+meta:
+  function_list:
+    - assertCSVSchemaOutput
+    - assertJSONContextOutput
+    - assertMarkdownFlagsOverrideOutput
+    - assertMarkdownFlagsSuppressedOutput
+    - assertMarkdownFullOutput
+    - assertMarkdownStandardOutput
+    - readPipelineGolden
+    - reportLoadedConfig
+    - reportScenarioResults
+    - reportScenarioWeights
+  import_files_list:
+    - encoding/csv
+    - encoding/json
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - os
+    - path/filepath
+    - reflect
+    - strings
+    - testing
+  language: go
