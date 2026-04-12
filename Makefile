@@ -1,9 +1,15 @@
-.PHONY: build build-go build-dist test test-go test-unit test-race test-e2e lint lint-go lint-e2e format format-go format-e2e coverage coverage-go doc-design doc-decision dup complexity release sec help
+.DEFAULT_GOAL := help
+
+.PHONY: build build-go build-dist test test-go test-unit test-race test-e2e \
+	lint lint-go lint-e2e format format-go format-e2e coverage coverage-go \
+	doc-design doc-decision dup complexity release sec \
+	thoth-meta thoth-meta-go thoth-meta-go-test thoth-meta-ts-e2e \
+	check-tools install-tools-help help
 
 GO := go
 BUN := bun
 GOLINT := golangci-lint
-ROOT_DIR := $(PWD)
+ROOT_DIR := $(CURDIR)
 TMP_DIR := $(ROOT_DIR)/tmp
 GO_CACHE_DIR := $(ROOT_DIR)/.gocache
 GO_MOD_CACHE_DIR := $(ROOT_DIR)/.gomodcache
@@ -126,6 +132,27 @@ thoth-meta-go-test:
 thoth-meta-ts-e2e:
 	$(THOTH) run --config ./pipeline-ts-e2e-maat.thoth.cue
 
+check-tools:
+	@printf "go=%s\n" "$$(command -v $(GO) >/dev/null 2>&1 && printf true || printf false)"
+	@printf "bun=%s\n" "$$(command -v $(BUN) >/dev/null 2>&1 && printf true || printf false)"
+	@printf "golangci-lint=%s\n" "$$(command -v $(GOLINT) >/dev/null 2>&1 && printf true || printf false)"
+	@printf "flyb=%s\n" "$$(command -v flyb >/dev/null 2>&1 && printf true || printf false)"
+	@printf "thoth=%s\n" "$$(command -v $(THOTH) >/dev/null 2>&1 && printf true || printf false)"
+	@printf "semgrep=%s\n" "$$(command -v semgrep >/dev/null 2>&1 && printf true || printf false)"
+	@printf "scc=%s\n" "$$(command -v scc >/dev/null 2>&1 && printf true || printf false)"
+	@printf "jscpd=%s\n" "$$(command -v npx >/dev/null 2>&1 && printf true || printf false)"
+
+install-tools-help:
+	@printf "Install required tools:\n"
+	@printf "  go: https://go.dev/doc/install\n"
+	@printf "  bun: https://bun.sh/docs/installation\n"
+	@printf "  golangci-lint: https://golangci-lint.run/welcome/install/\n"
+	@printf "  flyb: install the flyb CLI used for doc generation.\n"
+	@printf "  thoth: install the thoth CLI used for metadata pipelines.\n"
+	@printf "  semgrep: https://semgrep.dev/docs/getting-started/cli\n"
+	@printf "  scc: https://github.com/boyter/scc\n"
+	@printf "  jscpd: available via npx jscpd once Node/npm tooling is installed.\n"
+
 help:
 	@printf "Targets:\n"
 	@printf "  build        Build the E2E binary and release artifacts.\n"
@@ -150,4 +177,7 @@ help:
 	@printf "  complexity   Show top Go and TypeScript files by complexity.\n"
 	@printf "  release      Run the local release helper script.\n"
 	@printf "  sec          Run Semgrep security scan.\n"
+	@printf "  thoth-meta   Refresh thoth metadata for Go, Go tests, and E2E TypeScript.\n"
+	@printf "  check-tools  Report required tool availability as key=value pairs.\n"
+	@printf "  install-tools-help  Show how to install required tools.\n"
 	@printf "  help         Show this help message.\n"
