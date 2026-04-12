@@ -1,0 +1,15 @@
+locator: internal/pipeline/load_cue_test.go
+meta:
+  function_list:
+    - TestDefaultConfigLoaderDecodesReportFilepath
+    - TestDefaultConfigLoaderDirectoryDeterminism
+    - TestDefaultConfigLoaderFileAndDirectoryEquivalence
+    - TestDefaultConfigLoaderWithCue
+  import_files_list:
+    - context
+    - errors
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - path/filepath
+    - reflect
+    - testing
+  language: go

@@ -1,0 +1,24 @@
+locator: internal/pipeline/run_flow_behavior_test.go
+meta:
+  function_list:
+    - TestConstraintValidationFlowBehavior
+    - TestEvaluationValidationFlowBehavior
+    - TestInvalidCueFailsAtLoadStage
+    - TestPairwiseValidationFlowBehavior
+    - TestRealValidationFailureFromFixture
+    - TestReportDefinitionValidationFlowBehavior
+    - TestRunReportGenerateProducesRealRenderedReport
+    - TestRunReportGenerateRepeatedRunDeterminism
+    - TestRunReportGenerateStopsOnAggregationFailure
+    - TestRunReportGenerateStopsOnRenderingFailure
+    - TestRunValidateRepeatedRunDeterminism
+    - TestRunValidateValidationFailureDeterminism
+    - TestValidationFailureStopsPipeline
+  import_files_list:
+    - context
+    - errors
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - path/filepath
+    - reflect
+    - testing
+  language: go

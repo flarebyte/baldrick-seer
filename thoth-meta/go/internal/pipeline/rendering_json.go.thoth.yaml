@@ -1,0 +1,15 @@
+locator: internal/pipeline/rendering_json.go
+meta:
+  function_list:
+    - buildJSONAlternatives
+    - buildJSONCriteria
+    - buildJSONEvaluations
+    - buildJSONProblemContext
+    - buildJSONReportContext
+    - buildJSONScenarios
+    - canonicalCriteria
+    - renderJSONReport
+  import_files_list:
+    - encoding/json
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go

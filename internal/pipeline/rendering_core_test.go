@@ -2,9 +2,8 @@ package pipeline
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
@@ -33,6 +32,62 @@ func TestDefaultReportRenderer(t *testing.T) {
 			wantGolden: "report_markdown.out.golden",
 		},
 		{
+			name: "markdown standard detail output shape",
+			report: ReportConfig{
+				Name:      "summary-markdown-standard",
+				Title:     "Summary Markdown Standard",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard", "include-scores=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
+			name: "markdown full detail output shape",
+			report: ReportConfig{
+				Name:      "summary-markdown-full",
+				Title:     "Summary Markdown Full",
+				Format:    "markdown",
+				Arguments: []string{"detail=full", "include-scores=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
+			name: "markdown explicit include flags override legacy explain",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags",
+				Title:  "Summary Markdown Flags",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"explain=false",
+					"include-weights=true",
+					"include-tradeoffs=true",
+					"include-evaluation-notes=true",
+					"include-alternative-descriptions=false",
+				},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
+			name: "markdown explicit flags can suppress standard sections",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags-off",
+				Title:  "Summary Markdown Flags Off",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"include-context=false",
+					"include-weights=false",
+					"include-tradeoffs=false",
+				},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
 			name: "json renderer output shape",
 			report: ReportConfig{
 				Name:      "summary-json",
@@ -45,6 +100,17 @@ func TestDefaultReportRenderer(t *testing.T) {
 			wantGolden: "report_json.out.golden",
 		},
 		{
+			name: "json renderer context output shape",
+			report: ReportConfig{
+				Name:      "summary-json-context",
+				Title:     "Summary JSON Context",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "include-weights=true", "pretty=true"},
+			},
+			scenarios: reportScenarioResults(),
+			weights:   reportScenarioWeights(),
+		},
+		{
 			name: "csv renderer output shape",
 			report: ReportConfig{
 				Name:      "summary-csv",
@@ -54,6 +120,16 @@ func TestDefaultReportRenderer(t *testing.T) {
 			},
 			scenarios:  reportScenarioResults(),
 			wantGolden: "report_csv.out.golden",
+		},
+		{
+			name: "csv renderer schema output shape",
+			report: ReportConfig{
+				Name:      "summary-csv-schema",
+				Title:     "Summary CSV Schema",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
+			},
+			scenarios: reportScenarioResults(),
 		},
 		{
 			name: "empty final aggregated ranking when all alternatives are ineligible",
@@ -168,6 +244,34 @@ func TestDefaultReportRenderer(t *testing.T) {
 				t.Fatalf("RenderReports() error = %v", err)
 			}
 
+			if tt.name == "markdown standard detail output shape" {
+				if !strings.Contains(got.RenderedOutput, "# Summary Markdown Standard") {
+					t.Fatalf("RenderedOutput missing standard title in %q", got.RenderedOutput)
+				}
+				assertMarkdownStandardOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "markdown full detail output shape" {
+				assertMarkdownFullOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "markdown explicit include flags override legacy explain" {
+				assertMarkdownFlagsOverrideOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "markdown explicit flags can suppress standard sections" {
+				assertMarkdownFlagsSuppressedOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "json renderer context output shape" {
+				assertJSONContextOutput(t, got.RenderedOutput)
+				return
+			}
+			if tt.name == "csv renderer schema output shape" {
+				assertCSVSchemaOutput(t, got.RenderedOutput)
+				return
+			}
+
 			if got, want := got.RenderedOutput, readPipelineGolden(t, tt.wantGolden); got != want {
 				t.Fatalf("RenderedOutput = %q, want %q", got, want)
 			}
@@ -192,6 +296,40 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 			},
 		},
 		{
+			name: "markdown standard",
+			report: ReportConfig{
+				Name:      "summary-markdown-standard",
+				Title:     "Summary Markdown Standard",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard", "include-scores=true"},
+			},
+		},
+		{
+			name: "markdown full",
+			report: ReportConfig{
+				Name:      "summary-markdown-full",
+				Title:     "Summary Markdown Full",
+				Format:    "markdown",
+				Arguments: []string{"detail=full", "include-scores=true"},
+			},
+		},
+		{
+			name: "markdown explicit flags",
+			report: ReportConfig{
+				Name:   "summary-markdown-flags",
+				Title:  "Summary Markdown Flags",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"explain=false",
+					"include-weights=true",
+					"include-tradeoffs=true",
+					"include-evaluation-notes=true",
+					"include-alternative-descriptions=false",
+				},
+			},
+		},
+		{
 			name: "json",
 			report: ReportConfig{
 				Name:      "summary-json",
@@ -201,12 +339,30 @@ func TestDefaultReportRendererRepeatedRunDeterminism(t *testing.T) {
 			},
 		},
 		{
+			name: "json context",
+			report: ReportConfig{
+				Name:      "summary-json-context",
+				Title:     "Summary JSON Context",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "include-weights=true", "pretty=true"},
+			},
+		},
+		{
 			name: "csv",
 			report: ReportConfig{
 				Name:      "summary-csv",
 				Title:     "Summary CSV",
 				Format:    "csv",
 				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			},
+		},
+		{
+			name: "csv schema",
+			report: ReportConfig{
+				Name:      "summary-csv-schema",
+				Title:     "Summary CSV Schema",
+				Format:    "csv",
+				Arguments: []string{"columns=scenario,alternative,criterion,value,score,rank,excluded,exclusion_reason", "header=true"},
 			},
 		},
 		{
@@ -397,121 +553,5 @@ func TestDefaultReportRendererCanonicalizesShuffledInput(t *testing.T) {
 
 	if canonical.RenderedOutput != shuffled.RenderedOutput {
 		t.Fatalf("canonical output = %q, shuffled output = %q", canonical.RenderedOutput, shuffled.RenderedOutput)
-	}
-}
-
-func readPipelineGolden(t *testing.T, name string) string {
-	t.Helper()
-
-	content, err := os.ReadFile(filepath.Join("..", "..", "testdata", "golden", name))
-	if err != nil {
-		t.Fatalf("ReadFile(%q) error = %v", name, err)
-	}
-	return string(content)
-}
-
-func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
-	config := validLoadedConfig()
-	config.Config.Problem = &ProblemConfig{Name: "Decision Demo"}
-	config.Config.Reports = append([]ReportConfig(nil), reports...)
-	config.Config.CriteriaCatalog = []CriterionConfig{
-		{Name: "cost", Polarity: "cost", ValueType: "number"},
-		{Name: "quality", Polarity: "benefit", ValueType: "ordinal", ScaleGuidance: []any{"poor", "good"}},
-	}
-	config.Config.Alternatives = []AlternativeConfig{
-		{Name: "alpha"},
-		{Name: "beta"},
-	}
-	config.Config.Scenarios = []ScenarioConfig{
-		{
-			Name: "baseline",
-			ActiveCriteria: []ScenarioCriterionRef{
-				{CriterionName: "cost"},
-			},
-		},
-		{
-			Name: "growth",
-			ActiveCriteria: []ScenarioCriterionRef{
-				{CriterionName: "cost"},
-				{CriterionName: "quality"},
-			},
-		},
-	}
-	config.Config.Evaluations = []EvaluationConfig{
-		{
-			ScenarioName: "baseline",
-			Evaluations: []AlternativeEvaluationConfig{
-				{
-					AlternativeName: "alpha",
-					Values: map[string]CriterionValue{
-						"cost": {Kind: "number", Value: 10},
-					},
-				},
-				{
-					AlternativeName: "beta",
-					Values: map[string]CriterionValue{
-						"cost": {Kind: "number", Value: 20},
-					},
-				},
-			},
-		},
-		{
-			ScenarioName: "growth",
-			Evaluations: []AlternativeEvaluationConfig{
-				{
-					AlternativeName: "alpha",
-					Values: map[string]CriterionValue{
-						"cost":    {Kind: "number", Value: 12},
-						"quality": {Kind: "ordinal", Value: 3},
-					},
-				},
-				{
-					AlternativeName: "beta",
-					Values: map[string]CriterionValue{
-						"cost":    {Kind: "number", Value: 18},
-						"quality": {Kind: "ordinal", Value: 2},
-					},
-				},
-			},
-		},
-	}
-	config.Config.Aggregation = &AggregationConfig{Method: "equal_average"}
-	return config
-}
-
-func reportScenarioResults() []domain.ScenarioRankingResult {
-	return []domain.ScenarioRankingResult{
-		{
-			ScenarioName: "growth",
-			RankedAlternatives: []domain.RankedAlternative{
-				{Name: "alpha", Rank: 1, Score: 0.8},
-				{Name: "beta", Rank: 2, Score: 0.4},
-			},
-		},
-		{
-			ScenarioName: "baseline",
-			RankedAlternatives: []domain.RankedAlternative{
-				{Name: "alpha", Rank: 1, Score: 0.9},
-				{Name: "beta", Excluded: true, ExclusionReason: "excluded by scenario constraints"},
-			},
-		},
-	}
-}
-
-func reportScenarioWeights() []ScenarioCriterionWeights {
-	return []ScenarioCriterionWeights{
-		{
-			ScenarioName: "growth",
-			CriterionWeights: []CriterionWeight{
-				{CriterionName: "quality", Weight: 0.4},
-				{CriterionName: "cost", Weight: 0.6},
-			},
-		},
-		{
-			ScenarioName: "baseline",
-			CriterionWeights: []CriterionWeight{
-				{CriterionName: "cost", Weight: 1},
-			},
-		},
 	}
 }

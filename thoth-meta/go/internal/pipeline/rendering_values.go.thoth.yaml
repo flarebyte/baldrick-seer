@@ -1,0 +1,12 @@
+locator: internal/pipeline/rendering_values.go
+meta:
+  function_list:
+    - buildEvaluationValueLookup
+    - canonicalEvaluations
+    - renderCriterionValue
+    - valueNames
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - sort
+    - strconv
+  language: go

@@ -1,0 +1,13 @@
+locator: internal/domain/failure_test.go
+meta:
+  function_list:
+    - TestAsCommandFailureReturnsNilForUnknownError
+    - TestExitCodeForCategory
+    - TestFailureCarriesWrappedError
+    - TestNewDiagnostic
+    - TestNewDiagnosticAddsValidationGuidance
+    - TestPresentError
+  import_files_list:
+    - errors
+    - testing
+  language: go

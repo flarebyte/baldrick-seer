@@ -1,0 +1,28 @@
+locator: internal/cli/root_test.go
+meta:
+  function_list:
+    - TestCommandOutputGoldens
+    - TestExecuteIsDeterministic
+    - TestExecuteRepeatedRunDeterminism
+    - TestExecuteUsesCentralizedFailureEmission
+    - TestHelpIncludesRepositoryAndExamples
+    - TestReportGenerateCommandDelegatesToExecutor
+    - TestRootCommandExposesBuildVersion
+    - TestValidateCommandDelegatesToExecutor
+    - assertExecuteRepeated
+    - assertPresentedCommandError
+    - assertRootCommandFailure
+    - executeAndCapture
+    - readGolden
+    - reportGenerateFailureDeps
+    - testConfigPath
+    - validateFailureDeps
+  import_files_list:
+    - bytes
+    - context
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - os
+    - path/filepath
+    - strings
+    - testing
+  language: go

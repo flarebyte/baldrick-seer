@@ -1,0 +1,21 @@
+locator: internal/pipeline/rendering_helpers.go
+meta:
+  function_list:
+    - allowedFocusedNames
+    - canonicalScenarioWeights
+    - floatPointer
+    - formatScore
+    - intPointer
+    - limitRankedAlternatives
+    - orderedWeightNames
+    - problemName
+    - reportArgumentInt
+    - reportArgumentPresent
+    - reportArgumentValue
+    - sortScenarioWeights
+    - toAllowedNameSet
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strconv
+    - strings
+  language: go

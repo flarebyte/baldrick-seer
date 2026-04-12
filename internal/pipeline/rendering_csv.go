@@ -49,6 +49,14 @@ func renderCSVReport(
 	return buffer.String(), writer.Error()
 }
 
+func csvSchemaDescriptions() map[string]string {
+	schema := make(map[string]string, len(csvColumnDefinitions))
+	for _, definition := range csvColumnDefinitions {
+		schema[definition.Name] = definition.Description
+	}
+	return schema
+}
+
 func csvColumnsIncludeCriterionData(columns []string) bool {
 	for _, column := range columns {
 		if column == "criterion" || column == "value" {

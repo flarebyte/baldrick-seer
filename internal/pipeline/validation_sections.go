@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/flarebyte/baldrick-seer/internal/domain"
 )
@@ -283,6 +284,10 @@ func validateReports(
 			))
 		}
 
+		if diagnostic, ok := validateReportFilepath(reportIndex, report.Filepath); ok {
+			*diagnostics = append(*diagnostics, diagnostic)
+		}
+
 		if report.Focus != nil {
 			validateReportFocusNames(diagnostics, reportIndex, "scenarioNames", report.Focus.ScenarioNames, scenarioNames, "validation.unknown_report_focus_scenario", "unknown scenario name in report focus: %s")
 			validateReportFocusNames(diagnostics, reportIndex, "alternativeNames", report.Focus.AlternativeNames, alternativeNames, "validation.unknown_report_focus_alternative", "unknown alternative name in report focus: %s")
@@ -291,6 +296,35 @@ func validateReports(
 
 		*diagnostics = append(*diagnostics, validateReportArguments(reportIndex, report)...)
 	}
+}
+
+func validateReportFilepath(reportIndex int, value string) (domain.Diagnostic, bool) {
+	if value == "" {
+		return domain.Diagnostic{}, false
+	}
+
+	if filepath.IsAbs(value) {
+		return domain.NewDiagnostic(
+			domain.DiagnosticSeverityError,
+			"validation.invalid_report_filepath",
+			fmt.Sprintf("config.reports[%d].filepath", reportIndex),
+			domain.DiagnosticLocation{},
+			fmt.Sprintf("report filepath must be relative: %s", value),
+		), true
+	}
+
+	cleaned := filepath.Clean(value)
+	if cleaned == "." || cleaned == ".." {
+		return domain.NewDiagnostic(
+			domain.DiagnosticSeverityError,
+			"validation.invalid_report_filepath",
+			fmt.Sprintf("config.reports[%d].filepath", reportIndex),
+			domain.DiagnosticLocation{},
+			fmt.Sprintf("report filepath must name a file, got: %s", value),
+		), true
+	}
+
+	return domain.Diagnostic{}, false
 }
 
 func validateAggregation(diagnostics *[]domain.Diagnostic, aggregation *AggregationConfig, scenarioNames []string) {

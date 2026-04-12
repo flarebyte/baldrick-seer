@@ -1,0 +1,7 @@
+locator: internal/pipeline/ranking_values.go
+meta:
+  function_list:
+    - normalizeCriterionValue
+    - numericValue
+  import_files_list: []
+  language: go

@@ -1,0 +1,30 @@
+locator: internal/pipeline/rendering_markdown.go
+meta:
+  function_list:
+    - canonicalAlternatives
+    - canonicalScenarios
+    - markdownReportSettings
+    - renderMarkdownBriefReport
+    - renderMarkdownFullReport
+    - renderMarkdownReport
+    - renderMarkdownStandardReport
+    - resolveMarkdownRenderOptions
+    - sortAlternatives
+    - sortScenarios
+    - writeMarkdownAggregationDetailNotes
+    - writeMarkdownAggregationExplanation
+    - writeMarkdownAggregationNotes
+    - writeMarkdownAlternative
+    - writeMarkdownCriteriaWeights
+    - writeMarkdownExclusionNotes
+    - writeMarkdownInlineWeights
+    - writeMarkdownProblemSection
+    - writeMarkdownReportTitle
+    - writeMarkdownScenarioCatalog
+    - writeMarkdownScenarioDetailNotes
+    - writeMarkdownScenarioExplanation
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - strconv
+    - strings
+  language: go

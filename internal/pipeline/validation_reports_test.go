@@ -16,6 +16,31 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 		},
 		{
+			name: "valid markdown detail argument",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"detail=standard"},
+			}}),
+		},
+		{
+			name: "valid markdown granular explainability arguments",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:   "summary",
+				Title:  "Summary",
+				Format: "markdown",
+				Arguments: []string{
+					"detail=standard",
+					"include-context=true",
+					"include-weights=true",
+					"include-alternative-descriptions=true",
+					"include-evaluation-notes=false",
+					"include-tradeoffs=true",
+				},
+			}}),
+		},
+		{
 			name: "valid json report definition",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
@@ -25,12 +50,31 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 		},
 		{
+			name: "valid json include context argument",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"include-context=true", "pretty=true"},
+			}}),
+		},
+		{
 			name: "valid csv report definition",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
 				Title:     "Summary",
 				Format:    "csv",
+				Filepath:  "artifacts/summary.csv",
 				Arguments: []string{"columns=scenario,alternative,score,rank", "header=true"},
+			}}),
+		},
+		{
+			name: "valid relative report filepath with parent directory segments",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "../decision/data/summary.md",
 			}}),
 		},
 		{
@@ -121,6 +165,17 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			wantMessage: "report argument key header is not allowed for format json",
 		},
 		{
+			name: "markdown explainability key used with wrong report format",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "json",
+				Arguments: []string{"include-tradeoffs=true"},
+			}}),
+			wantCodes:   []string{"validation.incompatible_report_argument"},
+			wantMessage: "report argument key include-tradeoffs is not allowed for format json",
+		},
+		{
 			name: "invalid argument value",
 			config: validLoadedConfigWithReports([]ReportConfig{{
 				Name:      "summary",
@@ -130,6 +185,50 @@ func TestDefaultModelValidatorReportDefinitionValidation(t *testing.T) {
 			}}),
 			wantCodes:   []string{"validation.invalid_report_argument_value"},
 			wantMessage: "invalid value for report argument header: yes",
+		},
+		{
+			name: "invalid markdown detail value",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:      "summary",
+				Title:     "Summary",
+				Format:    "markdown",
+				Arguments: []string{"detail=verbose"},
+			}}),
+			wantCodes:   []string{"validation.invalid_report_argument_value"},
+			wantMessage: "invalid value for report argument detail: verbose",
+		},
+		{
+			name: "absolute report filepath is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "/tmp/summary.md",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must be relative: /tmp/summary.md",
+		},
+		{
+			name: "filepath resolving to current directory is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: ".",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must name a file, got: .",
+		},
+		{
+			name: "filepath resolving to parent directory only is invalid",
+			config: validLoadedConfigWithReports([]ReportConfig{{
+				Name:     "summary",
+				Title:    "Summary",
+				Format:   "markdown",
+				Filepath: "..",
+			}}),
+			wantCodes:   []string{"validation.invalid_report_filepath"},
+			wantMessage: "report filepath must name a file, got: ..",
 		},
 		{
 			name: "valid mixed examples using spec argument patterns",

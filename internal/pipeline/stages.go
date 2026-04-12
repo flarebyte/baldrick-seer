@@ -51,13 +51,19 @@ type ExecutionConfig struct {
 }
 
 type ProblemConfig struct {
-	Name string `json:"name"`
+	Name        string   `json:"name"`
+	Title       string   `json:"title"`
+	Goal        string   `json:"goal"`
+	Description string   `json:"description"`
+	Owner       string   `json:"owner"`
+	Notes       []string `json:"notes"`
 }
 
 type ReportConfig struct {
 	Name      string       `json:"name"`
 	Title     string       `json:"title"`
 	Format    string       `json:"format"`
+	Filepath  string       `json:"filepath"`
 	Arguments []string     `json:"arguments"`
 	Focus     *ReportFocus `json:"focus"`
 }
@@ -69,6 +75,8 @@ type ReportFocus struct {
 }
 
 type CriterionConfig struct {
+	Title         string `json:"title"`
+	Description   string `json:"description"`
 	Name          string `json:"name"`
 	Polarity      string `json:"polarity"`
 	ValueType     string `json:"valueType"`
@@ -76,11 +84,16 @@ type CriterionConfig struct {
 }
 
 type AlternativeConfig struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type ScenarioConfig struct {
 	Name           string                 `json:"name"`
+	Title          string                 `json:"title"`
+	Description    string                 `json:"description"`
+	Narrative      string                 `json:"narrative"`
 	ActiveCriteria []ScenarioCriterionRef `json:"activeCriteria"`
 	Preferences    *ScenarioPreferences   `json:"preferences"`
 	Constraints    []ConstraintConfig     `json:"constraints"`
@@ -110,11 +123,13 @@ type ConstraintConfig struct {
 
 type EvaluationConfig struct {
 	ScenarioName string                        `json:"scenarioName"`
+	Description  string                        `json:"description"`
 	Evaluations  []AlternativeEvaluationConfig `json:"evaluations"`
 }
 
 type AlternativeEvaluationConfig struct {
 	AlternativeName string                    `json:"alternativeName"`
+	Description     string                    `json:"description"`
 	Values          map[string]CriterionValue `json:"values"`
 }
 

@@ -1,0 +1,10 @@
+locator: internal/pipeline/rendering_focus.go
+meta:
+  function_list:
+    - filterFinalRankingForReport
+    - filterScenarioAlternativesForReport
+    - filterScenarioResultsForReport
+    - filterScenarioWeightsForReport
+  import_files_list:
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go

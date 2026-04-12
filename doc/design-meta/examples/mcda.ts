@@ -35,6 +35,7 @@ export const exampleScenarioBasedMcda: McdaModel = {
       title: "Platform Selection Scenario Matrix",
       description: "Tabular scenario, criterion, and alternative output for analytics workflows.",
       format: "csv",
+      filepath: "../decision/data/platform-selection-scenario-matrix.csv",
       arguments: ["columns=scenario,alternative,criterion,value,score,rank", "header=true"],
       focus: {
         criterionNames: ["cost", "time_to_market", "scalability", "reliability", "compliance"],

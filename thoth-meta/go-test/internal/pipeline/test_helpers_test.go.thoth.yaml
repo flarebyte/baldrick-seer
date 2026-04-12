@@ -1,0 +1,30 @@
+locator: internal/pipeline/test_helpers_test.go
+meta:
+  function_list:
+    - assertAggregatedRanking
+    - assertCommandFailure
+    - assertFailureCategory
+    - assertLoadedConfigSuccess
+    - assertLoaderFailure
+    - assertReportGenerateStageFailure
+    - assertScenarioEntry
+    - assertScenarioResults
+    - assertScenarioWeights
+    - assertStageOrder
+    - assertValidatedModelPath
+    - fixtureConfigPath
+    - mustLoadConfig
+    - newFakeRunner
+    - runFlowBehaviorTests
+    - runReportGenerateForTest
+    - singleCriterionWeights
+    - singleScenarioResults
+  import_files_list:
+    - context
+    - errors
+    - github.com/flarebyte/baldrick-seer/internal/domain
+    - math
+    - path/filepath
+    - reflect
+    - testing
+  language: go

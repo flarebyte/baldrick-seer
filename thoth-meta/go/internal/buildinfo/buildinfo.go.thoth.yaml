@@ -1,0 +1,7 @@
+locator: internal/buildinfo/buildinfo.go
+meta:
+  function_list:
+    - String
+  import_files_list:
+    - fmt
+  language: go

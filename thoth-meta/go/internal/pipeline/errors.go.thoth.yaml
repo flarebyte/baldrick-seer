@@ -1,0 +1,6 @@
+locator: internal/pipeline/errors.go
+meta:
+  function_list: []
+  import_files_list:
+    - errors
+  language: go

@@ -1,0 +1,15 @@
+locator: internal/domain/order.go
+meta:
+  function_list:
+    - CanonicalAggregatedRankingResult
+    - CanonicalCommandResult
+    - CanonicalDiagnostics
+    - CanonicalNames
+    - CanonicalRankedAlternatives
+    - CanonicalReportDefinitions
+    - CanonicalScenarioResults
+    - CanonicalValidatedModelSummary
+    - diagnosticSeverityOrder
+  import_files_list:
+    - sort
+  language: go

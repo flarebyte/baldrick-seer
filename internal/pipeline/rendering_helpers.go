@@ -36,6 +36,16 @@ func reportArgumentValue(arguments []string, key string, fallback string) string
 	return fallback
 }
 
+func reportArgumentPresent(arguments []string, key string) bool {
+	for _, argument := range arguments {
+		parsedKey, _, ok := strings.Cut(argument, "=")
+		if ok && parsedKey == key {
+			return true
+		}
+	}
+	return false
+}
+
 func reportArgumentInt(arguments []string, key string) int {
 	value := reportArgumentValue(arguments, key, "")
 	if value == "" {

@@ -1,0 +1,7 @@
+locator: internal/pipeline/validation_values_test.go
+meta:
+  function_list:
+    - TestDefaultModelValidatorEvaluationValueValidation
+  import_files_list:
+    - testing
+  language: go

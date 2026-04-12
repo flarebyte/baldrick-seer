@@ -1,0 +1,17 @@
+locator: internal/pipeline/validation_values.go
+meta:
+  function_list:
+    - isIntegerValue
+    - isNumericValue
+    - isSupportedConstraintOperator
+    - isSupportedCriterionValueKind
+    - isValidCriterionValue
+    - validateAlternativeEvaluationValues
+    - validationConstraintValueCode
+    - validationConstraintValueMessage
+    - validationValueSemanticCode
+    - validationValueSemanticMessage
+  import_files_list:
+    - fmt
+    - github.com/flarebyte/baldrick-seer/internal/domain
+  language: go
