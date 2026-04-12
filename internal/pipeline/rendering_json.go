@@ -219,11 +219,7 @@ func buildJSONAlternatives(config *ExecutionConfig) []jsonAlternativeContext {
 	alternatives := canonicalAlternatives(config.Alternatives)
 	output := make([]jsonAlternativeContext, 0, len(alternatives))
 	for _, alternative := range alternatives {
-		output = append(output, jsonAlternativeContext{
-			Name:        alternative.Name,
-			Title:       alternative.Title,
-			Description: alternative.Description,
-		})
+		output = append(output, jsonAlternativeContext(alternative))
 	}
 	return output
 }

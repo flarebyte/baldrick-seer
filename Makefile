@@ -15,6 +15,7 @@ GO_PACKAGES := ./...
 GO_ENV := GOTOOLCHAIN=local GOCACHE=$(GO_CACHE_DIR) GOMODCACHE=$(GO_MOD_CACHE_DIR)
 BUN_ENV := TMPDIR=$(TMP_DIR)
 BIOME := $(BUN_ENV) $(BUN) run biome
+THOTH := thoth
 GOLINT_ENV := $(GO_ENV) GOLANGCI_LINT_CACHE=$(GO_LINT_CACHE_DIR)
 COVER_PROFILE := $(TMP_DIR)/test-unit.coverage.out
 COVER_HTML := $(TMP_DIR)/test-unit.coverage.html
@@ -113,6 +114,17 @@ release:
 
 sec:
 	semgrep scan --config auto
+
+thoth-meta: thoth-meta-go thoth-meta-go-test thoth-meta-ts-e2e
+
+thoth-meta-go:
+	$(THOTH) run --config ./pipeline-go-maat.thoth.cue
+
+thoth-meta-go-test:
+	$(THOTH) run --config ./pipeline-go-test-maat.thoth.cue
+
+thoth-meta-ts-e2e:
+	$(THOTH) run --config ./pipeline-ts-e2e-maat.thoth.cue
 
 help:
 	@printf "Targets:\n"
