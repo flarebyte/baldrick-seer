@@ -1,19 +1,85 @@
 # Summary Empty
 
-Problem: Decision Demo
+## Problem
+
+### Title
+Decision Demo Title
+
+### Goal
+Choose the most robust option
+
+### Description
+Compare options across baseline and growth scenarios.
+
+### Notes
+- context note
+- reviewable artifact
+
+## Alternatives
+
+### Alpha
+Lower cost option
+
+### Beta
+Higher feature depth
 
 ## Scenarios
 
-### baseline
-- alpha: excluded
-- beta: excluded
+### Baseline
+Current operating constraints.
 
-## Aggregation
+Steady-state execution with tight delivery pressure.
 
-Method: equal_average
-Scenario weights:
-- baseline: 1.000000
+### Growth
+Expansion-oriented scenario.
+
+Rapid scale-up with higher demand volatility.
+
+## Decision Drivers
+
+### Criteria
+
+#### Cost
+Lower is better
+
+#### Quality
+Higher is better
+
+### Preference Justifications
+- Growth: Cost over Quality (strength 3.000000)
+
+## Scenario Ranking
+
+### Baseline
+- Alpha: excluded
+- Beta: excluded
+
+#### Evaluation Notes
+Observed baseline measurements.
+
+##### Alpha
+Alpha baseline observation.
+
+Scores:
+- Cost: 10
+
+##### Beta
+Beta baseline observation.
+
+Scores:
+- Cost: 20
 
 ## Final Ranking
 
 (none)
+
+## Notes and Tradeoffs
+
+- Aggregation method: equal_average
+
+### Scenario Weights
+- Baseline: 1.000000
+
+### Exclusions
+- Baseline: Alpha
+- Baseline: Beta

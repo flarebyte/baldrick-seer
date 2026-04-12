@@ -81,6 +81,7 @@ func TestDefaultReportRenderer(t *testing.T) {
 					"detail=standard",
 					"include-context=false",
 					"include-weights=false",
+					"include-evaluation-notes=false",
 					"include-tradeoffs=false",
 				},
 			},

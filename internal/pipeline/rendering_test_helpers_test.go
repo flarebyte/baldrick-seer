@@ -17,23 +17,48 @@ func assertMarkdownStandardOutput(t *testing.T, got string) {
 
 	patterns := []string{
 		"## Problem",
-		"- Name: Decision Demo",
+		"### Title\nDecision Demo Title",
+		"### Goal\nChoose the most robust option",
+		"### Description\nCompare options across baseline and growth scenarios.",
+		"### Notes",
+		"- context note",
 		"## Alternatives",
-		"- alpha",
-		"- beta",
+		"### Alpha",
+		"Lower cost option",
+		"### Beta",
+		"Higher feature depth",
 		"## Scenarios",
-		"- baseline",
-		"- growth",
-		"## Criteria Weights",
-		"- baseline: cost=1.000000",
-		"- growth: cost=0.600000, quality=0.400000",
+		"### Baseline",
+		"Current operating constraints.",
+		"### Growth",
+		"Expansion-oriented scenario.",
+		"## Decision Drivers",
+		"### Criteria",
+		"#### Cost",
+		"Lower is better",
+		"### Preference Justifications",
+		"- Growth: Cost over Quality (strength 3.000000)",
+		"### Criteria Weights",
+		"- Baseline: Cost=1.000000",
+		"- Growth: Cost=0.600000, Quality=0.400000",
 		"## Scenario Rankings",
-		"### baseline",
-		"### growth",
+		"### Baseline",
+		"1. Alpha (0.900000)",
+		"- Beta: excluded (excluded by scenario constraints)",
+		"#### Evaluation Notes",
+		"Observed baseline measurements.",
+		"##### Alpha",
+		"Scores:",
+		"- Cost: 10",
+		"### Growth",
+		"1. Alpha (0.800000)",
+		"2. Beta (0.400000)",
 		"## Notes and Tradeoffs",
 		"- Aggregation method: equal_average",
-		"- Exclusions:",
-		"baseline: beta (excluded by scenario constraints)",
+		"### Scenario Weights",
+		"- Baseline: 0.500000",
+		"### Exclusions",
+		"- Baseline: Beta (excluded by scenario constraints)",
 	}
 	for _, pattern := range patterns {
 		if !strings.Contains(got, pattern) {
@@ -48,13 +73,10 @@ func assertMarkdownFullOutput(t *testing.T, got string) {
 	assertMarkdownStandardOutput(t, got)
 	patterns := []string{
 		"# Summary Markdown Full",
-		"## Detailed Scenario Notes",
-		"- Ranked alternatives: 1",
-		"- Excluded alternatives: 1",
-		"- Leading alternative: alpha",
-		"## Aggregation Notes",
-		"- Participating scenarios: 2",
-		"- Final eligible alternatives: 1",
+		"##### Beta",
+		"Beta growth projection.",
+		"- Quality: 2",
+		"## Final Ranking",
 	}
 	for _, pattern := range patterns {
 		if !strings.Contains(got, pattern) {
@@ -69,10 +91,10 @@ func assertMarkdownFlagsOverrideOutput(t *testing.T, got string) {
 	present := []string{
 		"# Summary Markdown Flags",
 		"## Problem",
-		"## Criteria Weights",
+		"## Decision Drivers",
+		"### Criteria Weights",
 		"## Notes and Tradeoffs",
-		"## Detailed Scenario Notes",
-		"## Aggregation Notes",
+		"#### Evaluation Notes",
 	}
 	for _, pattern := range present {
 		if !strings.Contains(got, pattern) {
@@ -81,7 +103,8 @@ func assertMarkdownFlagsOverrideOutput(t *testing.T, got string) {
 	}
 
 	absent := []string{
-		"## Alternatives",
+		"Lower cost option",
+		"Higher feature depth",
 	}
 	for _, pattern := range absent {
 		if strings.Contains(got, pattern) {
@@ -107,11 +130,10 @@ func assertMarkdownFlagsSuppressedOutput(t *testing.T, got string) {
 	absent := []string{
 		"## Problem",
 		"## Alternatives",
-		"## Scenarios\n- ",
-		"## Criteria Weights",
+		"## Scenarios",
+		"## Decision Drivers",
 		"## Notes and Tradeoffs",
-		"## Detailed Scenario Notes",
-		"## Aggregation Notes",
+		"#### Evaluation Notes",
 	}
 	for _, pattern := range absent {
 		if strings.Contains(got, pattern) {
@@ -252,6 +274,17 @@ func reportLoadedConfig(reports ...ReportConfig) LoadedConfig {
 			ActiveCriteria: []ScenarioCriterionRef{
 				{CriterionName: "cost"},
 				{CriterionName: "quality"},
+			},
+			Preferences: &ScenarioPreferences{
+				Method: "ahp",
+				Scale:  "saaty",
+				Comparisons: []PairwiseComparison{
+					{
+						MoreImportantCriterionName: "cost",
+						LessImportantCriterionName: "quality",
+						Strength:                   3,
+					},
+				},
 			},
 		},
 	}

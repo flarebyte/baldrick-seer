@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 .PHONY: build build-go build-dist test test-go test-unit test-race test-e2e \
-	lint lint-go lint-e2e format format-go format-e2e coverage coverage-go \
+	lint lint-go lint-e2e format format-go format-e2e review coverage coverage-go \
 	doc-design doc-decision dup complexity release sec \
 	thoth-meta thoth-meta-go thoth-meta-go-test thoth-meta-ts-e2e \
 	check-tools install-tools-help help
@@ -79,6 +79,8 @@ lint-e2e:
 	$(BIOME) check .
 
 format: format-go format-e2e
+
+review: format test lint
 
 format-go:
 	mkdir -p $(TMP_DIR)
@@ -171,6 +173,7 @@ help:
 	@printf "  format       Format Go and Biome-managed files.\n"
 	@printf "  format-go    Format Go files with gofmt.\n"
 	@printf "  format-e2e   Format TypeScript and tooling files with Biome.\n"
+	@printf "  review       Run format, test, and lint using existing targets.\n"
 	@printf "  doc-design   Regenerate design docs from flyb configs.\n"
 	@printf "  doc-decision Validate decision configs and regenerate markdown decision reports.\n"
 	@printf "  dup          Run duplicate code detection.\n"
