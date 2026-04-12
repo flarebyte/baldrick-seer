@@ -677,6 +677,7 @@ func orderedAlternativeEvaluations(report ReportConfig, config *ExecutionConfig,
 }
 
 type markdownCriterionValueRecord struct {
+	Name     string
 	Label    string
 	Rendered string
 }
@@ -694,6 +695,7 @@ func orderedCriterionValueRecords(criteria []CriterionConfig, values map[string]
 			continue
 		}
 		ordered = append(ordered, markdownCriterionValueRecord{
+			Name:     criterion.Name,
 			Label:    criterionLabel(criterion),
 			Rendered: renderCriterionValue(value.Value),
 		})
@@ -705,6 +707,7 @@ func orderedCriterionValueRecords(criteria []CriterionConfig, values map[string]
 			continue
 		}
 		ordered = append(ordered, markdownCriterionValueRecord{
+			Name:     criterionName,
 			Label:    criterionName,
 			Rendered: renderCriterionValue(values[criterionName].Value),
 		})
@@ -719,6 +722,18 @@ func alternativeLabelByName(config *ExecutionConfig, name string) string {
 		}
 	}
 	return name
+}
+
+func alternativeTitleByName(config *ExecutionConfig, name string) string {
+	if config == nil {
+		return ""
+	}
+	for _, alternative := range config.Alternatives {
+		if alternative.Name == name {
+			return alternative.Title
+		}
+	}
+	return ""
 }
 
 func criterionLabelByName(config *ExecutionConfig, name string) string {
@@ -745,6 +760,30 @@ func scenarioLabelByName(config *ExecutionConfig, name string) string {
 	return name
 }
 
+func scenarioTitleByName(config *ExecutionConfig, name string) string {
+	if config == nil {
+		return ""
+	}
+	for _, scenario := range config.Scenarios {
+		if scenario.Name == name {
+			return scenario.Title
+		}
+	}
+	return ""
+}
+
+func criterionTitleByName(config *ExecutionConfig, name string) string {
+	if config == nil {
+		return ""
+	}
+	for _, criterion := range config.CriteriaCatalog {
+		if criterion.Name == name {
+			return criterion.Title
+		}
+	}
+	return ""
+}
+
 func alternativeLabel(alternative AlternativeConfig) string {
 	return firstNonEmpty(alternative.Title, alternative.Name)
 }
@@ -764,36 +803,4 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
-}
-
-func canonicalAlternatives(alternatives []AlternativeConfig) []AlternativeConfig {
-	output := append([]AlternativeConfig(nil), alternatives...)
-	sortAlternatives(output)
-	return output
-}
-
-func canonicalScenarios(scenarios []ScenarioConfig) []ScenarioConfig {
-	output := append([]ScenarioConfig(nil), scenarios...)
-	sortScenarios(output)
-	return output
-}
-
-func sortAlternatives(alternatives []AlternativeConfig) {
-	for index := 0; index < len(alternatives); index++ {
-		for next := index + 1; next < len(alternatives); next++ {
-			if alternatives[next].Name < alternatives[index].Name {
-				alternatives[index], alternatives[next] = alternatives[next], alternatives[index]
-			}
-		}
-	}
-}
-
-func sortScenarios(scenarios []ScenarioConfig) {
-	for index := 0; index < len(scenarios); index++ {
-		for next := index + 1; next < len(scenarios); next++ {
-			if scenarios[next].Name < scenarios[index].Name {
-				scenarios[index], scenarios[next] = scenarios[next], scenarios[index]
-			}
-		}
-	}
 }

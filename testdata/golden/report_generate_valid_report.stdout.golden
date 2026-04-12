@@ -27,11 +27,70 @@ overall,option_a,0.000000,1
       ]
     }
   ],
+  "scenarioWeights": [
+    {
+      "scenarioName": "baseline",
+      "weights": [
+        {
+          "criterionName": "cost",
+          "weight": 1
+        }
+      ]
+    }
+  ],
   "finalRanking": [
     {
       "alternativeName": "option_a",
       "rank": 1,
       "score": 0
+    }
+  ],
+  "problem": {
+    "name": "valid-report"
+  },
+  "report": {
+    "name": "summary-json",
+    "title": "Summary JSON",
+    "format": "json",
+    "arguments": [
+      "include-evidence=false",
+      "pretty=true"
+    ]
+  },
+  "alternatives": [
+    {
+      "name": "option_a"
+    }
+  ],
+  "criteria": [
+    {
+      "name": "cost",
+      "valueType": "number"
+    }
+  ],
+  "scenarios": [
+    {
+      "name": "baseline",
+      "activeCriteria": [
+        "cost"
+      ]
+    }
+  ],
+  "evaluations": [
+    {
+      "scenarioName": "baseline",
+      "evaluations": [
+        {
+          "alternativeName": "option_a",
+          "values": [
+            {
+              "criterionName": "cost",
+              "value": 1,
+              "rendered": "1"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

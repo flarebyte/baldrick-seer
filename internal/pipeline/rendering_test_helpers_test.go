@@ -184,6 +184,28 @@ func assertJSONContextOutput(t *testing.T, got string) {
 	if got, want := len(report["arguments"].([]any)), 3; got != want {
 		t.Fatalf("len(report.arguments) = %d, want %d", got, want)
 	}
+
+	scenarioResults := payload["scenarioResults"].([]any)
+	firstScenario := scenarioResults[0].(map[string]any)
+	if got, want := firstScenario["scenarioTitle"], "Baseline"; got != want {
+		t.Fatalf("scenarioResults[0].scenarioTitle = %#v, want %#v", got, want)
+	}
+
+	finalRanking := payload["finalRanking"].([]any)
+	firstRank := finalRanking[0].(map[string]any)
+	if got, want := firstRank["alternativeTitle"], "Alpha"; got != want {
+		t.Fatalf("finalRanking[0].alternativeTitle = %#v, want %#v", got, want)
+	}
+
+	evaluations := payload["evaluations"].([]any)
+	firstEvaluation := evaluations[0].(map[string]any)
+	entries := firstEvaluation["evaluations"].([]any)
+	firstAlternative := entries[0].(map[string]any)
+	values := firstAlternative["values"].([]any)
+	firstValue := values[0].(map[string]any)
+	if got, want := firstValue["criterionTitle"], "Cost"; got != want {
+		t.Fatalf("evaluations[0].evaluations[0].values[0].criterionTitle = %#v, want %#v", got, want)
+	}
 }
 
 func assertCSVSchemaOutput(t *testing.T, got string) {
