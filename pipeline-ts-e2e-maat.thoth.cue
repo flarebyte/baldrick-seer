@@ -13,7 +13,7 @@
 
   filter: {
     inline: """
-      return thoth.starts_with(locator, "script/e2e/")
+      return thoth.starts_with(locator, "e2e/")
         and (
           thoth.ends_with(locator, ".test.ts")
           or thoth.ends_with(locator, ".suite.ts")

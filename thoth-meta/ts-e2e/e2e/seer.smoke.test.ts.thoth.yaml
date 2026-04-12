@@ -1,0 +1,22 @@
+locator: e2e/seer.smoke.test.ts
+meta:
+  import_files_list:
+    - ./helpers
+    - bun:test
+  language: typescript
+  testcase_titles_list:
+    - determinism
+    - fails for empty cue directories
+    - fails for malformed cue input
+    - fails with semantic validation errors
+    - fails without config
+    - keeps report generation stable across repeated runs
+    - keeps validate success stable across repeated runs
+    - keeps validation failures stable across repeated runs
+    - renders the default minimal report
+    - renders the multi-report fixture
+    - report generate
+    - runs with a cue directory package
+    - runs with a single cue file
+    - seer CLI E2E
+    - validate
